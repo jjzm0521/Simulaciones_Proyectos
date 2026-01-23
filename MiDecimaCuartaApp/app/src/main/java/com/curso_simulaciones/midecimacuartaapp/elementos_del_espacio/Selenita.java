@@ -12,71 +12,78 @@ import android.graphics.Path;
  */
 public class Selenita extends Extraterrestre {
 
-    /**
-     * Constructor por defecto
-     */
-    public Selenita() {
-        super();
-    }
+        /**
+         * Constructor por defecto
+         */
+        public Selenita() {
+                super();
+        }
 
-    /**
-     * Constructor con posición del centroide
-     */
-    public Selenita(float posicionCentroideX, float posicionCentroideY) {
-        super(posicionCentroideX, posicionCentroideY);
-    }
+        /**
+         * Constructor con posición del centroide
+         */
+        public Selenita(float posicionCentroideX, float posicionCentroideY) {
+                super(posicionCentroideX, posicionCentroideY);
+        }
 
-    @Override
-    public void dibujese(Canvas canvas, Paint pincel) {
-        canvas.save();
+        @Override
+        public void dibujese(Canvas canvas, Paint pincel) {
+                canvas.save();
 
-        // magnificar
-        canvas.scale(magnificacion, magnificacion, posicionCentroideX, posicionCentroideY);
-        // rotar
-        canvas.rotate(posicionAngularRotacionEjeXY, posicionEjeRotacionX, posicionEjeRotacionY);
+                // magnificar
+                canvas.scale(magnificacion, magnificacion, posicionCentroideX, posicionCentroideY);
+                // rotar
+                canvas.rotate(posicionAngularRotacionEjeXY, posicionEjeRotacionX, posicionEjeRotacionY);
 
-        float radio = 50f;
+                float ancho = 80f;
+                float alto = 100f;
+                float radioSemicirculo = 20f;
 
-        // Dibujar cuerpo del selenita (forma ovalada)
-        pincel.setStyle(Paint.Style.FILL);
-        pincel.setColor(Color.LTGRAY);
-        canvas.drawOval(posicionCentroideX - radio * 0.7f, posicionCentroideY - radio,
-                posicionCentroideX + radio * 0.7f, posicionCentroideY + radio, pincel);
+                // Dibujar semicírculo en la cabeza con relleno rojo (alineado con el
+                // rectángulo)
+                pincel.setStyle(Paint.Style.FILL);
+                pincel.setColor(Color.RED);
+                // Usar drawArc para crear un semicírculo (180 grados en la parte superior)
+                canvas.drawArc(posicionCentroideX - radioSemicirculo,
+                                posicionCentroideY - alto / 2 - radioSemicirculo,
+                                posicionCentroideX + radioSemicirculo,
+                                posicionCentroideY - alto / 2 + radioSemicirculo,
+                                180f, 180f, true, pincel);
 
-        // Contorno
-        pincel.setStyle(Paint.Style.STROKE);
-        pincel.setStrokeWidth(3f);
-        pincel.setColor(Color.BLACK);
-        canvas.drawOval(posicionCentroideX - radio * 0.7f, posicionCentroideY - radio,
-                posicionCentroideX + radio * 0.7f, posicionCentroideY + radio, pincel);
+                // Dibujar cuerpo rectangular rojo
+                pincel.setStyle(Paint.Style.FILL);
+                pincel.setColor(Color.RED);
+                canvas.drawRect(posicionCentroideX - ancho / 2, posicionCentroideY - alto / 2,
+                                posicionCentroideX + ancho / 2, posicionCentroideY + alto / 2, pincel);
 
-        // Dibujar ojos grandes típicos del selenita
-        pincel.setStyle(Paint.Style.FILL);
-        pincel.setColor(Color.BLACK);
-        float separacionOjos = 0.25f * radio;
-        // Ojo izquierdo
-        canvas.drawOval(posicionCentroideX - separacionOjos - 0.3f * radio, posicionCentroideY - 0.4f * radio,
-                posicionCentroideX - separacionOjos + 0.1f * radio, posicionCentroideY + 0.2f * radio, pincel);
-        // Ojo derecho
-        canvas.drawOval(posicionCentroideX + separacionOjos - 0.1f * radio, posicionCentroideY - 0.4f * radio,
-                posicionCentroideX + separacionOjos + 0.3f * radio, posicionCentroideY + 0.2f * radio, pincel);
+                // Dibujar ojos cuadrados blancos (más centrados y más pequeños)
+                pincel.setColor(Color.WHITE);
+                float tamañoOjo = 12f; // Reducido de 15f a 12f
+                float separacionOjos = 10f; // Reducido para centrar más los ojos
+                // Ojo izquierdo
+                canvas.drawRect(posicionCentroideX - separacionOjos - tamañoOjo,
+                                posicionCentroideY - alto / 4 - tamañoOjo,
+                                posicionCentroideX - separacionOjos, posicionCentroideY - alto / 4, pincel);
+                // Ojo derecho
+                canvas.drawRect(posicionCentroideX + separacionOjos, posicionCentroideY - alto / 4 - tamañoOjo,
+                                posicionCentroideX + separacionOjos + tamañoOjo, posicionCentroideY - alto / 4, pincel);
 
-        // Antenas
-        pincel.setStyle(Paint.Style.STROKE);
-        pincel.setStrokeWidth(5f);
-        pincel.setColor(color);
-        // Antena izquierda
-        canvas.drawLine(posicionCentroideX - 0.3f * radio, posicionCentroideY - radio,
-                posicionCentroideX - 0.5f * radio, posicionCentroideY - 1.5f * radio, pincel);
-        // Antena derecha
-        canvas.drawLine(posicionCentroideX + 0.3f * radio, posicionCentroideY - radio,
-                posicionCentroideX + 0.5f * radio, posicionCentroideY - 1.5f * radio, pincel);
+                // Dibujar punto como nariz
+                pincel.setColor(Color.BLACK);
+                canvas.drawCircle(posicionCentroideX, posicionCentroideY, 5f, pincel);
 
-        // Bolitas en las antenas
-        pincel.setStyle(Paint.Style.FILL);
-        canvas.drawCircle(posicionCentroideX - 0.5f * radio, posicionCentroideY - 1.5f * radio, 8f, pincel);
-        canvas.drawCircle(posicionCentroideX + 0.5f * radio, posicionCentroideY - 1.5f * radio, 8f, pincel);
+                // Dibujar boca rectangular blanca (alineada con el centro de los ojos, más
+                // baja)
+                pincel.setColor(Color.WHITE);
+                // El ancho de la boca se alinea con el centro de los ojos
+                float anchoBoca = (separacionOjos + tamañoOjo / 2) * 2;
+                float altoBoca = 10f; // Reducido para hacerla menos gruesa
+                float distanciaDesdeCentro = 20f; // Más baja
+                canvas.drawRect(posicionCentroideX - anchoBoca / 2,
+                                posicionCentroideY + distanciaDesdeCentro - altoBoca / 2,
+                                posicionCentroideX + anchoBoca / 2,
+                                posicionCentroideY + distanciaDesdeCentro + altoBoca / 2, pincel);
 
-        canvas.restore();
-    }
+                canvas.restore();
+        }
 }

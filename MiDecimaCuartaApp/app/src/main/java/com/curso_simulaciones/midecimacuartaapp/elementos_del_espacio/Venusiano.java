@@ -29,64 +29,92 @@ public class Venusiano extends Extraterrestre {
     public void dibujese(Canvas canvas, Paint pincel) {
         canvas.save();
 
+        // Activar anti-aliasing
+        pincel.setAntiAlias(true);
+
         // magnificar
         canvas.scale(magnificacion, magnificacion, posicionCentroideX, posicionCentroideY);
         // rotar
         canvas.rotate(posicionAngularRotacionEjeXY, posicionEjeRotacionX, posicionEjeRotacionY);
 
-        float radio = 50f;
+        float radioCuerpo = 50f;
 
-        // Dibujar cabeza triangular del venusiano
+        // 1. Dibujar cuerpo circular principal (Cara)
         pincel.setStyle(Paint.Style.FILL);
-        pincel.setColor(color);
+        pincel.setColor(Color.BLUE);
+        canvas.drawCircle(posicionCentroideX, posicionCentroideY, radioCuerpo, pincel);
 
-        // Triángulo para la cabeza
-        float[] puntosTriangulo = {
-                posicionCentroideX, posicionCentroideY - radio, // Punta superior
-                posicionCentroideX - 0.8f * radio, posicionCentroideY + 0.5f * radio, // Esquina izquierda
-                posicionCentroideX + 0.8f * radio, posicionCentroideY + 0.5f * radio // Esquina derecha
-        };
-
-        android.graphics.Path path = new android.graphics.Path();
-        path.moveTo(puntosTriangulo[0], puntosTriangulo[1]);
-        path.lineTo(puntosTriangulo[2], puntosTriangulo[3]);
-        path.lineTo(puntosTriangulo[4], puntosTriangulo[5]);
-        path.close();
-        canvas.drawPath(path, pincel);
-
-        // Contorno del triángulo
+        // Borde negro fino para la cara
         pincel.setStyle(Paint.Style.STROKE);
-        pincel.setStrokeWidth(3f);
+        pincel.setStrokeWidth(2f);
         pincel.setColor(Color.BLACK);
-        canvas.drawPath(path, pincel);
+        canvas.drawCircle(posicionCentroideX, posicionCentroideY, radioCuerpo, pincel);
 
-        // Dibujar tres ojos en línea horizontal
+        // 2. Dibujar el gorro/óvalo en la parte superior (Más grande y sin cuernos)
         pincel.setStyle(Paint.Style.FILL);
-        pincel.setColor(Color.YELLOW);
-        float yOjos = posicionCentroideY - 0.2f * radio;
-        float radioOjo = 0.15f * radio;
+        pincel.setColor(Color.BLUE);
 
-        // Ojo izquierdo
-        canvas.drawCircle(posicionCentroideX - 0.4f * radio, yOjos, radioOjo, pincel);
-        // Ojo central
-        canvas.drawCircle(posicionCentroideX, yOjos, radioOjo, pincel);
-        // Ojo derecho
-        canvas.drawCircle(posicionCentroideX + 0.4f * radio, yOjos, radioOjo, pincel);
+        // Aumentamos el tamaño del gorro
+        float anchoGorro = radioCuerpo * 1.8f; // Antes 1.4f
+        float altoGorro = 35f; // Antes 25f
+        float yCentroGorro = posicionCentroideY - radioCuerpo + 5f;
 
-        // Pupilas
+        // El óvalo
+        canvas.drawOval(posicionCentroideX - anchoGorro / 2,
+                yCentroGorro - altoGorro / 2,
+                posicionCentroideX + anchoGorro / 2,
+                yCentroGorro + altoGorro / 2,
+                pincel);
+
+        // (Se eliminaron las antenas/cuernitos)
+
+        // 4. Ojos (Círculos Blancos grandes separados)
+        pincel.setColor(Color.WHITE);
+        float radioOjo = 18f;
+        float separacionOjos = 22f;
+
+        float xOjoIzq = posicionCentroideX - separacionOjos;
+        float yOjo = posicionCentroideY - 5f;
+        float xOjoDer = posicionCentroideX + separacionOjos;
+
+        canvas.drawCircle(xOjoIzq, yOjo, radioOjo, pincel);
+        canvas.drawCircle(xOjoDer, yOjo, radioOjo, pincel);
+
+        // 5. Pupilas (Rombos)
+        pincel.setColor(Color.BLUE);
+        float radioPupila = 6f;
+
+        android.graphics.Path pathPupilaIzq = new android.graphics.Path();
+        pathPupilaIzq.moveTo(xOjoIzq, yOjo - radioPupila);
+        pathPupilaIzq.lineTo(xOjoIzq + radioPupila, yOjo);
+        pathPupilaIzq.lineTo(xOjoIzq, yOjo + radioPupila);
+        pathPupilaIzq.lineTo(xOjoIzq - radioPupila, yOjo);
+        pathPupilaIzq.close();
+        canvas.drawPath(pathPupilaIzq, pincel);
+
+        android.graphics.Path pathPupilaDer = new android.graphics.Path();
+        pathPupilaDer.moveTo(xOjoDer, yOjo - radioPupila);
+        pathPupilaDer.lineTo(xOjoDer + radioPupila, yOjo);
+        pathPupilaDer.lineTo(xOjoDer, yOjo + radioPupila);
+        pathPupilaDer.lineTo(xOjoDer - radioPupila, yOjo);
+        pathPupilaDer.close();
+        canvas.drawPath(pathPupilaDer, pincel);
+
+        // 6. Nariz
         pincel.setColor(Color.BLACK);
-        float radioPupila = 0.07f * radio;
-        canvas.drawCircle(posicionCentroideX - 0.4f * radio, yOjos, radioPupila, pincel);
-        canvas.drawCircle(posicionCentroideX, yOjos, radioPupila, pincel);
-        canvas.drawCircle(posicionCentroideX + 0.4f * radio, yOjos, radioPupila, pincel);
+        canvas.drawCircle(posicionCentroideX, posicionCentroideY + 10f, 2f, pincel);
 
-        // Boca sonriente
-        pincel.setStyle(Paint.Style.STROKE);
-        pincel.setStrokeWidth(4f);
-        pincel.setColor(Color.BLACK);
-        canvas.drawArc(posicionCentroideX - 0.3f * radio, posicionCentroideY + 0.1f * radio,
-                posicionCentroideX + 0.3f * radio, posicionCentroideY + 0.5f * radio,
-                0, 180, false, pincel);
+        // 7. Boca (Recta/Rectángulo redondeado fino y ancho)
+        pincel.setColor(Color.WHITE);
+        float anchoBoca = 30f;
+        float altoBoca = 4f;
+        float yBoca = posicionCentroideY + 30f;
+
+        canvas.drawRoundRect(posicionCentroideX - anchoBoca / 2,
+                yBoca - altoBoca / 2,
+                posicionCentroideX + anchoBoca / 2,
+                yBoca + altoBoca / 2,
+                10f, 10f, pincel);
 
         canvas.restore();
     }
