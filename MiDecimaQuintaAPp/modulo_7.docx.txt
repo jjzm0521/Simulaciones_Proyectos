@@ -1,0 +1,785 @@
+﻿SIMULACIONES
+IV + IoT + DL 
+Industria 5.0
+Copyright 2026 para:
+Diego L. Aristizábal Ramírez
+Profesor, Facultad de Ciencias, Departamento de Física
+Universidad Nacional de Colombia
+Medellín
+
+
+	ESTRUCTURA DE UNA APP ANDROID
+
+
+	7
+	
+
+
+
+
+
+Temas
+	* INTRODUCCIÓN
+* ESTRUCTURA DE UNA APP EN ANDROID
+* RUTAS EN EL CICLO DE VIDA DE UNA APP EN ANDROID
+* MI DECIMA QUINTA APP: CICLOS DE VIDA DE UNA ACTIVIDAD
+* TALLER
+* REFERENCIAS
+	
+
+
+
+INTRODUCCIÓN
+Cuando se empieza a programar en un lenguaje como C++ o JAVA, lo primero que se enseña es el método main, que es el punto en donde se llama al sistema operativo (SO) cuando se arranca la aplicación.
+En ANDROID una aplicación (APP) en general se conforma con un conjunto de las denominadas ACTIVIDADES (Activity). En este sentido una Activity es un componente de la aplicación que contiene una pantalla con la que los usuarios pueden interactuar para realizar acciones. A cada actividad le corresponde una ventana en la que se puede dibujar una Interfaz Gráfica de Usuario (GUI, por sus siglas en ingles). 
+
+
+
+
+APLICACIÓN = Σ ACTIVIDADES
+
+
+
+
+En ANDROID no existe un método main como tal, pero una Activity tiene varios métodos eventos que son llamados automáticamente por el SO: onCreate(), onStart(), onRestart(), onResume(), onPause(), onStop() y onDestroy(). Estos eventos se disparan con base en un ciclo de vida tal y como se expone a continuación.
+ESTRUCTURA DE UNA APP ANDROID
+El ciclo de vida de ANDROID se ilustra en el esquema de la Figura 1. 
+  
+
+Figura 1
+Los eventos de este ciclo son:
+1. onCreate(Bundle)
+“Se llama en la creación de la actividad. Se utiliza para realizar todo tipo de inicializaciones, como la creación de la interfaz de usuario o la inicialización de estructuras de datos. Este método recibe un objeto de tipo Bundle. Si no es la primera vez que se crea esta actividad en la ejecución actual de la aplicación, esto es, si la actividad ya ha existido antes pero fue destruida, el objeto Bundle contendrá lo necesario para restaurar su estado anterior de forma que el usuario se encuentre la actividad tal y como se la espera. Si no es así, el objeto será nulo” (Vico 2018).
+
+
+Nota:
+“Existen algunas situaciones en las que se destruye la actividad debido al comportamiento normal de la app; por ejemplo, cuando el usuario presiona el botón Atrás o la actividad señala su propia destrucción llamando a finish(). También es posible que el sistema destruya la actividad si está detenida y no se ha utilizado desde hace mucho tiempo, o si la actividad en primer plano necesita más recursos y el sistema debe cerrar algunos procesos en segundo plano para recuperar memoria.
+Cuando la actividad se destruye porque el usuario presiona Atrás  o la actividad se finaliza a sí misma, el concepto del sistema de esa instancia Activity se pierde para siempre porque el comportamiento indica que ya no se necesita la actividad. Sin embargo, si el sistema destruye la actividad debido a limitaciones del sistema (y no debido al comportamiento normal de la app), aunque la instancia Activity  real se pierde, el sistema recuerda que existió, de modo que si el usuario vuelve a ella, el sistema crea una nueva instancia de la actividad utilizando un conjunto de datos guardados que describe el estado en el que se encontraba la actividad cuando se destruyó. Los datos guardados que el sistema utiliza para restaurar el estado previo se denominan "estado de instancia" y son una colección de pares clave-valor almacenados en un objeto Bundle.
+
+
+Advertencia: Cada vez que el usuario gira la pantalla, la actividad se destruirá y se volverá a crear. Cuando la pantalla cambia de orientación, el sistema destruye y vuelve a crear la actividad en primer plano porque la configuración de la pantalla ha cambiado y es posible que tu actividad necesite cargar recursos alternativos (por ejemplo, el diseño).
+En el objeto Bundle se puede guardar información adicional a la predeterminada, por ejemplo, variables de miembro que siguen el progreso del usuario en la actividad. Sin embargo este tema no será tratado en este módulo” (Developers, 2018).
+2. onStart()
+Indica que la actividad está a punto de ser mostrada al usuario. Si se viene de una parada, se pasará antes por onRestart().
+“Este método se ejecuta cuando el sistema tiene intención de hacer visible la actividad, aunque luego no llegue a ocurrir realmente. Se suele utilizar para crear aquellos procesos cuyo objetivo es actualizar la interfaz de usuario: animaciones, temporizadores, localización GPS etc. Se hace en este método en lugar de en onCreate para no consumir recursos de forma innecesaria hasta que realmente hay intención de mostrar la actividad” (Vico 2018).
+3. onRestart()
+Anterior a onStart() cuando se  procede de una llamada a onStop().
+“Este método se ejecuta cuando una actividad había dejado de ser completamente visible pero tiene que mostrarse de nuevo (sin que haya sido destruida entre tanto, claro). Su uso no es tan habitual como el del resto de métodos, pero puede ser útil en algunos casos donde no compensa destruir ciertos elementos en onStop para luego tener que crearlos de nuevo en onStart, por cuestiones de eficiencia o porque eso provocaría el reinicio no deseado de alguna operación (consultas a una base de datos, por ejemplo). En esos casos lo que se hace es crear los procesos en onStart sólo la primera vez, detenerlos sin destruirlos en onStop y reanudarlos de nuevo en onRestart” (Vico 2018).
+4. onResume()
+“Este método se ejecuta justo antes de que la actividad sea completamente visible y el usuario pueda empezar a interactuar con ella. Es el sitio ideal para iniciar animaciones, acceder a recursos que se tienen que utilizar de forma exclusiva (como la cámara), etc. De esta forma no se utilizan los recursos más valiosos hasta que realmente van a ser necesarios. Hay que tener en cuenta que aunque se ejecute onStart, la actividad podría no llegar a visualizarse, por lo que no tendría sentido bloquear recursos o activar procesos que actualizan una interfaz de usuario que nadie va a ver” (Vico 2018).
+Cuando el método onCreate() termina de ejecutarse llama al método onStart() y onResume(), esto sucede de manera muy rápida. Técnicamente, la actividad se vuelve visible para el usuario cuando se llama onStart(), pero como sigue muy rápido al onResume() y se mantiene en ese estado hasta que suceda otra cosa (por ejemplo, cuando se apaga la pantalla o cuando se va a pasar a otra actividad, también en caso de recibir una llamada telefónica), se dice que aquí la actividad prácticamente es cuando se hace completamente visible.
+En onResume() es  en donde la actividad se encuentra en primer plano y el usuario interactúa con ella, se puede decir en español que es el estado “corriendo” o “ejecutando”.
+5. onPause()
+Indica que la actividad está a punto de ser lanzada a segundo plano, normalmente porque otra actividad es lanzada. Es el lugar adecuado para detener animaciones, música o almacenar los datos que estaban en edición. La actividad va a dejar de responder a la interacción del usuario.
+“Se ejecuta cuando el usuario deja de poder interactuar con la actividad actual, porque va a ser reemplazada por otra (la anterior o una que se superponga). Es, por lo tanto, el sitio ideal para detener todo lo que se ha activado en onResume y liberar los recursos de uso exclusivo (dado que podría necesitarlos la nueva actividad). También se suele aprovechar este método para guardar los cambios que no se quiere que se pierdan entre ejecuciones de la aplicación, dado que desde este punto del ciclo de vida la actividad puede ser destruida o su proceso eliminado de memoria en cualquier momento. En cualquier caso, la ejecución de este método debería ser lo más rápida posible, puesto que el usuario no podrá utilizar la nueva actividad hasta que finalice onPause” (Vico 2018).
+En onPause() es cuando la actividad se encuentra parcialmente oscurecida por una actividad que se encuentra en el primer plano, por ejemplo está medio transparente o no cubre toda la pantalla, en este estado no se reciben datos de entrada del usuario y no puede ejecutarse código.
+6. onStop()
+La actividad ya no va a ser visible para el usuario. Hay que tener mucho cuidado en su uso ya que si hay muy poca memoria, es posible que la actividad se destruya sin llamar a este método. La actividad ha pasado completamente a segundo plano.
+“Se llama a este método cuando la actividad ha sido ocultada totalmente por otra que ya está interactuando con el usuario. Aquí se suelen destruir los procesos creados en el método onStart, para liberar recursos y permitir que la actividad que está interactuando actualmente con el usuario pueda ir lo más fluida posible” (Vico 2108).
+En onStop() la actividad se encuentra completamente invisible u oculta para el usuario, se puede decir que se encuentra en el “fondo”, en este estado se puede decir que todo se congela, por ejemplo las variables e información se mantiene pero no se puede ejecutar el código.
+7. onDestroy()
+Se llama antes de que la actividad sea totalmente destruida. Por ejemplo, cuando el usuario pulsa el botón de volver o cuando se llama al método finish(). La actividad va a ser destruida y sus recursos liberados. Hay que tener mucho cuidado en su uso ya que si hay muy poca memoria, es posible que la actividad se destruya sin llamar a este método.
+“El sistema ejecuta este método cuando ya no tiene intención de reutilizar más el objeto que contiene la actividad, ya sea porque se ha eliminado la actividad desde el propio código o porque el sistema está tratando de liberar memoria. Aquí ya no se puede hacer otra cosa que destruir los objetos, hilos y demás que hayamos creado en onCreate, para no dejar basura atrás” (Vico 2018).
+Es buena práctica asegurarse de que los hilos que se crearon sean destruidos y las acciones de larga duración también estén ya detenidas.
+Nota: Una aplicación no tiene que “usar” todos los métodos del ciclo de vida. El desarrollador decide cuáles le serán útiles para realizar tareas que al estar incluidas en estos métodos facilitan la programación.
+Cuando se necesiten implementar estos métodos (o algunos) se hará con base en el siguiente esqueleto:
+
+
+public class NombreActividad extends Activity {
+
+
+     //La actividad se crea
+     protected void onCreate(Bundle savedInstanceState) {
+          super.onCreate(savedInstanceState);
+          ...
+     }
+     
+     //La actividad va a estar en pantalla
+     protected void onStart() {
+          super.onStart();
+          ...
+     }  
+     
+     //Anterior a onStart() cuando se procede de una llamada a onStop()
+     protected void onRestart() {
+          super.onRestart();
+          ...
+     }
+     
+
+
+     //La actividad va a empezar a responder la interacción con el usuario
+     protected void onResume() {
+          super.onResume();
+          ...
+     }
+     
+    //La actividad va a dejar de responder a la interacción con el usuario
+    protected void onPause() {
+          ...
+          super.onPause();
+          
+     }
+    
+    //La actividad va a segundo plano
+     protected void onStop() {
+           ...          
+           super.onStop();
+          
+     }
+     
+     //La actividad va a ser destruida y los recursos liberados
+     protected void onDestroy() {
+          ...
+          super.onDestroy();
+          
+     }
+}
+	
+
+“Es importante mantener la llamada al método de la superclase para no encontrarse con sorpresas. Las tareas de cada evento que están por encima de la actividad deben mantenerse. Esta llamada irá al principio de los eventos de entrada, y al final de los de salida. De esa forma se evitaran sorpresas, ya que los elementos de la actividad que se necesitan pero que no estarán bajo control estarán creados antes de usarlos, y se destruirán después.
+No se tienen que añadir todos los eventos, los que no se necesitan usarán la implementación por defecto. Los métodos que a menudo se utilizan son onCreate, onPause, y onRestart.
+El significado de onCreate es claro: es el lugar donde se cargan los recursos que se necesitan: vistas y cualquier otra cosa que necesaria. Para la salida, el único método en el que se debe centrar es onPause. La razón de evitar onStop y onDestroy es que no se tiene ningún control sobre ellos. onPause se ejecutará siempre que la aplicación salga de primer plano, mientras que los otros dos los ejecutará el sistema operativo en función de sus necesidades. ¡Puede que nunca lleguen a ejecutarse! Esto se hace para evitar el costo que tiene crear la actividad una y otra vez si se pasa de la actividad al escritorio y viceversa, y el sistema operativo sólo liberará los recursos utilizados si los necesita, y no tiene para atender todos los procesos abiertos.
+Eso implica que se asumirá que la aplicación morirá después de ejecutar onPause, y que es la última oportunidad de salvar los datos que se necesiten salvar, y de parar servicios que se estén utilizando, como la geolocalización. Si se han parado servicios, el sitio adecuado para reiniciarlos es onRestart.
+Los demás métodos no se necesitarán usar mucho.
+Algunas ideas útiles
+* Recordar para qué sirve cada evento. Siempre se necesitara onCreate, y bastante a menudo se necesitarán onPause y onResume para parar y relanzar los servicios que más consuman.
+* No tocar los demás eventos si no se necesitan expresamente.
+* No confiar en onStop y onDestroy, podrían no llamarse nunca. Salvar todo lo que se necesite en onPause”. (Androidsis. 2018)
+RUTAS EN EL CICLO DE VIDA DE UNA APP EN ANDROID
+En la figura 2 se ilustran rutas posibles en el ciclo de vida de una app.
+
+
+  
+ https://desarrolloweb.com/archivoimg/general/2949.jpg 
+Figura 2 Rutas en una app
+Imagen tomada de https://desarrolloweb.com/articulos/ciclo-vida-actividad-aplicacion.html
+
+
+“En la Figura lo que está encerrado en óvalos son lo que se denomina  “estados” y para llegar a un estado se tiene que pasar por un método o más, en la imagen se muestran los métodos y son los que tiene el prefijo “on”. Para entender esta segunda forma ver estos dos ejemplos:
+Ejemplo 1: Para llegar al estado Created de una actividad, pasamos por el método onCreate().
+Ejemplo 2: Para pasar al estado Started desde el estado Stopped pasamos por los métodos onRestart() y onStart()” (Dimas J. 2014).
+MI DÉCIMA QUINTA APP
+Esta aplicación se diseña con la jerarquía de paquetes y clases de la Figra 3. Con Android Studio crear el proyecto denominado MiDecimaQuintaApp con esta jeraquía.
+
+
+ Interfaz de usuario gráfica, Texto, Aplicación, Correo electrónico
+
+El contenido generado por IA puede ser incorrecto. 
+
+Figura 3
+El objeto de la app es ilustrar el ciclo de vida de una aplicación en Android. Esto se hará mediante avisos pequeños que son objetos de  una clase de ANDROID denominada TOAST de gran utilidad para desplegar información  de corta duración. Esta clase tiene un método makeText que es estático (static) y por lo tanto se puede acceder a él sin necesidad de crear objetos de la clase Toast:
+
+
+Toast.makeText(this,"aviso…",Toast.LENGTH_SHORT).show();
+
+
+Es necesario advertir que en algunos dispositivos móviles se hace demasiado rápido el despliegue de los TOAST y como consecuencia no se logra observar bien con esta aplicación el despliegue de todos ellos. 
+Debido a lo anterior y para darle más claridad al ejercicio, se optó por desplegar los pasos del ciclo de vida en un objeto tipo TextView adicionado en la ActividadPrincpilaMiDecimaQuintaApp. Para facilitar el proceso se uso una clase denominada AlmacenDatosRAM (esta se ubicó en el paquete denomidado datos) la cual hace el papel de una pequeñita “base de datos” no persistente (al al apagar el dispositivo móvil o destruir definitivamente la aplicación estos datos son borrados). Los datos se almacenan esa clase con carácter public y static lo que facilita su acceso. En el caso de esta app, se almacenará en una cadena (String) que informa de los estados por donde pasa la app. El código de esta clase es el siguiente:
+
+
+public class AlmacenDatosRAM {
+
+   public static String mensaje ="Ciclo de Vida de una app Android";
+
+   
+}
+
+
+Agregar este código a AlmacenDatosRAM.
+A continuación agregar el código de ActividadSecundariaMiDecimaQuintaApp.
+
+
+public class ActividadSecundariaMiDecimaQuintaApp extends Activity {
+
+   private String metodo_ciclo_vida;
+
+
+   public void onCreate(Bundle savedInstanceState){
+       super.onCreate(savedInstanceState);
+
+       metodo_ciclo_vida = "onCreate ActividadSecundaria";
+       Toast.makeText(this, metodo_ciclo_vida, Toast.LENGTH_SHORT).show();
+
+        /*Aviso de estado del ciclo de vida.
+        Como el toast está pasando muy rápido
+        se optó por desplegar también el aviso
+        en un textview en la actividad principal
+        principal.
+        */
+        AlmacenDatosRAM.mensaje = AlmacenDatosRAM.mensaje + "\n\n" + metodo_ciclo_vida;
+
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       //para informar cómo se debe pegar el adminitrador de
+       //diseño obtenido con el método GUI
+       ViewGroup.LayoutParams parametro_layout_principal = new
+               ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+               ViewGroup.LayoutParams.MATCH_PARENT);
+
+       this.setContentView(gui(), parametro_layout_principal);
+
+       //para administrar los eventos
+       eventos();
+
+
+   } //fin del método onCreate
+
+
+   /*método responsable de la creación de los elementos de la GUI*/
+   private void crearElementosGUI(){
+
+
+   }//fin método crearElementosGUI
+
+
+   //método responsable de la GUI
+   private LinearLayout gui(){
+
+       LinearLayout linear_principal=new LinearLayout(this);
+       linear_principal.setBackgroundColor(Color.YELLOW);
+
+       return linear_principal;
+   }//fin método gui
+
+   /*Administra los eventos de la GUI*/
+   private void eventos(){
+
+
+   }//fin método eventos
+
+
+       /*Métodos de una actividad que se pueden
+     ser implementados y que automáticamente
+     son llamados por el SO.
+    */
+
+   protected void onStart() {
+       super.onStart();
+
+       metodo_ciclo_vida = "onStart ActividadSecundaria";
+        /*Aviso de estado del ciclo de vida.
+        Como el toast está pasando muy rápido
+        se optó por desplegar también el aviso
+        en un textview en la actividad principal
+        principal.
+        */
+       Toast.makeText(this, metodo_ciclo_vida, Toast.LENGTH_SHORT).show();
+       AlmacenDatosRAM.mensaje = AlmacenDatosRAM.mensaje + "\n\n" + metodo_ciclo_vida;
+
+   }
+
+   protected void onRestart() {
+       super.onRestart();
+       metodo_ciclo_vida = "onRestart ActividadSecundaria";
+       Toast.makeText(this, metodo_ciclo_vida, Toast.LENGTH_SHORT).show();
+        /*Aviso de estado del ciclo de vida.
+        Como el toast está pasando muy rápido
+        se optó por desplegar también el aviso
+        en un textview en la actividad principal
+        principal.
+        */
+        AlmacenDatosRAM.mensaje = AlmacenDatosRAM.mensaje + "\n\n" + metodo_ciclo_vida;
+
+   }
+
+   protected void onResume() {
+       super.onResume();
+       metodo_ciclo_vida = "onResume ActividadSecundaria";
+       Toast.makeText(this, metodo_ciclo_vida, Toast.LENGTH_SHORT).show();
+        /*Aviso de estado del ciclo de vida.
+        Como el toast está pasando muy rápido
+        se optó por desplegar también el aviso
+        en un textview en la actividad principal
+        principal.
+        */
+        AlmacenDatosRAM.mensaje = AlmacenDatosRAM.mensaje + "\n\n" + metodo_ciclo_vida;
+
+   }
+
+   protected void onPause() {
+       metodo_ciclo_vida = "onPause ActividadSecundaria";
+       Toast.makeText(this, metodo_ciclo_vida, Toast.LENGTH_SHORT).show();
+        /*Aviso de estado del ciclo de vida.
+        Como el toast está pasando muy rápido
+        se optó por desplegar también el aviso
+        en un textview en la actividad principal
+        principal.
+        */
+       AlmacenDatosRAM.mensaje = AlmacenDatosRAM.mensaje + "\n\n" + metodo_ciclo_vida;
+       super.onPause();
+
+
+   }
+
+   protected void onStop() {
+       metodo_ciclo_vida = "onStop ActividadSecundaria";
+       Toast.makeText(this, metodo_ciclo_vida, Toast.LENGTH_SHORT).show();
+        /*Aviso de estado del ciclo de vida.
+        Como el toast está pasando muy rápido
+        se optó por desplegar también el aviso
+        en un textview en la actividad principal
+        principal.
+        */
+       AlmacenDatosRAM.mensaje = AlmacenDatosRAM.mensaje + "\n\n" + metodo_ciclo_vida;
+       super.onStop();
+   }
+
+   protected void onDestroy() {
+
+       metodo_ciclo_vida = "onDestroy ActividadSecundaria";
+       Toast.makeText(this, metodo_ciclo_vida, Toast.LENGTH_SHORT).show();
+       /*Aviso de estado del ciclo de vida.
+        Como el toast está pasando muy rápido
+        se optó por desplegar también el aviso
+        en un textview en la actividad principal
+        principal.
+        */
+       AlmacenDatosRAM.mensaje = AlmacenDatosRAM.mensaje + "\n\n" + metodo_ciclo_vida;
+       super.onDestroy();
+   }
+
+}
+
+
+Agregar el código ahora de ActividadPrincipalMiDecimaQuintaApp.
+
+
+public class ActividadPrincipalMiDecimaQuintaApp extends Activity {
+
+   private Button botonActivar;
+   private TextView aviso;
+   private ScrollView scroller;
+   private int tamanoLetraResolucionIncluida;
+   private int margenesResolucionIncluida;
+   private String metodo_ciclo_vida;
+
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       gestionarResolucion();
+
+       metodo_ciclo_vida = "onCreate ActividadPrincipal";
+       Toast.makeText(this, metodo_ciclo_vida, Toast.LENGTH_SHORT).show();
+        /*Aviso de estado del ciclo de vida.
+        Como el toast está pasando muy rápido
+        se optó por desplegar también el aviso
+        en un textview en la actividad principal
+        principal.
+        */
+       AlmacenDatosRAM.mensaje = AlmacenDatosRAM.mensaje + "\n\n" + metodo_ciclo_vida;
+
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       //para informar cómo se debe pegar el adminitrador de
+       //diseño obtenido con el método GUI
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);;
+
+
+       //para administrar los eventos
+       eventos();
+
+   } //fin del método onCreate
+
+   private void gestionarResolucion() {
+
+       //independencia de la resolución de la pantalla
+       DisplayMetrics displayMetrics = this.getApplicationContext().getResources().getDisplayMetrics();
+       int alto = displayMetrics.heightPixels;
+       int ancho = displayMetrics.widthPixels;
+       int dimensionReferencia;
+
+       //tomar el menor valor entre alto y ancho de pantalla
+       if (alto > ancho) {
+
+           dimensionReferencia = ancho;
+       } else {
+
+           dimensionReferencia = alto;
+       }
+
+
+       //una estimación de un buen tamaño
+       int tamanoLetra = dimensionReferencia / 20;
+
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       tamanoLetraResolucionIncluida = (int) (tamanoLetra / displayMetrics.scaledDensity);
+       margenesResolucionIncluida = (int)(5f*tamanoLetraResolucionIncluida);
+
+   }//fin método gestionarResolucion()
+
+
+   /*método responsable de la creación de los elementos de la GUI*/
+   private void crearElementosGUI() {
+
+       //crear botón
+       botonActivar = new Button(this);
+       botonActivar.setTextSize(TypedValue.COMPLEX_UNIT_SP,tamanoLetraResolucionIncluida);
+       botonActivar.setText("IR A LA ACTIVAD SECUNDARIA");
+       botonActivar.getBackground().setColorFilter(Color.rgb(220, 156, 80), PorterDuff.Mode.MULTIPLY);
+
+       scroller = new ScrollView(this);
+       aviso = new TextView(this);
+       aviso.setTextSize(0.7f*tamanoLetraResolucionIncluida);
+       aviso.setText(AlmacenDatosRAM.mensaje);
+       scroller.addView(aviso);
+
+   }//fin método crearElementosGUI
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+       LinearLayout linearPrincipal = new LinearLayout(this);
+       linearPrincipal.setOrientation(LinearLayout.VERTICAL);
+       linearPrincipal.setGravity(Gravity.CENTER_HORIZONTAL);
+       linearPrincipal.setGravity(Gravity.FILL);
+       linearPrincipal.setWeightSum(10f);
+
+       //parámtero de pegado
+       //pegado del scroll
+       LinearLayout.LayoutParams parametro_pegado_scroll = new LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametro_pegado_scroll.weight=9.0f;
+       parametro_pegado_scroll.setMargins(margenesResolucionIncluida,0,0,0);
+       linearPrincipal.addView(scroller,parametro_pegado_scroll);
+
+       //pegar el botón
+       LinearLayout.LayoutParams parametro_pegado_boton = new LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametro_pegado_boton.weight=1.0f;
+       linearPrincipal.addView(botonActivar,parametro_pegado_boton);
+
+       return linearPrincipal;
+   }//fin método gui
+
+
+   /*Administra los eventos de la GUI*/
+   private void eventos() {
+
+       //evento
+       botonActivar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               lanzarAplicacionSecundaria();
+           }
+       });
+
+   }//fin método eventos
+
+
+   //método que lanza la segunda actividad
+   private void lanzarAplicacionSecundaria() {
+
+       Intent intent = new Intent(this, ActividadSecundariaMiDecimaQuintaApp.class);
+       startActivity(intent);
+
+   }
+
+   /*Métodos de una actividad que se pueden
+     ser implementados y que automáticamente
+     son llamados por el SO.
+    */
+
+   protected void onStart() {
+       super.onStart();
+
+       metodo_ciclo_vida = "onStart ActividadPrincipal";
+       Toast.makeText(this, metodo_ciclo_vida, Toast.LENGTH_SHORT).show();
+
+       /*Aviso de estado del ciclo de vida.
+        Como el toast está pasando muy rápido
+        se optó por desplegar también el aviso
+        en un textview en la actividad principal
+        principal.
+        */
+        AlmacenDatosRAM.mensaje = AlmacenDatosRAM.mensaje + "\n\n" + metodo_ciclo_vida;
+
+         }
+
+   protected void onRestart() {
+       super.onRestart();
+
+       metodo_ciclo_vida = "onRestart ActividadPrincipal";
+       Toast.makeText(this, metodo_ciclo_vida, Toast.LENGTH_LONG).show();
+       /*Aviso de estado del ciclo de vida.
+        Como el toast está pasando muy rápido
+        se optó por desplegar también el aviso
+        en un textview en la actividad principal
+        principal.
+        */
+        AlmacenDatosRAM.mensaje = AlmacenDatosRAM.mensaje + "\n\n" + metodo_ciclo_vida;
+
+   }
+
+   protected void onResume() {
+       super.onResume();
+
+       metodo_ciclo_vida = "onResume ActividadPrincipal";
+       Toast.makeText(this, metodo_ciclo_vida, Toast.LENGTH_SHORT).show();
+
+       /*Aviso de estado del ciclo de vida.
+        Como el toast está pasando muy rápido
+        se optó por desplegar también el aviso
+        en un textview en la actividad principal
+        principal.
+        */
+       AlmacenDatosRAM.mensaje = AlmacenDatosRAM.mensaje + "\n\n" + metodo_ciclo_vida;
+
+       /* en este método actualizo el mensaje
+          ya qe aqui aseguro que cuando la actividad está
+          en primer plano llama a este método para actualizar
+          la pantalla
+       */
+       aviso.setText(AlmacenDatosRAM.mensaje);
+   }
+
+   protected void onPause() {
+
+       metodo_ciclo_vida = "onPause ActividadPrincipal";
+       Toast.makeText(this, metodo_ciclo_vida, Toast.LENGTH_SHORT).show();
+
+       /*Aviso de estado del ciclo de vida.
+        Como el toast está pasando muy rápido
+        se optó por desplegar también el aviso
+        en un textview en la actividad principal
+        principal.
+        */
+        AlmacenDatosRAM.mensaje = AlmacenDatosRAM.mensaje + "\n\n" + metodo_ciclo_vida;
+
+       super.onPause();
+
+
+   }
+
+   protected void onStop() {
+
+       metodo_ciclo_vida = "onStop ActividadPrincipal";
+       Toast.makeText(this, metodo_ciclo_vida, Toast.LENGTH_SHORT).show();
+
+       /*Aviso de estado del ciclo de vida.
+        Como el toast está pasando muy rápido
+        se optó por desplegar también el aviso
+        en un textview en la actividad principal
+        principal.
+        */
+       AlmacenDatosRAM.mensaje = AlmacenDatosRAM.mensaje +"\n\n" + metodo_ciclo_vida;
+
+       super.onStop();
+
+         }
+
+   protected void onDestroy() {
+       metodo_ciclo_vida = "onDestroy ActividadPrincipal";
+       Toast.makeText(this, metodo_ciclo_vida, Toast.LENGTH_SHORT).show();
+
+        /*Aviso de estado del ciclo de vida.
+        Como el toast está pasando muy rápido
+        se optó por desplegar también el aviso
+        en un textview en la actividad principal
+        principal.
+        */
+       AlmacenDatosRAM.mensaje = AlmacenDatosRAM.mensaje + "\n\n" + metodo_ciclo_vida;
+
+       super.onDestroy();
+   }
+
+}
+
+
+Para que la aplicación se pueda ejecutar en el dispositivo móvil es necesario declarar en el archivo AndroidManifest.xml (ubicado en la carpeta manifests) cuál es la actividad lanzadora de ésta. En ese caso es ActividadPrincipalMiDecimaQuintaApp. Adicionalmente también se debe declarar la actividad secundaria ActividadSecundariaMiDecimaQuintaApp. Este archivo deberá quedar como sigue:
+
+
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools"
+   package="com.curso_simulaciones.midecimaquintaapp">
+
+   <application
+       android:allowBackup="true"
+       android:dataExtractionRules="@xml/data_extraction_rules"
+       android:fullBackupContent="@xml/backup_rules"
+       android:icon="@mipmap/ic_launcher"
+       android:label="@string/app_name"
+       android:roundIcon="@mipmap/ic_launcher_round"
+       android:supportsRtl="true"
+       android:theme="@style/Theme.MiDecimaQuintaApp"
+       tools:targetApi="31" >
+
+       <activity android:name="com.curso_simulaciones.midecimaquintaapp.ActividadPrincipalMiDecimaQuintaApp"
+           android:exported="true">
+           <intent-filter>
+               <action android:name="android.intent.action.MAIN" />
+               <category android:name="android.intent.category.LAUNCHER" />
+           </intent-filter>
+
+       </activity>
+
+
+       <!--declarando otra actividad-->
+       <activity android:name="com.curso_simulaciones.midecimaquintaapp.actividades_secundarias.ActividadSecundariaMiDecimaQuintaApp"></activity>
+
+
+   </application>
+
+
+</manifest>
+
+
+
+
+
+
+Compilar y ejecutar la aplicación. Se despliega en el dispositivo móvil GUI de la Figura 4 izquierda correspondiente a la pantalla de la actividad ActividadPrincipalMiDecimaQuintaApp. Haciendo clic en el botón IR A LA ACTIVIDAD SECUNDARIA se despliega la GUI de la Figura 4 derecha correspondiente a la pantalla de la actividad ActividadSecundariaMiDecimaQuintaApp. Los mensajes del estado de ciclo de vida se van desplegando en los toast. Al regresar (botón atrás), se despliega la GUI de la Figura 5 izquierda, donde se muestra los pasos seguidos e el ciclo de vida da la app hasta aquí.
+
+
+ Imagen que contiene Patrón de fondo
+
+Descripción generada automáticamente 
+
+
+
+	
+
+ Forma, Cuadrado
+
+Descripción generada automáticamente 
+
+	Figura 4
+
+
+
+
+Al salir de la app y volver a ingresar se despliega la información de la Figura 5 derecha.
+
+
+
+
+
+
+  
+
+	 Tabla
+
+Descripción generada automáticamente 
+
+	
+
+
+
+Figura 5
+
+
+Si se destruye definitivamente la app y se ejecuta de nuevo, se vuelve a desplegar la información de la Figura 4 izquierda.
+
+
+
+
+
+
+Nota el resultado de la aplicación es el siguiente:
+Al entrar a la aplicación principal se ejecutan los siguientes métodos y en ese orden:
+* onCreate ()  ActividadPrincipal
+* onStart() AvctividadPrincipal
+* onResume() ActividadPrincipal
+Al hacer clic en el botón IR A LA ACTIVIDAD SECUNDARIA se ejecutan los siguientes métodos y en ese orden:
+* onPause() ActividadPrincipal
+* onCreate() ActividadSecundaria
+* onStart() ActividadSecundaria
+* onResume() ActividadSecundaria
+* onStop() ActividadPrincipal
+Al oprimir hacia atrás (<) en la actividad secundaria se ejecutan los siguientes métodos y en ese orden:
+* onPause() ActividadSecundaria
+* onRestart() ActividadPrincipal
+* onStart() ActividadPrincipal
+* onResume() ActividadPrincipal
+* onStop() ActividadSecundaria
+* onDestroy() ActividadSecundaria
+Al oprimir hacia atrás (<) en la actividad principal se ejecutan los siguiente métodos y en ese orden:
+* onPause() ActividadPrincipal
+* onStop() ActiviadadPrincipal
+* onDestroy() ActividadPrincipal
+Agregar un icono a la aplicación
+Android Studio genera un icono por defecto. En la Figura 6 enmarcado en un cuadro rojo  se ilustra este icono. 
+
+
+  
+
+Figura 6
+
+
+* Para personalizar el icono se debe primero crear la imagen correspondiente (se recomienda en formato .png). Para este ejemplo se creó la imagen que se denominó lanzador_15.png, Figura 7.
+ Icono
+
+Descripción generada automáticamente 
+
+Figura 7 lanzador_15.png
+* Luego se accede a new > Image Asset, Figura 8. Se despliega la GUI de la Figura 9.
+ Interfaz de usuario gráfica, Texto, Aplicación
+
+El contenido generado por IA puede ser incorrecto. 
+
+Figura 8
+ Interfaz de usuario gráfica, Aplicación
+
+El contenido generado por IA puede ser incorrecto. 
+
+Figura 9
+* Luego se escoge la imagen que quedará en el icono a traves de Path donde se encuentra, Figura 10.
+ Interfaz de usuario gráfica, Aplicación
+
+El contenido generado por IA puede ser incorrecto. 
+
+Figura 10
+* Se redimensiona para que la imagen quede bien dentro del icono, Figura 11.
+
+
+ Interfaz de usuario gráfica, Aplicación
+
+El contenido generado por IA puede ser incorrecto. 
+
+Figura 11
+* Hacer clic en Next y Finish. Compilar de nuevo y listo. Se observa que ya se tiene el icono personalizado, Figura 12.
+
+
+ Imagen que contiene Patrón de fondo
+
+El contenido generado por IA puede ser incorrecto. 
+
+Figura 12
+
+
+TAREA
+1. Desarrollar el ejemplo del módulo agregando un icono personal. Cuando se ejecute la app REFLEXIONAR MUY ATENTAMENTE EN CUÁL ESTADO SE ENCUENTRA LA APLICACIÓN CUANDO SE EJECUTA Y “MEMORIZAR” ESTE CICLO DE VIDA.
+
+
+________________
+
+
+REFERENCIAS
+
+
+* Android Studio.  https://developer.android.com/studio/. Consultada [Septiembre de 2025].
+
+
+* Vico A.J. Ciclo de vida de las actividades de Android (I). Blog técnico personal. https://columna80.wordpress.com/2011/09/03/ciclo-de-vida-de-las-actividades-de-android-i/. Consultada [Septiembre de 2025].
+
+
+* Vico A.J. Ciclo de vida de las actividades de Android (II). Blog técnico personal. https://columna80.wordpress.com/2011/09/07/ciclo-de-vida-de-las-actividades-de-android-ii/. Consultada [Septiembre de 2025].
+
+
+* Androidsis. El ciclo de vida de una aplicación Android. https://www.androidsis.com/el-ciclo-de-vida-de-una-aplicacion-de-android/. Consultada [Septiembre de 2025].
+
+
+* Dimas J. Ciclo de vida de una actividad. https://desarrolloweb.com/articulos/ciclo-vida-actividad-aplicacion.html. Consultada [Septiembre de 2025].
