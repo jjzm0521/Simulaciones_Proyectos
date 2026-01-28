@@ -92,11 +92,10 @@ public class ActividadSecundaria_2 extends Activity {
         linearImagenArea.setBackgroundColor(Color.WHITE);
         linearImagenArea.setGravity(Gravity.CENTER);
 
-        TextView txtImagen = new TextView(this);
-        txtImagen.setText("IMAGEN");
-        txtImagen.setTextSize(TypedValue.COMPLEX_UNIT_SP, AlmacenDatosRAM.tamanoLetraResolucionIncluida * 1.5f);
-        txtImagen.setTextColor(Color.BLACK);
-        linearImagenArea.addView(txtImagen);
+        android.widget.ImageView imgImagen = new android.widget.ImageView(this);
+        imgImagen.setImageResource(com.curso_simulaciones.midecimanovenaapp.R.drawable.imagen_dos);
+        imgImagen.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+        linearImagenArea.addView(imgImagen);
 
         LinearLayout.LayoutParams paramsImagen = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0);

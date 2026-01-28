@@ -30,7 +30,7 @@ public class ActividadSecundaria_1 extends Activity {
         this.setContentView(crearGUI(), parametro_layout_principal);
     }
 
-    /*método responsable de la creación de los elementos de la GUI*/
+    /* método responsable de la creación de los elementos de la GUI */
     private void crearElementsGUI() {
         etiquetaNombre = new TextView(this);
         etiquetaNombre.setText("NOMBRE");
@@ -46,7 +46,7 @@ public class ActividadSecundaria_1 extends Activity {
         campoTexto.setTextColor(Color.BLACK);
     }
 
-    /*método responsable de administrar el diseño de la GUI*/
+    /* método responsable de administrar el diseño de la GUI */
     private LinearLayout crearGUI() {
         // Contenedor principal externo (blanco)
         LinearLayout linearPrincipal = new LinearLayout(this);
@@ -65,12 +65,11 @@ public class ActividadSecundaria_1 extends Activity {
         LinearLayout linearImagenArea = new LinearLayout(this);
         linearImagenArea.setBackgroundColor(Color.WHITE);
         linearImagenArea.setGravity(Gravity.CENTER);
-        
-        TextView txtImagen = new TextView(this);
-        txtImagen.setText("IMAGEN");
-        txtImagen.setTextSize(TypedValue.COMPLEX_UNIT_SP, AlmacenDatosRAM.tamanoLetraResolucionIncluida * 1.5f);
-        txtImagen.setTextColor(Color.BLACK);
-        linearImagenArea.addView(txtImagen);
+
+        android.widget.ImageView imgImagen = new android.widget.ImageView(this);
+        imgImagen.setImageResource(com.curso_simulaciones.midecimanovenaapp.R.drawable.imagen_uno);
+        imgImagen.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+        linearImagenArea.addView(imgImagen);
 
         LinearLayout.LayoutParams paramsImagen = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0);
@@ -83,7 +82,8 @@ public class ActividadSecundaria_1 extends Activity {
         linearControlesAmarillo.setOrientation(LinearLayout.HORIZONTAL);
         linearControlesAmarillo.setBackgroundColor(Color.YELLOW);
         linearControlesAmarillo.setWeightSum(2.0f); // 50/50 split
-        linearControlesAmarillo.setPadding(15, 15, 15, 15); // Inset para que los elementos sean más pequeños que el recuadro
+        linearControlesAmarillo.setPadding(15, 15, 15, 15); // Inset para que los elementos sean más pequeños que el
+                                                            // recuadro
 
         LinearLayout.LayoutParams paramsNOMBRE = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.MATCH_PARENT);

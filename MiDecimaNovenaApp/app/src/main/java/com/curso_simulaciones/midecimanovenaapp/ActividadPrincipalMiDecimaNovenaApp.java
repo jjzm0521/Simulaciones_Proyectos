@@ -72,23 +72,23 @@ public class ActividadPrincipalMiDecimaNovenaApp extends Activity {
          * PorterDuff.Mode.MULTIPLY.
          */
         botonUno = new Button(this);
-        botonUno.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+        botonUno.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida * 0.65f);
         botonUno.setText("UNO");
         botonUno.getBackground().setColorFilter(Color.rgb(255, 140, 0), PorterDuff.Mode.MULTIPLY); // Naranja
 
         botonDos = new Button(this);
-        botonDos.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+        botonDos.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida * 0.65f);
         botonDos.setText("DOS");
         botonDos.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.MULTIPLY);
 
         botonTres = new Button(this);
-        botonTres.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+        botonTres.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida * 0.65f);
         botonTres.setText("TRES");
         botonTres.getBackground().setColorFilter(Color.BLUE, PorterDuff.Mode.MULTIPLY);
         botonTres.setEnabled(false);
 
         botonCuatro = new Button(this);
-        botonCuatro.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+        botonCuatro.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida * 0.65f);
         botonCuatro.setText("CUATRO");
         botonCuatro.getBackground().setColorFilter(Color.GREEN, PorterDuff.Mode.MULTIPLY);
         botonCuatro.setEnabled(false);
@@ -140,11 +140,10 @@ public class ActividadPrincipalMiDecimaNovenaApp extends Activity {
         linearImagen1.setBackgroundColor(Color.rgb(255, 165, 79)); // Naranja
         linearImagen1.setGravity(android.view.Gravity.CENTER);
 
-        TextView txtImagen1 = new TextView(this);
-        txtImagen1.setText("IMAGEN");
-        txtImagen1.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
-        txtImagen1.setTextColor(Color.BLACK);
-        linearImagen1.addView(txtImagen1);
+        android.widget.ImageView imgImagen1 = new android.widget.ImageView(this);
+        imgImagen1.setImageResource(R.drawable.imagen_uno);
+        imgImagen1.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+        linearImagen1.addView(imgImagen1);
 
         LinearLayout.LayoutParams paramsImagen1 = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -161,11 +160,10 @@ public class ActividadPrincipalMiDecimaNovenaApp extends Activity {
         linearImagen2.setBackgroundColor(Color.CYAN);
         linearImagen2.setGravity(android.view.Gravity.CENTER);
 
-        TextView txtImagen2 = new TextView(this);
-        txtImagen2.setText("IMAGEN");
-        txtImagen2.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
-        txtImagen2.setTextColor(Color.BLACK);
-        linearImagen2.addView(txtImagen2);
+        android.widget.ImageView imgImagen2 = new android.widget.ImageView(this);
+        imgImagen2.setImageResource(R.drawable.imagen_dos);
+        imgImagen2.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+        linearImagen2.addView(imgImagen2);
 
         LinearLayout.LayoutParams paramsImagen2 = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0);

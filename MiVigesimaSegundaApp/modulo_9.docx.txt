@@ -1,0 +1,3075 @@
+﻿SIMULACIONES
+IV + IoT + DL 
+Industria 5.0
+Copyright 2026 para:
+Diego L. Aristizábal Ramírez
+Profesor, Facultad de Ciencias, Departamento de Física
+Universidad Nacional de Colombia
+Medellín
+
+
+	GENERANDO
+UNA LIBRERÍA EN ANDROID
+
+
+	9
+	
+
+Temas
+	* INTRODUCCIÓN
+* JERARQUIZACIÓN DE LA LIBRERÍA SIMULPHYSICS 
+* MI VIGESIMA APP: APP PARA AYUDAR A GENERAR LA LIBRERÍA
+* COPIAR LA LIBRERÍA PARA USARLA EN OTRAS APLICACIONES
+* MI VIGESIMA PRIMERA APP: USANDO LA LIBRERÍA SIMULPHYSICS
+* ANEXO: GENERANDO EL JAVADOC DE LA LIBRERÍA
+* TALLER
+* REFERENCIAS
+	
+
+INTRODUCCIÓN
+En este módulo se aprenderá a construir una librería de objetos dibujables que representan objetos de un laboratorio de física básica para ser usados en simulaciones de eventos físicos (los MUY MAL denominados por algunos como Laboratorios Virtuales de Física). Estos objetos se pueden hacer con clases que se apoyen en clases e interfaces del paquete drawable de ANDROID.  Sin embargo, en estas notas se harán usando código muy básico y del cual se ha adquirido el dominio en los módulos anteriores. También se agregará a la librería una clase que permita solucionar ecuaciones diferenciales ordinarias usando el método de Runge-Kutta como ejemplo de uso de métodos numéricos en la implementación de las simulaciones.
+Se desarrollará en este módulo una app que tiene como objetivo la construcción de la librería que se denominará simulphysics, lo cual ilustrará cómo hacer en general librerías Java para Android y cómo documentarlas con javadoc. Al final se desarrollará otra app que usa la librería construida para montar un escenario responsivo de una simulación física. En el módulo 10 se hará la animación de estos escenarios.
+
+
+
+
+
+
+JERARQUIZACIÓN DE LA LIBRERÍA SIMULPHYSICS
+La librería que se diseñará e implementará tendrá el nombre de simulphysics y tendrá la jerarquización de las Figuras 1 y 2. Contiene dos paquetes:
+
+
+* métodos_numericos
+* objetos_laboratorio
+
+
+El paquete objetos_laboratorio está compuesto de una interface  (Dibujable)  y dos clases abstractas: ObjetoLaboratorio y CuerpoRigido (éstas poseen el método método abstracto dibujese(Canvas canvas, Paint pincel)). La clase ObjetoLaboratorio implementa la interface Dibujable. De estas dos clases se desprende el árbol de herencia de la Figura 1.  El paquete métodos_numericos está compuesto por dos clases: RungeKuttaOrdenDos (abstracta) y Estado.
+
+
+  
+
+Figura 1
+
+
+ Interfaz de usuario gráfica, Aplicación
+
+Descripción generada automáticamente 
+
+Figura 2
+MI VIGESIMA APP: APP PARA AYUDAR A GENERAR LA LIBRERÍA
+Comenzar un proyecto denominado MiVigesimaApp con tres paquetes: controlador , vista[1] y datos. En el paquete controlador crear la clase con la responsabilidad de ejercer el control y que se denominará ActividadControladora, en el paquete vista crear una clase denominada Pizarra, que es la responsable de desplegar el escenario de la simulación física y una clase denominada CR que es responsable de darle responsividad a la escena física desplegada en los objetos tipo Pizarra, en el paquete datos crear la clase AlmacenDatosRAM[2], Figura 3. Crear adicionalmente la clase  ActividadPrincipalMiVigesimaApp a la cual se le dará la responsabilidad de lanzar la aplicación y de realizar los cálculos de responsividad para las interfaces gráficas (GUI) de todas las actividades.
+ Interfaz de usuario gráfica, Texto, Aplicación
+
+El contenido generado por IA puede ser incorrecto. 
+
+Figura 3
+
+
+
+
+El código de la clase AlmacenDatosRAM es el siguiente.
+
+
+public class AlmacenDatosRAM {
+
+   public static float ancho_pantalla, alto_pantalla;
+
+
+
+   public AlmacenDatosRAM() {
+
+   }
+}
+
+
+
+
+
+
+El código de la clase CR es el siguiente.
+
+
+public class CR{
+   public static float anchoPizarra;
+   public static float altoPizarra;
+
+
+   public CR(){
+
+   }
+
+
+   /**
+    * Método para convertir porcentaje de
+    * posición en X a pixeles.
+    * @param pcX
+    * @return
+    */
+   public static float pcApxX(float pcX) {
+
+       float pxX = pcX * anchoPizarra / 100f;
+
+       return pxX;
+
+   }
+
+
+
+
+   /**
+    * Método para convertir porcentaje de
+    * posición en Y a pixeles.
+    * @param pcY
+    * @return
+    */
+   public static float pcApxY(float pcY) {
+
+       float pxY = pcY * altoPizarra / 100f;
+
+       return pxY;
+
+   }
+
+
+   /**
+    * Dada una longitud pcL en porcentaje
+    * referido al menor entre el ancho
+    * y el alto de Pizarra la convierte a una
+    * longitud en pixeles.
+    * @param pcL
+    * @return
+    */
+   public static float pcApxL(float pcL) {
+
+       float pxL = 0;
+
+       if (anchoPizarra > altoPizarra) {
+
+           pxL = pcL * altoPizarra / 100f;
+
+
+       } else {
+
+           pxL = pcL * anchoPizarra / 100f;
+       }
+
+
+       return pxL;
+
+   }
+
+
+
+   /**
+    * Convierte pixeles de uan posicón en
+    * X a porcentaje.
+    * @param pxX
+    * @return
+    */
+   public static float  pxXApc(float pxX) {
+
+       float pcX = pxX * 100f / anchoPizarra;
+
+       return pcX;
+
+   }
+
+
+
+   /**
+    * Convierte pixeles de una posición en
+    * Y a porcentaje.
+    * @param pxY
+    * @return
+    */
+   public static float  pxYApc(float pxY) {
+
+       float pcY = pxY * 100f / altoPizarra;
+
+       return pcY;
+
+   }
+
+
+   /*Convierte pixeles referidas
+     al menor entre el ancho y el
+     alto en porcentaje
+ */
+
+   /**
+    * Dada una longitud pxL en pixeles la
+    * convierte a porcentaje referido al menor entre
+    * el ancho y el alto.
+    * Pizarra.
+    * @param pxL
+    * @return
+    */
+   public static float pxApcL(float pxL) {
+
+       float pcL = 0;
+
+       if (CR.anchoPizarra > altoPizarra) {
+
+           pcL = pxL * 100f/ altoPizarra ;
+
+
+       } else {
+
+           pcL = pxL * 100f/ anchoPizarra;
+       }
+
+
+       return pcL;
+
+   }
+
+}
+
+
+El código de la clase ActividadPrincipalMiVigesimaApp es en principio el siguiente. El código de Pizarra se hará más adelante.
+
+
+public class ActividadPrincipalMiVigesimaApp extends Activity {
+
+
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+
+       gestionarResolucion();
+
+
+       lanzarActividadControladora();
+
+
+
+   }//fin onCreate
+
+
+
+
+   /*Método auxiliar para asuntos de resolución*/
+   private void gestionarResolucion() {
+
+       //independencia de la resolución de la pantalla
+       DisplayMetrics displayMetrics = this.getApplicationContext().getResources().getDisplayMetrics();
+       int alto = displayMetrics.heightPixels;
+       int ancho = displayMetrics.widthPixels;
+
+       //guardar en almacen annho y alto de pantalla
+       AlmacenDatosRAM.ancho_pantalla =ancho;
+       AlmacenDatosRAM.alto_pantalla =alto;
+
+   }
+
+
+
+   private void lanzarActividadControladora(){
+
+       Intent intent = new Intent(this, ActividadControladora.class);
+       startActivity(intent);
+
+   }
+
+}
+
+
+
+
+Y el código inicial de la clase ActividadControladora es el siguiente.
+
+
+
+
+
+
+public class ActividadControladora  extends Activity {
+
+
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+
+       gestionarResolucion();
+
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       //para informar cómo se debe pegar el adminitrador de
+       //diseño obtenido con el método GUI
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+
+
+   }//fin onCreate
+
+
+
+   /*método responsable de la creación de los elementos de la GUI*/
+   private void crearElementosGUI() {
+
+
+
+   }//fin crearElementosGUI
+
+
+   /*Método auxiliar para asuntos de resolución*/
+   private void gestionarResolucion() {
+
+   }
+
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+       //el linear principal
+       LinearLayout linear_principal = new LinearLayout(this);
+       linear_principal.setOrientation(LinearLayout.VERTICAL);
+
+
+
+       return linear_principal;
+
+   }//fin crearGUI
+
+
+}
+
+
+
+
+Luego proceder a crear un módulo que será el que contendrá la librería que se construirá. Seguir los pasos indicados en las Figuras 4 y 5.
+ Interfaz de usuario gráfica, Texto, Aplicación
+
+El contenido generado por IA puede ser incorrecto. 
+
+ Figura 4
+ Interfaz de usuario gráfica, Texto, Aplicación, Correo electrónico
+
+El contenido generado por IA puede ser incorrecto. 
+
+Figura 5
+
+
+Se obtiene el aspecto de la Figura 6.
+
+
+ Interfaz de usuario gráfica, Texto, Aplicación
+
+El contenido generado por IA puede ser incorrecto. 
+
+Figura 6
+
+
+En el módulo simulphysics crear la jerarquía de la Figura 2.  A la interface Dibujable agregarle el siguiente código:
+
+
+
+
+public interface Dibujable {
+
+   /**
+    * Método  que se debe implementar para que
+    * los objetos se dibujen
+    * @param canvas
+    * @param pincel
+    */
+   public void dibujese(Canvas canvas, Paint pincel);
+
+}
+
+
+
+
+
+
+
+
+A la clase ObjetoLaboratorio agregarle el siguiente código:
+
+
+
+
+
+
+public abstract class ObjetoLaboratorio implements Dibujable{
+
+
+   protected int color = Color.RED;
+   protected float posicionX,posicionY;
+   protected float posicionAngular;
+   protected float grosorLinea=2f;
+
+
+   /**
+    * Modifica el grosor de la línea con la que se dibujará
+    * @param grosorLinea
+    */
+
+   public void setGrosorLinea(float grosorLinea){
+
+       this.grosorLinea=grosorLinea;
+
+   }
+
+
+
+   /**
+    * Devuelve el grosor de la línea con la que se dibuja
+    * @return
+    */
+   public float getGrosorLinea(){
+
+       return grosorLinea;
+   }
+
+
+   /**
+    * Modifica el color del cuerpo del objeto de laboratorio
+    *
+    * @param color
+    */
+   public void setColor(int color) {
+       this.color = color;
+   }
+
+   /**
+    * Devuelve el color del objeto de laboratorio
+    *
+    * @return
+    */
+   public int getColor() {
+       return color;
+   }
+
+
+   /**
+    * Método para que se dibujen los objetos Dibujables,
+    * es decir, los objetos que implementanla interface Dibujable
+    * @param canvas
+    * @param pincel
+    */
+   public abstract void dibujese(Canvas canvas, Paint pincel);
+}
+
+
+
+
+
+
+
+
+A la clase CuerpoRigido agregarle el siguiente código.
+
+
+
+
+
+
+public  abstract class CuerpoRigido extends ObjetoLaboratorio {
+
+   protected float posicionInicialCentroMasaX, posicionInicialCentroMasaY;
+   protected float posicionCentroMasaX, posicionCentroMasaY;
+   protected float posicionEjeRotacionX, posicionEjeRotacionY;
+   protected float posicionAngularRotacionEjeXY;
+
+
+   /**
+    * Constructor por defecto del cuerpo rígido.
+    * Su centro de masa está ubicado en la
+    * posición (0,0). La posición angular es cero
+    * y su color es rojo
+    */
+   public CuerpoRigido() {
+
+   }
+
+   /**
+    * Constructor de CuerpoRigido
+    * cuyo centro de masa está
+    * ubicado en (posicionInicialX,posicionInicialX)
+    */
+
+   public CuerpoRigido(float posicionInicialCentroMasaX, float posicionInicialCentroMasaY) {
+       this.posicionCentroMasaX = posicionInicialCentroMasaX;
+       this.posicionCentroMasaY = posicionInicialCentroMasaY;
+
+       this.posicionInicialCentroMasaX = posicionInicialCentroMasaX;
+       this.posicionInicialCentroMasaY = posicionInicialCentroMasaY;
+   }
+
+
+   /**
+    * Modifica el color del cuerpo rígido
+    *
+    * @param color
+    */
+   public void setColor(int color) {
+       this.color = color;
+   }
+
+   /**
+    * Devuelve el color del cuerpo rígido
+    *
+    * @return
+    */
+   public int getColor() {
+       return color;
+   }
+
+
+  /*
+    Se podría hacer un método setPosicion(x,y)
+    para cambiar la posición del centro de masa, pero más adelante
+    esta el método mover(x,y) que hace esto
+   */
+
+   /**
+    * Retorna la posicion en X
+    * del centro de masa
+    *
+    * @return
+    */
+
+   public float getPosicionX() {
+
+       return posicionCentroMasaX;
+   }
+
+
+   /**
+    * Retorna posicion en Y
+    * del centro de masa
+    *
+    * @return
+    */
+   public float getPosicionY() {
+
+       return posicionCentroMasaY;
+   }
+
+
+   /**
+    * Modifica la posición (posicionCentroMasaX,posicionCentroMasaY)
+    * del centro de masa del cuerpo rígido
+    *
+    * @param desplazamientoCentroMasaX
+    * @param desplazamientoCentroMasaY
+    */
+   public void mover(float desplazamientoCentroMasaX, float desplazamientoCentroMasaY) {
+
+       this.posicionCentroMasaX = this.posicionInicialCentroMasaX + desplazamientoCentroMasaX;
+       this.posicionCentroMasaY = this.posicionInicialCentroMasaY + desplazamientoCentroMasaY;
+
+   }
+
+
+   /**
+    * Modifica la posición angular del cuerpo rígido
+    * alrededor de une eje que pasa por su centro
+    * de masa
+    *
+    * @param posicionAngular
+    */
+   public void mover(float posicionAngular) {
+       this.posicionEjeRotacionX = this.posicionInicialCentroMasaX;
+       this.posicionEjeRotacionY = this.posicionInicialCentroMasaY;
+
+       this.posicionAngularRotacionEjeXY = posicionAngular;
+   }
+
+   /**
+    * Modifica la posición (posicionCentroMasaX,posicionCentroMasaY)
+    * del centro de masa del cuerpo rígido y genera una rotación
+    * alrededor del eje que pasa por éste
+    *
+    * @param desplazamientoCentroMasaX
+    * @param desplazamientoCentroMasaY
+    * @param posicionAngular
+    */
+
+   public void mover(float desplazamientoCentroMasaX, float desplazamientoCentroMasaY, float posicionAngular) {
+       this.posicionCentroMasaX = this.posicionInicialCentroMasaX + desplazamientoCentroMasaX;
+       this.posicionCentroMasaY = this.posicionInicialCentroMasaY + desplazamientoCentroMasaY;
+
+       this.posicionEjeRotacionX = this.posicionCentroMasaX;
+       this.posicionEjeRotacionY = this.posicionCentroMasaY;
+
+       this.posicionAngularRotacionEjeXY = posicionAngular;
+   }
+
+
+   /**
+    * Genera rotación del cuerpo rígido a la
+    * posición angular posicionAngularRotacionEjeXY
+    * alrededor de eje que pasa por
+    * (posicionEjeRotacionX,posicionEjeRotacionY)
+    *
+    * @param posicionEjeRotacionX
+    * @param posicionEjeRotacionY
+    * @param posicionAngular
+    */
+
+   public void rotar(float posicionEjeRotacionX, float posicionEjeRotacionY, float posicionAngular) {
+
+       this.posicionEjeRotacionX = posicionEjeRotacionX;
+       this.posicionEjeRotacionY = posicionEjeRotacionY;
+
+       this.posicionAngularRotacionEjeXY = posicionAngular;
+
+   }
+
+   public abstract void dibujese(Canvas canvas, Paint pincel);
+
+
+}
+
+
+
+
+
+
+A la clase Polea agregarle el siguiente código.
+
+
+
+
+public class Polea extends CuerpoRigido {
+
+
+   protected float radio;
+   private float anguloEje;
+   private boolean soporte =false;
+
+
+   /**
+    * Constructor de Polea centrada
+    * en (posicionX,posicionY)
+    * y diámetro igual a 2*radio
+    */
+
+   public Polea(float posicionCentroMasaX, float posicionCentroMasaY, float radio) {
+       super(posicionCentroMasaX, posicionCentroMasaY);
+       this.radio = radio;
+   }
+
+   /**
+    * Modifica el valor del radio de la polea
+    *
+    * @param radio
+    */
+   public void setRadio(float radio) {
+       this.radio = radio;
+   }
+
+
+   /**
+    * Devuelve el valor del radio de la polea
+    *
+    * @return
+    */
+   public float getRadio() {
+       return radio;
+   }
+
+
+   public void setSoportePolea(boolean soporte){
+
+       this.soporte=soporte;
+
+   }
+
+
+   /**
+    * Modifica el ángulo del eje
+    * @param anguloEje
+    * @return
+    */
+
+
+   public void rotarEje(float anguloEje) {
+
+       this.anguloEje = anguloEje;
+
+   }
+
+
+   //se implementó este método dque en su clase madre es abstracto
+   public void dibujese(Canvas canvas, Paint pincel) {
+
+
+       //valores del pincel para luego restaurarlo  como estaba
+       //  float grosorInicialLinea=pincel.getStrokeWidth();
+       //estado del canvas para luego restaurarlo a como estaba
+       canvas.save();
+
+
+       //estilo del pincel
+       pincel.setStyle(Paint.Style.STROKE);
+       //grosor del pincel
+       pincel.setStrokeWidth(grosorLinea);
+
+       //color del pincel
+       pincel.setColor(color);
+       //rotar
+       canvas.rotate(posicionAngularRotacionEjeXY, posicionEjeRotacionX, posicionEjeRotacionY);
+       //dibujar circunferencia de la polea
+       canvas.drawCircle(posicionCentroMasaX, posicionCentroMasaY, radio, pincel);
+       //dibujar las líenas radiales de la polea
+       for (int i = 0; i < 12; i = i + 1) {
+           //rotar de a 36 grados
+           canvas.rotate(i * 36f, posicionCentroMasaX, posicionCentroMasaY);
+           canvas.drawLine(posicionCentroMasaX, posicionCentroMasaY, posicionCentroMasaX, posicionCentroMasaY - radio, pincel);
+           //retroceder la rotación
+           canvas.rotate(-i * 36f, posicionCentroMasaX, posicionCentroMasaY);
+       }//fin for
+
+
+
+
+
+       //restaurar el canvas
+       canvas.restore();
+
+
+       //dibujar eje polea
+       pincel.setStyle(Paint.Style.STROKE);
+       pincel.setStrokeWidth(0.5f*grosorLinea);
+       if (soporte == false) {
+           canvas.rotate(anguloEje, posicionCentroMasaX, posicionCentroMasaY);
+           canvas.drawRect(posicionCentroMasaX - 0.1f * radio, posicionCentroMasaY - 1.2f * radio, posicionCentroMasaX + 0.1f * radio, posicionCentroMasaY + 1.2f * radio, pincel);
+           canvas.rotate(-anguloEje, posicionCentroMasaX, posicionCentroMasaY);
+
+       }
+
+       if (soporte ==true) {
+           canvas.rotate(anguloEje, posicionCentroMasaX, posicionCentroMasaY);
+           canvas.drawRect(posicionCentroMasaX - 0.1f * radio, posicionCentroMasaY-1.2f*radio, posicionCentroMasaX+0.1f*radio, posicionCentroMasaY + 1.8f * radio, pincel);
+           canvas.rotate(-anguloEje, posicionCentroMasaX, posicionCentroMasaY);
+
+       }
+
+       //restaurar el pincel
+       pincel.reset();
+   }
+
+
+}
+
+
+
+
+
+
+A la clase Rueda agregarle el siguiente código.
+
+
+public class Rueda extends CuerpoRigido {
+
+
+   protected float radio;
+
+
+   /**
+    * Constructor por defecto
+    * Rueda centrada en (0,0)
+    * y de radio 50f
+    */
+   public Rueda() {
+       super();
+       this.radio = 50f;
+   }
+
+
+   /**
+    * Constructor de Rueda centrada
+    * en (posicionCentroMasaX,posicionCentroMasaY)
+    * y diámetro igual a 2*radio
+    */
+
+   public Rueda(float posicionInicialCentroMasaX, float posicionInicialCentroMasaY, float radio) {
+       super(posicionInicialCentroMasaX, posicionInicialCentroMasaY);
+       this.radio = radio;
+
+   }
+
+   /**
+    * Modifica el valor del radio de la rueda
+    *
+    * @param radio
+    */
+   public void setRadio(float radio) {
+       this.radio = radio;
+   }
+
+
+   /**
+    * Devuelve el valor del radio de la rueda
+    *
+    * @return
+    */
+   public float getRadio() {
+       return radio;
+   }
+
+
+
+   public void dibujese(Canvas canvas, Paint pincel) {
+
+       //estilo del pindel
+       pincel.setStyle(Paint.Style.STROKE);
+       //grosor del pincel
+       pincel.setStrokeWidth(2f);
+       //color del pincel
+       pincel.setColor(color);
+
+
+       canvas.save();
+       //rotar
+       canvas.rotate(posicionAngularRotacionEjeXY,posicionEjeRotacionX,posicionEjeRotacionY);
+       //dibujar círculo de la rueda
+       pincel.setStyle(Paint.Style.FILL);
+       canvas.drawCircle(posicionCentroMasaX, posicionCentroMasaY, radio, pincel);
+       pincel.setColor(Color.BLACK);
+       //dibujar punticos negro para poder bservar la rotación de la rueda
+
+       for (int i = 0; i < 6; i = i + 1) {
+           //rotar de a 36 grados
+           canvas.rotate(i * 60f, posicionCentroMasaX, posicionCentroMasaY);
+           canvas.drawCircle(posicionCentroMasaX - 0.2f * radio, posicionCentroMasaY - 0.3f * radio, 0.1f * radio, pincel);
+           canvas.rotate(-i * 60f, posicionCentroMasaX, posicionCentroMasaY);
+       }
+
+       //dibujar circunferencia de la rueda
+       pincel.setStyle(Paint.Style.STROKE);
+       canvas.drawCircle(posicionCentroMasaX, posicionCentroMasaY, radio, pincel);
+
+       //regresa la rotación
+       canvas.restore();
+
+   }
+
+}
+
+
+
+
+A la clase Resorte agregarle el siguiente código.
+
+
+public class Resorte extends ObjetoLaboratorio {
+
+   private float longitudNatural, longitud;
+   private float ancho;
+   private int numeroEspiras=12;
+
+
+   /**
+    * Constructor de resorte que comienza en
+    * (posicionX,posicionY) de longitudNatural
+    * y ancho
+    * @param posicionX
+    * @param posicionY
+    * @param longitudNatural
+    * @param ancho
+    */
+
+   public Resorte(float posicionX, float posicionY,float longitudNatural,float ancho) {
+
+       this.posicionX=posicionX;
+       this.posicionY=posicionY;
+       this.longitud = longitudNatural;
+       this.ancho = ancho;
+
+   }
+
+
+   /**
+    * Modifica la longitud del objeto de laboratorio Resorte
+    *
+    * @param longitud
+    */
+   public void setLongitud(float longitud) {
+
+       this.longitud = longitud;
+
+   }
+
+   /**
+    * Devuelve la longitud del objeto de laboratorio Resorte
+    *
+    * @return longitud
+    */
+   public float getLongitud() {
+
+       return longitud;
+   }
+
+
+   /**
+    * Modifica la longitud natural del objeto de laboratorio Resorte
+    *
+    * @param longitudNatural
+    */
+
+   public void setLongitudNatural(float longitudNatural) {
+
+       this.longitudNatural = longitudNatural;
+       this.longitud = longitudNatural;
+
+   }
+
+
+   /**
+    * Devuelve la longitud natural del objeto de laboratorio Resorte
+    *
+    * @return longitudNatural
+    */
+
+   public float getLongitudNatural() {
+
+       return longitudNatural;
+   }
+
+
+   public void setNumeroEspiras(int numeroEspiras){
+
+       this.numeroEspiras=numeroEspiras+1;
+   }
+
+   /**
+    * Modifica la posicion del objeto de laboratorio
+    *
+    * @param posicionX
+    * @param posicionY
+    */
+
+   public void setPosicion(float posicionX, float posicionY) {
+
+       this.posicionX = posicionX;
+       this.posicionY = posicionY;
+
+   }
+
+
+   /**
+    * Regresa la posición del laboratorio
+    *
+    * @return
+    */
+
+
+   public float[] getPosicion() {
+
+       float[] coordenadas = new float[2];
+
+       coordenadas[0] = posicionX;
+       coordenadas[1] = posicionY;
+
+       return coordenadas;
+
+
+   }
+
+
+   /**
+    * Modifica el grosor de la línea con la que se dibujará
+    *
+    * @param grosorLinea
+    */
+
+   public void setGrosorLinea(float grosorLinea) {
+
+       this.grosorLinea = grosorLinea;
+
+   }
+
+
+   /**
+    * Devuelve el grosor de la línea con la que se dibuja
+    *
+    * @return
+    */
+   public float getGrosorLinea() {
+
+       return grosorLinea;
+   }
+
+   /**
+    * Modifica el color del objeto de laboratorio
+    *
+    * @param color
+    */
+
+   public void setColor(int color) {
+
+       this.color = color;
+
+   }
+
+   /**
+    * Devuelve el color del objeto de laboratorio
+    *
+    * @return
+    */
+   public int getColor() {
+
+       return color;
+   }
+
+
+   /**
+    * Modifica el ancho del objeto de laboratorio Resorte2D
+    *
+    * @param ancho
+    */
+   public void setAncho(float ancho) {
+
+       this.ancho = ancho;
+
+   }
+
+
+
+
+   /**
+    * Devuelve el ancho del objeto de laboratorio Resorte2D
+    *
+    * @return
+    */
+
+   public float getAncho() {
+
+       return ancho;
+   }
+
+
+
+   /**
+    * Genera rotación del resorte a la
+    * posición angular posicionAngular
+    * alrededor de eje que pasa por
+    * (posicionX,posicionY)
+    * @param posicionAngular
+    */
+
+   public void rotar(float posicionAngular){
+
+       this.posicionAngular=posicionAngular;
+
+   }
+
+   public void dibujese(Canvas canvas, Paint pincel) {
+
+
+       //estado del canvas para luego restaurarlo a como estaba
+       canvas.save();
+
+       pincel.setStrokeWidth(grosorLinea);
+       pincel.setColor(color);
+
+
+       //traslada la resorte a la posición (posicionX, posicionY)
+       canvas.translate(posicionX, posicionY);
+       //rota la resorte alrededor de eje que pasa por (posicionX, posicionY)
+       canvas.rotate(posicionAngular);//,posicionX,posicionY);
+
+
+       float paso = longitud / numeroEspiras;
+
+       pincel.setStyle(Paint.Style.STROKE);
+
+       Path path = new Path();
+
+
+       path.moveTo(0, 0);
+       path.lineTo(0, 0);
+
+
+       for (int i = 1; i < numeroEspiras; i = i + 1) {
+
+           path.lineTo(i * paso, (float) Math.pow(-1, i) * ancho);
+       }
+
+       path.lineTo(numeroEspiras * paso, 0);
+       canvas.drawPath(path, pincel);
+
+
+       //restaurar el canvas
+       canvas.restore();
+       //restaurar el pincel
+       pincel.reset();
+
+   }
+
+
+}
+
+
+
+
+El código de la clase CuerpoRectangular es el siguiente.
+
+
+public class CuerpoRectangular extends CuerpoRigido {
+
+   protected float largo, alto;
+
+   /**
+    * Constructor de cuerpo rectangular
+    * centrado en (posicionCentroMasaX,posicionCentroMasaY)
+    * de dimensiones largoxalto
+    */
+
+   public CuerpoRectangular(float posicionCentroMasaX, float posicionCentroMasaY, float largo, float alto) {
+       super(posicionCentroMasaX, posicionCentroMasaY);
+       this.largo = largo;
+       this.alto=alto;
+   }
+
+
+   /**
+    * Modifica el valor del largo del cuerpo
+    * rectangular     *
+    * @param largo
+    */
+   public void setLargo(float largo) {
+       this.largo = largo;
+   }
+
+
+   /**
+    * Devuelve el valor del largo del cuerpo
+    * rectangular
+    *
+    * @return
+    */
+   public float getLargo() {
+       return largo;
+   }
+
+   /**
+    * Modifica el valor del ancho del cuerpo
+    * rectangular
+    *
+    * @param alto
+    */
+   public void setAlto(float alto) {
+       this.alto = alto;
+   }
+
+
+   /**
+    * Devuelve el valor del alto del cuerpo
+    * rectangular
+    *
+    * @return
+    */
+   public float getAlto() {
+       return alto;
+   }
+
+
+
+   //se implementó este método dque en su clase madre es abstracto
+   public void dibujese(Canvas canvas, Paint pincel) {
+
+
+       canvas.save();
+
+       //estilo del pincel
+       pincel.setStyle(Paint.Style.STROKE);
+       //grosor del pincel
+       pincel.setStrokeWidth(grosorLinea);
+       //color del pincel
+       pincel.setColor(color);
+
+       //rotar
+       canvas.rotate(posicionAngularRotacionEjeXY,posicionEjeRotacionX,posicionEjeRotacionY);
+       //dibujar el relleno del bloque
+       pincel.setStyle(Paint.Style.FILL);
+       canvas.drawRect(posicionCentroMasaX-0.5f*largo, posicionCentroMasaY-0.5f*alto,posicionCentroMasaX+0.5f*largo, posicionCentroMasaY+0.5f*alto, pincel);
+       //dibujar el perímetro del bloque
+       pincel.setColor(Color.BLACK);
+       pincel.setStyle(Paint.Style.STROKE);
+       canvas.drawRect(posicionCentroMasaX-0.5f*largo, posicionCentroMasaY-0.5f*alto,posicionCentroMasaX+0.5f*largo, posicionCentroMasaY+0.5f*alto, pincel);
+
+
+       //restaurar el canvas
+       canvas.restore();
+       //restaurar el pincel
+       pincel.reset();
+
+
+   }
+
+}
+
+
+El código de la clase Flecha es el siguiente.
+
+
+public class Flecha extends ObjetoLaboratorio {
+
+   private float longitud;
+
+
+   /**
+    * Cosntructor de flecha con punto inicial en
+    * (posicionX, posicionY) y largo longitud
+    * @param posicionX
+    * @param posicionY
+    * @param longitud
+    */
+
+   public Flecha(float posicionX, float posicionY, float longitud) {
+
+       this.posicionX = posicionX;
+       this.posicionY = posicionY;
+       this.longitud = longitud;
+
+   }
+
+
+   /**
+    * Modifica la longitud del objeto de laboratorio Flecha
+    *
+    * @param longitud
+    */
+
+   public void setLongitud(float longitud) {
+
+       this.longitud = longitud;
+   }
+
+
+   public float getLongitud() {
+
+       return longitud;
+
+   }
+
+
+   /**
+    * Modifica la posicion del objeto de laboratorio
+    * @param posicionX
+    * @param posicionY
+    */
+
+   public void setPosicion(float posicionX,float posicionY){
+
+       this.posicionX=posicionX;
+       this.posicionY=posicionY;
+
+   }
+
+
+   /**
+    * Regresa la posición del laboratorio
+    * @return
+    */
+
+
+   public float[] getPosicion(){
+
+       float[] coordenadas = new float[2];
+
+       coordenadas[0]=posicionX;
+       coordenadas[1]=posicionY;
+
+       return coordenadas;
+
+
+   }
+
+
+   /**
+    * Modifica el grosor de la línea con la que se dibujará
+    * @param grosorLinea
+    */
+
+   public void setGrosorLinea(float grosorLinea){
+
+       this.grosorLinea=grosorLinea;
+
+   }
+
+
+
+   /**
+    * Devuelve el grosor de la línea con la que se dibuja
+    * @return
+    */
+   public float getGrosorLinea(){
+
+       return grosorLinea;
+   }
+
+
+
+   /**
+    * Genera rotación de la flecha a la
+    * posición angular posicionAngular
+    * alrededor de eje que pasa por
+    * (posicionX,posicionY)
+    * @param posicionAngular
+    */
+
+   public void rotar(float posicionAngular){
+
+       this.posicionAngular=posicionAngular;
+
+   }
+
+
+
+   //implementa el método de la Interface Dibujable
+   public void dibujese(Canvas canvas, Paint pincel) {
+
+
+       //estado del canvas para luego restaurarlo a como estaba
+       canvas.save();
+
+
+       pincel.setStrokeWidth(grosorLinea);
+       pincel.setColor(color);
+
+
+       //traslada la flecha a la posición (posicionX, posicionY)
+       canvas.translate(posicionX, posicionY);
+       //rota la flecha alrededor de eje que pasa por (posicionX, posicionY)
+       canvas.rotate(posicionAngular);
+
+       float cabeza = 0.1f * longitud;
+       Path path = new Path();
+       path.moveTo(0, 0);
+       path.lineTo(longitud - cabeza, 0);
+       path.lineTo(longitud - cabeza, -0.5f * cabeza);
+       path.lineTo(longitud, 0);
+       path.lineTo(longitud - cabeza, 0.5f * cabeza);
+       path.lineTo(longitud - cabeza, 0);
+       pincel.setStyle(Paint.Style.STROKE);
+       canvas.drawPath(path, pincel);
+
+       //restaurar el canvas
+       canvas.restore();
+       //restaurar el pincel
+       pincel.reset();
+
+
+   }
+
+}
+
+
+
+
+El código de la clase Regla es el siguiente.
+
+
+public class Regla extends ObjetoLaboratorio {
+
+
+   private float esquinaIzquierdaX, esquinaIzquierdaY,largo, alto;
+   private int colorLetras= Color.BLACK;
+   private int numeroDivisiones=50;
+
+
+   /**
+    * Cosntrutor de regla cuya esquina superior izquierda
+    * se encuentra en (esquinaIzquierdaX,esquinaIzquierdaY)
+    * y con largo y ancho
+    * @param esquinaIzquierdaX
+    * @param esquinaIzquierdaY
+    * @param largo
+    * @param alto
+    */
+   public Regla(float esquinaIzquierdaX,float esquinaIzquierdaY, float largo, float alto){
+
+       this.esquinaIzquierdaX=esquinaIzquierdaX;
+       this.esquinaIzquierdaY=esquinaIzquierdaY;
+       this.largo=largo;
+       this.alto=alto;
+
+   }
+
+
+   public void setNumeroDivisiones(int numeroDivisiones){
+
+       this.numeroDivisiones=numeroDivisiones;
+
+   }
+   public void setColorLetras(int colorLetras){
+
+       this.colorLetras=colorLetras;
+
+   }
+
+   /**
+    * Rota la regla alrededor de eje que pasa por
+    * la esquina superior izquierda un ángulo igual
+    * a posicionAngular
+    * @param posicionAngular
+    *
+    */
+   public void rotar(float posicionAngular){
+
+       this.posicionAngular=posicionAngular;
+
+
+   }
+
+
+   /**
+    * Cambia la posición de la regla
+    * @param esquinaIzquierdaX
+    * @param esquinaIzquierdaY
+    */
+
+   public void setPosicionRegla(float esquinaIzquierdaX, float esquinaIzquierdaY){
+
+       this.esquinaIzquierdaX=esquinaIzquierdaX;
+       this.esquinaIzquierdaY=esquinaIzquierdaY;
+
+   }
+
+   //implementa el método de la Interface Dibujable
+   public void dibujese(Canvas canvas, Paint pincel) {
+
+
+       //estado del canvas para luego restaurarlo a como estaba
+       canvas.save();
+
+       //traslada la cadena a la posición (posicionX, posicionY)
+       canvas.translate(esquinaIzquierdaX, esquinaIzquierdaY);
+       //rota la cadena alrededor de eje que pasa por (pX, pY)
+       canvas.rotate(posicionAngular, 0, 0);
+
+       pincel.setStyle(Paint.Style.FILL);
+       pincel.setColor(color);
+       canvas.drawRect(0, 0, largo, alto, pincel);
+       pincel.setColor(Color.BLACK);
+       pincel.setStyle(Paint.Style.STROKE);
+       canvas.drawRect(0, 0, largo, alto, pincel);
+
+       pincel.setStrokeWidth(2);
+
+       //int numeroDivisiones=30;
+       float paso=(float)((largo-0.1*largo)/numeroDivisiones);
+       float inicio= (float)(0.05*largo);
+
+       for(int i=0;i<numeroDivisiones+1;i++){
+           pincel.setColor(Color.BLACK);
+           canvas.drawLine(inicio+paso*i,0,inicio+paso*i,(float)(0.25*alto),pincel);
+           //cada 5 divisiones una divisón larga
+
+           if(i%5==0){
+               pincel.setColor(Color.RED);
+               canvas.drawLine(inicio+paso*i,0,inicio+paso*i,(float)(0.5*alto),pincel);
+               //marcar
+               pincel.setTextSize(0.2f*alto);
+               pincel.setStyle(Paint.Style.FILL);
+               pincel.setColor(colorLetras);
+               canvas.drawText(""+i,inicio+paso*i-0.01f*largo,0.75f*alto,pincel);
+           }
+
+
+
+       }
+
+       //restaurar el canvas
+       canvas.restore();
+       //restaurar el pincel
+       pincel.reset();
+
+
+   }
+
+}
+
+
+
+
+El código de la clase Masa es el siguiente.
+
+
+public class Masa extends CuerpoRectangular {
+
+
+   private String marca;
+
+   private int colorMarca;
+
+   public Masa(float posicionCentroMasaX, float posicionCentroMasaY, float largo, float alto){
+
+       super(posicionCentroMasaX, posicionCentroMasaY,largo,alto);
+
+   }
+
+
+   public void setMarca(String marca){
+
+       this.marca=marca;
+
+
+   }
+
+   public void setColorMarca(int colorMarca){
+       this.colorMarca=colorMarca;
+
+   }
+
+   //se implementó este método dque en su clase madre es abstracto
+   public void dibujese(Canvas canvas, Paint pincel) {
+
+       super.dibujese(canvas, pincel);
+
+
+       canvas.save();
+
+       canvas.rotate(posicionAngularRotacionEjeXY,posicionEjeRotacionX,posicionEjeRotacionY);
+
+       pincel.setStyle(Paint.Style.FILL);
+
+       if(marca!=null) {
+
+           pincel.setStyle(Paint.Style.FILL);
+           float tamano=(float)(0.5*Math.min(largo,alto));
+           pincel.setTextSize(tamano);
+           float ancho_cadena=pincel.measureText(marca);
+
+           Paint.FontMetrics fm = pincel.getFontMetrics();
+           float altura = fm.bottom - fm.top + fm.leading;//fm.top - fm.ascent;
+
+           Rect bounds = new Rect((int)(posicionCentroMasaX-0.5f*largo), (int)(posicionCentroMasaY-0.5f*alto),(int)(posicionCentroMasaX+0.5f*largo), (int)(posicionCentroMasaY+0.5f*alto));
+           pincel.getTextBounds(marca, 0, marca.length(), bounds);
+
+           pincel.setColor(colorMarca);
+           canvas.drawText(marca,posicionCentroMasaX-0.5f*ancho_cadena, posicionCentroMasaY+0.25f*altura , pincel);
+       }
+
+       //regresar la rotación
+       canvas.restore();
+       //restaurar el pincel
+       pincel.reset();
+
+
+
+
+   }
+
+}
+
+
+
+
+El código de la clase Marca es el siguiente.
+
+
+public class Marca extends ObjetoLaboratorio {
+
+   private String marca="";
+   private float tamano=12;
+
+
+   /**
+    * Constructor de una cadena en posición
+    * (posicionX,posicionY)
+    * @param marca
+    * @param posicionX
+    * @param posicionY
+    */
+
+   public Marca(String marca, float posicionX,float posicionY){
+       this.marca=marca;
+       this.posicionX=posicionX;
+       this.posicionY=posicionY;
+
+
+   }
+
+   /**
+    * Cambia la cadena marca
+    * @param marca
+    */
+   public void setMarca(String marca){
+
+       this.marca=marca;
+
+   }
+
+   public void setTamano(float tamano){
+
+       this.tamano=tamano;
+
+   }
+   /**
+    * Genera rotación de la cadena
+    * @param posicionAngular
+    */
+   public void rotar(float posicionAngular){
+
+       this.posicionAngular=posicionAngular;
+
+
+   }
+
+
+   //implementa el método de la Interface Dibujable
+   public void dibujese(Canvas canvas, Paint pincel) {
+
+
+       //estado del canvas para luego restaurarlo a como estaba
+       canvas.save();
+
+
+       pincel.setColor(color);
+
+       pincel.setStyle(Paint.Style.FILL);
+       pincel.setTextSize(tamano);
+
+       //traslada la cadena a la posición (posicionX, posicionY)
+       canvas.translate(posicionX, posicionY);
+       //rota la cadena
+       canvas.rotate(posicionAngular);
+       canvas.drawText(marca,0,0,pincel);
+
+       //restaurar el canvas
+       canvas.restore();
+       //restaurar el pincel
+       pincel.reset();
+
+
+   }
+
+}
+
+
+El código de la clase Cuerda es el siguiente.
+
+
+public class Cuerda extends ObjetoLaboratorio {
+
+   private float posicionIniclaX, posicionInicialY, posicionFinalX, posicionFinalY;
+
+   /**
+    * Constructor de la cuerda con extremo inicial en
+    * (posicionInicialX,posicionInicialY) y con extremo final en
+    * (posicionFinalX,posicionFinalY)
+    * @param posicionInicialX
+    * @param posicionInicialY
+    * @param posicionFinalX
+    * @param posicionFinalY
+    */
+   public Cuerda(float posicionInicialX, float posicionInicialY, float posicionFinalX, float posicionFinalY) {
+
+       this.posicionIniclaX = posicionInicialX;
+       this.posicionInicialY = posicionInicialY;
+       this.posicionFinalX=posicionFinalX;
+       this.posicionFinalY=posicionFinalY;
+
+   }
+
+
+   /**
+    * Cambia la psoción del extremo inicial de la cuerda
+    * @param posicionIniclaX
+    * @param posicionInicialY
+    */
+
+   public void setPosicionInicial(float posicionIniclaX, float posicionInicialY){
+
+       this.posicionIniclaX=posicionIniclaX;
+       this.posicionInicialY=posicionInicialY;
+
+   }
+
+   /**
+    * Cambia la posición del extremo final de la cuerda
+    * @param posicionFinalX
+    * @param posicionFinalY
+    */
+   public void setPosicionFinal(float posicionFinalX, float posicionFinalY){
+
+       this.posicionFinalX=posicionFinalX;
+       this.posicionFinalY=posicionFinalY;
+
+   }
+
+   /**
+    * Retorna la longitud de la cuerda
+    * @return
+    */
+
+   public float getLongitud(){
+
+       float a=posicionFinalX-posicionIniclaX;
+       float b=posicionFinalY-posicionInicialY;
+
+       return (float)(Math.sqrt(a*a+b*b));
+   }
+
+
+
+   //implementa el método de la Interface Dibujable
+   public void dibujese(Canvas canvas, Paint pincel) {
+
+
+       canvas.save();
+
+       pincel.setStrokeWidth(grosorLinea);
+       pincel.setColor(color);
+
+       canvas.drawLine(posicionIniclaX,posicionInicialY,posicionFinalX,posicionFinalY,pincel);
+
+       //restaurar el canvas
+       canvas.restore();
+       //restaurar el pincel
+       pincel.reset();
+   }
+
+}
+
+
+
+
+El código de la clase Particula es el siguiente.
+
+
+public class Particula extends ObjetoLaboratorio {
+
+
+   //radio de la bola
+   private float radio;
+   private float[] x=new float[1000];
+   private float[] y=new float[1000];
+   private int i=0;
+   private boolean TRAYECTORIA=false;
+   private int colorTrayectoria= Color.RED;
+
+
+   /**
+    * Constructor de Partícula en (posicionX, posicionY) y de radio
+    * @param posicionX
+    * @param posicionY
+    * @param radio
+    */
+
+   public Particula(float posicionX, float posicionY, float radio){
+
+       this.posicionX=posicionX;
+       this.posicionY=posicionY;
+       this.radio=radio;
+
+   }
+
+   /**
+    * Modifica la posicion de la partícula
+    *
+    * @param posicionX
+    * @param posicionY
+    */
+
+   public void setPosicion(float posicionX, float posicionY) {
+
+       this.posicionX = posicionX;
+       this.posicionY = posicionY;
+
+   }
+
+
+
+   /**
+    * Método para cambiar el radio de la bola.
+    * @param radio
+    */
+
+   public void setRadio(float radio){
+
+       this.radio=radio;
+
+
+   }//fin setRadio
+
+
+   /**
+    * Método para obtener el radio de la bola.
+    * @return
+    */
+
+   public float getRadio( ){
+
+       return radio;
+
+   }//fin getRadio
+
+
+   /**
+    * Asigna el color a la trayectoria
+    * @param colorTrayectoria
+    */
+   public void setColorTrayectoria(int colorTrayectoria){
+       this.colorTrayectoria=colorTrayectoria;
+
+   }
+
+   /**
+    * Con true define que la trayectoria se desplegará
+    * hasta 999 puntos
+    * @param TRAYECTORIA
+    * @param i
+    */
+   public void setTrayectoria(boolean TRAYECTORIA, int i){
+
+               
+       this.i=i;
+
+       this.TRAYECTORIA=TRAYECTORIA;
+
+       if(TRAYECTORIA==true&i<999) {
+           x[i]=this.posicionX;
+           y[i]=this.posicionY;
+       }
+
+   }
+
+   public void borrarDatos(){
+
+       for (int i = 0; i < 1000; i++) {
+           x[i] = 0;
+           y[i] = 0;
+       }
+
+   }
+
+
+
+   public void dibujese(Canvas canvas, Paint pincel) {
+
+
+       //estado del canvas para luego restaurarlo a como estaba
+       canvas.save();
+
+
+       pincel.setStrokeWidth(grosorLinea);
+
+   /*
+     Para dibujar óvalos no rellenos hay un BUG en ANDROID con
+     el método drawCircle. Por esto se implementó el método
+     aqui denominado dibujarOvalo() que arregla esto.
+   */
+
+       //el punto donde se centrarala polea
+       pincel.setStyle(Paint.Style.FILL);
+       pincel.setColor(color);
+       canvas.drawCircle(posicionX, posicionY, radio, pincel);
+
+       //dibujar puntico central
+       RectF rec_puntico= new RectF(-0.001f*radio,-0.001f*radio,0.001f*radio,0.001f*radio);
+       pincel.setColor(Color.BLACK);
+       canvas.drawCircle(posicionX, posicionY, 0.05f * radio, pincel);
+
+
+       pincel.setStyle(Paint.Style.STROKE);
+       pincel.setStrokeWidth(grosorLinea);
+
+
+       //dibujar trayectoria
+       pincel.setColor(colorTrayectoria);
+       if(TRAYECTORIA==true) {
+
+           for (int j = 1; j < i; j = j + 1) {
+
+               if (i > 1 & i < 1000) {
+                   canvas.drawLine(x[j - 1],y[j - 1],x[j], y[j], pincel);
+               }  else{i=998;}
+           }//fin dibujar la trayectoria
+       }//fin if
+
+
+
+       //restaurar el canvas
+       canvas.restore();
+       //restaurar el pincel
+       pincel.reset();
+   }
+
+}
+
+
+
+
+Para que la aplicación reconozca el módulo simulphysics se debe agregar el siguiente código en el archivo build.gradle (Module: app) en dependencies.
+
+
+
+
+dependencies {
+
+implementation(project(":app:simulphysics"))   
+
+}
+
+
+y sincronizar, Figura 7.
+
+
+ Interfaz de usuario gráfica, Texto, Aplicación
+
+El contenido generado por IA puede ser incorrecto. 
+
+Figura 7
+
+
+El código de Pizarra es el siguiente.
+
+
+public class Pizarra extends View {
+
+   private ObjetoLaboratorio objetosLab[];
+
+
+
+   /**
+    * Constructor
+    *
+    * @param context
+    */
+   public Pizarra(Context context) {
+       super(context);
+
+   }
+
+
+   public void setEstadoEscena(ObjetoLaboratorio[] cuerpos) {
+
+       this.objetosLab = cuerpos;
+
+   }
+
+
+   //Método para dibujar la escena
+   private void dibujarEscena(Canvas canvas, Paint pincel) {
+
+       //dibujar las objetos de laboratorio
+       for (int i = 0; i < objetosLab.length; i++) {
+           if (objetosLab[i] != null) {
+               objetosLab[i].dibujese(canvas, pincel);
+           }
+       }
+
+
+
+   }
+
+
+   //método para dibujar
+   protected void onDraw(Canvas canvas) {
+       super.onDraw(canvas);
+
+
+       Paint pincel = new Paint();
+       //evita efecto sierra
+       pincel.setAntiAlias(true);
+
+       if (objetosLab != null)
+           dibujarEscena(canvas, pincel);
+
+
+
+       //necesario para actualizar los dibujos en animaciones
+       invalidate();
+
+   }
+
+}
+
+
+
+
+Para finalizar ActividadControladora terminar de agregar su código. El código completo es el siguiente:
+
+
+
+
+public class ActividadControladora extends Activity {
+
+
+   private Pizarra pizarra;
+   private Masa masa;
+   private Cuerda cuerda;
+   private Regla regla;
+   private Polea polea_1, polea_2,polea_3,polea_4;
+   private CuerpoRectangular cuerpoRectangular;
+   private Marca marca;
+   private Flecha flecha;
+   private Resorte resorte;
+   private Rueda rueda;
+   private Particula particula;
+   private ObjetoLaboratorio[] obj=new ObjetoLaboratorio[15];
+
+
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+
+       gestionarResolucion();
+
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       //para informar cómo se debe pegar el adminitrador de
+       //diseño obtenido con el método GUI
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+           }//fin onCreate
+
+
+       /*Método auxiliar para asuntos de resolución*/
+       private void gestionarResolucion() {
+
+       /*
+       Según el diseño de la GUI se puede anticipar cuál es la
+       dimensión de la pizarra. En este caso es el 100% del ancho
+       de la pantalla y el 100% del alto de la misma
+       */
+           CR.anchoPizarra = AlmacenDatosRAM.ancho_pantalla;
+           CR.altoPizarra = AlmacenDatosRAM.alto_pantalla;
+
+       }
+
+
+
+   /*método responsable de la creación de los elementos de la GUI*/
+   private void crearElementosGUI() {
+
+       //crear pizarra sabiendo de antemano sus dimensiones
+       pizarra = new Pizarra(this);
+       pizarra.setBackgroundColor(Color.WHITE);
+
+       crearObjetosLaboratorio();
+
+
+   }//fin crearElementosGUI
+
+
+
+
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+       //el linear principal
+       LinearLayout linear_principal = new LinearLayout(this);
+       linear_principal.setOrientation(LinearLayout.VERTICAL);
+       //linear_principal.setBackgroundColor(Color.YELLOW);
+
+       //pegar pizarra a linearArriba
+       linear_principal.addView(pizarra);
+
+       return linear_principal;
+
+   }//fin crearGUI
+
+
+
+   /*
+ Crea los objetos cuerpo rígido con su estado inicia
+ -X esta en porcentaje del annco del canvas
+ -Y está en porcentaje del alto del canvas
+ -Cualquier otra dimensión está en porcentaje del menor
+  entre el alto y el ancho del canvas
+ */
+   private void crearObjetosLaboratorio() {
+
+       //objetos
+       //una masa
+       masa =new Masa(CR.pcApxX(10),CR.pcApxY(20),CR.pcApxL(20),CR.pcApxL(10));
+       masa.setColorMarca(Color.BLACK);
+       masa.setColor(Color.rgb(255,152,60));
+       masa.setMarca("M");
+       masa.mover(30);
+       obj[0]=masa;
+
+       //una cuerda
+       cuerda=new Cuerda(CR.pcApxX(20),CR.pcApxY(10),CR.pcApxX(25),CR.pcApxY(50));
+       cuerda.setColor(Color.RED);
+       cuerda.setGrosorLinea(CR.pcApxL(0.5f));
+       obj[1]=cuerda;
+
+       //una regla
+       regla=new Regla(CR.pcApxX(35),CR.pcApxY(10), CR.pcApxL(60),CR.pcApxL(10));
+       regla.setColor(Color.YELLOW);
+       regla.setColorLetras(Color.BLACK);
+       regla.setNumeroDivisiones(20);
+       regla.rotar(90);
+       obj[2]=regla;
+
+       //una polea
+       polea_1=new Polea(CR.pcApxX(70),CR.pcApxY(40),CR.pcApxL(10));
+       polea_1.setColor(Color.BLUE);
+       polea_1.setGrosorLinea(CR.pcApxL(1f));
+       obj[3]=polea_1;
+
+
+       //una polea
+       polea_2=new Polea(CR.pcApxX(85),CR.pcApxY(40),CR.pcApxL(10));
+       polea_2.setColor(Color.RED);
+       polea_2.setGrosorLinea(CR.pcApxL(1f));
+       polea_2.rotarEje(36);
+       obj[4]=polea_2;
+
+
+       //una polea
+       polea_3=new Polea(CR.pcApxX(70),CR.pcApxY(65),CR.pcApxL(10));
+       polea_3.setColor(Color.BLUE);
+       polea_3.setGrosorLinea(CR.pcApxL(1f));
+       polea_3.rotarEje(36);
+       polea_3.setSoportePolea(true);
+       obj[5]=polea_3;
+
+       //una polea
+       polea_4=new Polea(CR.pcApxX(85),CR.pcApxY(65),CR.pcApxL(10));
+       polea_4.setColor(Color.RED);
+       polea_4.setGrosorLinea(CR.pcApxL(1f));
+       polea_4.setSoportePolea(true);
+       polea_4.rotarEje(36);
+       polea_4.setSoportePolea(true);
+       obj[6]=polea_4;
+
+
+       //un cuerpo rectangular
+       cuerpoRectangular=new CuerpoRectangular(CR.pcApxX(55),CR.pcApxY(30),CR.pcApxL(5),CR.pcApxL(60));
+       cuerpoRectangular.setGrosorLinea(CR.pcApxL(0.5f));
+       cuerpoRectangular.setColor(Color.argb(100,150,250,30));
+       cuerpoRectangular.mover(75);
+       obj[7]=cuerpoRectangular;
+
+       //una marca
+       marca=new Marca("Eje y",CR.pcApxX(92),CR.pcApxY(40));
+       marca.setColor(Color.BLACK);
+       marca.setTamano(CR.pcApxL(3f));
+       marca.rotar(90);
+       obj[8]=marca;
+
+       //una flecha
+       flecha=new Flecha(CR.pcApxX(95),CR.pcApxY(20),CR.pcApxL(30));
+       flecha.rotar(90);
+       obj[9]=flecha;
+
+       //un resorte
+       resorte=new Resorte(CR.pcApxX(20),CR.pcApxY(60),CR.pcApxL(30),CR.pcApxL(5) );
+       resorte.setColor(Color.BLACK);
+       resorte.setNumeroEspiras(15);
+       resorte.setGrosorLinea(CR.pcApxL(0.5f));
+       resorte.rotar(90);
+       obj[10]=resorte;
+
+       //una rueda
+       rueda= new Rueda(CR.pcApxX(50),CR.pcApxY(50),CR.pcApxL(10));
+       obj[11]=rueda;
+
+       //una particula
+       particula=new Particula(CR.pcApxX(50),CR.pcApxY(70),CR.pcApxL(1));
+       obj[12]=particula;
+
+
+       //desplegar la escena inicial
+       pizarra.setEstadoEscena(obj);
+
+   }
+
+
+}
+
+
+El código de la clase Estado de la librería simulphysics  es el siguiente.
+
+
+public class Estado {
+
+   /**
+    * Variable indpenediente (tiempo)
+    */
+   public double t;
+
+   /**
+    * Posición
+    */
+   public double x;
+
+   /**
+    * Velocidad
+    */
+   public double v;
+
+
+   /**
+    * Estado
+    * @param t: tiempo
+    * @param x: posición
+    * @param v: velocidad
+    */
+   public Estado(double t, double x, double v) {
+       this.t=t;
+       this.x=x;
+       this.v=v;
+   }
+
+}
+
+
+
+
+El código de la clase RungeKuttaOrdenDos de la librería simulphysics es el siguiente.
+
+
+public abstract class RungeKuttaOrdenDos {
+
+
+       /**
+        * Constructor
+        */
+       public RungeKuttaOrdenDos(){
+
+       }
+
+
+       /**
+        * Resuelve la ecuación diferencial por el método de Runge-Kutta
+        * @param tf: resolver hasta tf
+        * @param e: estado inicial (posición y velocidad en to
+        * @param h: paso para resolver la ecuación diferencial
+        */
+
+       public void resolver(double tf, Estado e, double h){
+
+           //variables auxiliares
+           double k1, k2, k3, k4;
+           double l1, l2, l3, l4;
+           //estado inicial
+           double x=e.x;
+           double v=e.v;
+           double t0=e.t;
+
+           for(double t=t0; t<tf; t+=h){
+               k1=h*v;
+               l1=h*f(x, v, t);
+               k2=h*(v+l1/2);
+               l2=h*f(x+k1/2, v+l1/2, t+h/2);
+               k3=h*(v+l2/2);
+               l3=h*f(x+k2/2, v+l2/2, t+h/2);
+               k4=h*(v+l3);
+               l4=h*f(x+k3, v+l3, t+h);
+               x+=(k1+2*k2+2*k3+k4)/6;
+               v+=(l1+2*l2+2*l3+l4)/6;
+           }
+
+           //estado final
+           e.t=tf;
+           e.x=x;
+           e.v=v;
+       }
+
+
+       /**
+        * La ecuación dieferencial tiene la forma d2x/dt2=f(x,v,t)
+        * @param x: posición
+        * @param v: velocidad
+        * @param t: tiempo
+        * @return
+        */
+
+       abstract public double f(double x, double v, double t);
+
+   }
+
+
+El código del archivo manifiesto de la app es:
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools"
+   package="com.curso_simulaciones.mivigesimaapp">
+
+   <application
+       android:allowBackup="true"
+       android:dataExtractionRules="@xml/data_extraction_rules"
+       android:fullBackupContent="@xml/backup_rules"
+       android:icon="@mipmap/ic_launcher"
+       android:label="@string/app_name"
+       android:roundIcon="@mipmap/ic_launcher_round"
+       android:supportsRtl="true"
+       android:theme="@style/Theme.MiVigesimaApp"
+       tools:targetApi="31" >
+
+       <!--Declarar la actividad que lanzara la aplicación-->
+       <activity android:name="com.curso_simulaciones.mivigesimaapp.ActividadPrincipalMiVigesimaApp"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:configChanges="screenSize|orientation"
+           android:screenOrientation="landscape"
+           android:exported="true">
+
+           <intent-filter>
+               <action android:name="android.intent.action.MAIN" />
+               <category android:name="android.intent.category.LAUNCHER" />
+           </intent-filter>
+
+       </activity>
+
+       <!--declarando otras actividades-->
+       <activity
+           android:name=".controlador.ActividadControladora"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="landscape">
+       </activity>
+
+
+   </application>
+
+
+</manifest>
+
+
+Compilar y ejecutar la aplicación en el dispositivo móvil. Se despliega la GUI de la Figura 8.
+
+
+ Diagrama
+
+Descripción generada automáticamente 
+
+Figura 8
+COPIAR LA LIBRERÍA PARA USARLA EN OTRAS APLICACIONES
+Ir al directorio donde está hospedado el proyecto. Allí copiar el archivo clases.jar el cual se encuentra en:
+simulphysics>build>intermediates>compile_library_classes> debug>classes.jar
+Aquí está contenida la librería simulphysics que se usará en la MiVigesimaPrimeraApp  para preparar un escenario preliminar para una simulación. Para darle más identidad renombrarlo como simulphysics.jar.
+
+
+MI VIGESIMA PRIMERA APP: USANDO LA LIBRERÍA SIMULPHYSICS
+Crear un proyecto denominado MiVigesimaPrimeraApp y darle la estructura de la Figura 9.
+ Interfaz de usuario gráfica, Texto, Aplicación, Correo electrónico
+
+El contenido generado por IA puede ser incorrecto. 
+
+Figura 9
+La librería a usar debe estar empaquetada en  un .jar o .zip. Esta se deposita en la carpeta app>libs> del proyecto. Crear esa carpeta libs y proceder a depositar simuphysics.jar en dicha carpeta.
+Para que la app reconozca el paquete .jar agregar el siguiente código en dependencies del archivo (build.gradle (Module: app). 
+
+
+dependencies {
+
+
+implementation(files("libs/simulphysics.jar"))
+
+
+}
+
+
+y sincronizar, Figura 10.
+
+
+ Interfaz de usuario gráfica, Texto, Aplicación
+
+El contenido generado por IA puede ser incorrecto. 
+
+Figura 10
+Listo.
+Ahora se procederá a dibujar el estado inicial de una simulación que empleará el paquete simulphysics, Figura 11. 
+
+
+ Imagen que contiene Diagrama
+
+Descripción generada automáticamente 
+
+Figura 11
+
+
+Agregar el siguiente código a la clase AlmacenDatosRAM.
+
+
+public class AlmacenDatosRAM {
+
+   public static float ancho_pantalla, alto_pantalla;
+
+
+
+   public AlmacenDatosRAM() {
+
+   }
+}
+
+
+
+
+Agregar el código a la clase CR.
+
+
+public class CR {
+   public static float anchoPizarra;
+   public static float altoPizarra;
+
+
+   public CR(){
+
+   }
+
+
+   /**
+    * Método para convertir porcentaje de
+    * posición en X a pixeles.
+    * @param pcX
+    * @return
+    */
+   public static float pcApxX(float pcX) {
+
+       float pxX = pcX * anchoPizarra / 100f;
+
+       return pxX;
+
+   }
+
+
+
+
+   /**
+    * Método para convertir porcentaje de
+    * posición en Y a pixeles.
+    * @param pcY
+    * @return
+    */
+   public static float pcApxY(float pcY) {
+
+       float pxY = pcY * altoPizarra / 100f;
+
+       return pxY;
+
+   }
+
+
+   /**
+    * Dada una longitud pcL en porcentaje
+    * referido al menor entre el ancho
+    * y el alto de Pizarra la convierte a una
+    * longitud en pixeles.
+    * @param pcL
+    * @return
+    */
+   public static float pcApxL(float pcL) {
+
+       float pxL = 0;
+
+       if (anchoPizarra > altoPizarra) {
+
+           pxL = pcL * altoPizarra / 100f;
+
+
+       } else {
+
+           pxL = pcL * anchoPizarra / 100f;
+       }
+
+
+       return pxL;
+
+   }
+
+
+
+   /**
+    * Convierte pixeles de uan posicón en
+    * X a porcentaje.
+    * @param pxX
+    * @return
+    */
+   public static float  pxXApc(float pxX) {
+
+       float pcX = pxX * 100f / anchoPizarra;
+
+       return pcX;
+
+   }
+
+
+
+   /**
+    * Convierte pixeles de una posición en
+    * Y a porcentaje.
+    * @param pxY
+    * @return
+    */
+   public static float  pxYApc(float pxY) {
+
+       float pcY = pxY * 100f / altoPizarra;
+
+       return pcY;
+
+   }
+
+
+   /*Convierte pixeles referidas
+     al menor entre el ancho y el
+     alto en porcentaje
+ */
+
+   /**
+    * Dada una longitud pxL en pixeles la
+    * convierte a porcentaje referido al menor entre
+    * el ancho y el alto.
+    * Pizarra.
+    * @param pxL
+    * @return
+    */
+   public static float pxApcL(float pxL) {
+
+       float pcL = 0;
+
+       if (CR.anchoPizarra > altoPizarra) {
+
+           pcL = pxL * 100f/ altoPizarra ;
+
+
+       } else {
+
+           pcL = pxL * 100f/ anchoPizarra;
+       }
+
+
+       return pcL;
+
+   }
+
+}
+
+
+Agregar el código a la clase Pizarra.
+
+
+public class Pizarra extends View {
+
+   private ObjetoLaboratorio objetosLab[];
+
+
+
+   /**
+    * Constructor
+    *
+    * @param context
+    */
+   public Pizarra(Context context) {
+       super(context);
+
+   }
+
+
+   public void setEstadoEscena(ObjetoLaboratorio[] cuerpos) {
+
+       this.objetosLab = cuerpos;
+
+   }
+
+
+   //Método para dibujar la escena
+   private void dibujarEscena(Canvas canvas, Paint pincel) {
+
+       //dibujar las objetos de laboratorio
+       for (int i = 0; i < objetosLab.length; i++) {
+           if (objetosLab[i] != null) {
+               objetosLab[i].dibujese(canvas, pincel);
+           }
+       }
+
+
+
+   }
+
+
+   //método para dibujar
+   protected void onDraw(Canvas canvas) {
+       super.onDraw(canvas);
+
+
+       Paint pincel = new Paint();
+       //evita efecto sierra
+       pincel.setAntiAlias(true);
+
+       if (objetosLab != null)
+           dibujarEscena(canvas, pincel);
+
+
+       //necesario para actualizar los dibujos en animaciones
+       invalidate();
+
+   }
+
+}
+
+
+Agregar el código a la clase ActividadControladora.
+
+
+public class ActividadControladora extends Activity {
+
+
+   private Pizarra pizarra;
+
+   private Masa masa_1, masa_2;
+   private Polea polea_1, polea_2;
+   private Flecha flecha_1, flecha_2, flecha_3;
+   private Regla regla_1, regla_2;
+   private CuerpoRectangular barra;
+   private Cuerda cuerda_1, cuerda_2, cuerda_3, cuerda_4;
+   private Marca marca;
+
+   private ObjetoLaboratorio[] objetos = new ObjetoLaboratorio[20];
+
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+
+       gestionarResolucion();
+
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       //para informar cómo se debe pegar el adminitrador de
+       //diseño obtenido con el método GUI
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+
+        }//fin onCreate
+
+
+   /*Método auxiliar para asuntos de resolución*/
+   private void gestionarResolucion() {
+
+       /*
+       Según el diseño de la GUI se puede anticipar cuál es la
+       dimensión de la pizarra. En este caso es el 100% del ancho
+       de la pantalla y el 100% del alto de la misma
+       */
+       CR.anchoPizarra = AlmacenDatosRAM.ancho_pantalla;
+       CR.altoPizarra = AlmacenDatosRAM.alto_pantalla;
+
+   }
+
+   /*método responsable de la creación de los elementos de la GUI*/
+   private void crearElementosGUI() {
+
+
+       //crear pizarra sabiendo de antemano sus dimensiones
+       pizarra = new Pizarra(this);
+       pizarra.setBackgroundColor(Color.WHITE);
+
+       crearObjetosLaboratorio();
+
+
+   }//fin crearElementosGUI
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+       //el linear principal
+       LinearLayout linear_principal = new LinearLayout(this);
+       linear_principal.setOrientation(LinearLayout.VERTICAL);
+
+
+       //pegar pizarra a linearArriba
+       linear_principal.addView(pizarra);
+
+       return linear_principal;
+
+   }//fin crearGUI
+
+
+
+      /*
+    Crea los objetos cuerpo rígido con su estado inicia
+    -X esta en porcentaje del annco del canvas
+    -Y está en porcentaje del alto del canvas
+    -Cualquier otra dimensión está en porcentaje del menor
+     entre el alto y el ancho del canvas
+    */
+   private void crearObjetosLaboratorio() {
+
+        /*
+         Coordenadas de puntos básicos y
+         dimensiones de los elementos
+        */
+       //radio de las poleas
+       float radio= CR.pcApxL(5);
+
+       //dimensiones de cada masa: m1 y m2
+       float ancho_bloque= 2*radio;
+       float alto_bloque=radio;
+
+       //coordenadas de las masas
+       //abscisa y ordenada del centro de la masa 1
+       float x1= CR.pcApxX(51)+radio;
+       float y1= CR.pcApxY(34.2f);
+       //abscisa y ordenada del centro de la masa 2
+       float x2= x1-3*radio;
+       float y2=CR.pcApxY(81.5f);
+
+       //coordenadas de las poleas
+       //abscisa y ordenada del centro de la polea 1
+       float xp1=x1-radio;
+       float yp1=CR.pcApxY(10f);
+       //abscisa y ordenada del centro de la polea 2
+       float xp2=x2;
+       float yp2= y2 - 3*radio;
+
+
+       /*
+       Creación de objetos físicos y dibujo del
+       estado inicial de la escena física
+      */
+       //dos poleas
+       //polea 1 (polea azul)
+       polea_1=new Polea(xp1,yp1,radio);
+       polea_1.setColor(Color.BLUE);
+       polea_1.setGrosorLinea(CR.pcApxL(0.5f));
+       polea_1.setSoportePolea(true);
+       polea_1.rotarEje(180);
+       objetos[0]=polea_1;
+
+       //polea 2 (polea roja)
+       polea_2=new Polea(xp2,yp2,radio);
+       polea_2.setColor(Color.RED);
+       polea_2.setGrosorLinea(CR.pcApxL(0.5f));
+       objetos[1]=polea_2;
+
+
+       //barra superior que sostiene el sistem
+       barra=new CuerpoRectangular(CR.pcApxX(50),CR.pcApxY(2),CR.pcApxL(40),CR.pcApxL(2));
+       objetos[2]=barra;
+
+
+       //4  cuerdas
+       cuerda_1=new Cuerda(xp2+radio,yp1, xp2+radio,yp2);
+       cuerda_1.setColor(Color.BLACK);
+       cuerda_1.setGrosorLinea(CR.pcApxL(0.5f));
+       objetos[3]=cuerda_1;
+
+       cuerda_2=new Cuerda(xp2-radio,CR.pcApxY(2.8f),xp2-radio,yp2);
+       cuerda_2.setColor(Color.BLACK);
+       cuerda_2.setGrosorLinea(CR.pcApxL(0.5f));
+       objetos[4]=cuerda_2;
+
+       cuerda_3=new Cuerda(xp1+radio,yp1,xp1+radio,y1-0.5f*alto_bloque);
+       cuerda_3.setColor(Color.BLACK);
+       cuerda_3.setGrosorLinea(CR.pcApxL(0.5f));
+       objetos[5]=cuerda_3;
+
+       //cuerda_4=new Cuerda(xp2,yp2+0.5f*alto_barrita,xp2,y2-0.5f*alto_bloque);
+       cuerda_4=new Cuerda(xp2,yp2+radio,xp2,y2-0.5f*alto_bloque);
+       cuerda_4.setColor(Color.BLACK);
+       cuerda_4.setGrosorLinea(CR.pcApxL(0.5f));
+       objetos[6]=cuerda_4;
+
+        //2 masas
+       //masa 2
+       masa_2=new Masa(x2,y2,ancho_bloque,alto_bloque);
+       masa_2.setColor(Color.YELLOW);
+       masa_2.setColorMarca(Color.BLACK);
+       masa_2.setMarca("M2");
+       objetos[7]=masa_2;
+
+       //masa 1
+       masa_1=new Masa(x1,y1,ancho_bloque,alto_bloque);
+       masa_1.setColor(Color.YELLOW);
+       masa_1.setColorMarca(Color.BLACK);
+       masa_1.setMarca("M1");
+       objetos[8]=masa_1;
+
+       //dos reglas
+       //regla 1
+       regla_1=new Regla(xp2-2.5f*radio,CR.pcApxY(15),CR.pcApxL(70),1.5f*radio);
+       regla_1.setColor(Color.GREEN);
+       regla_1.setColorLetras(Color.BLACK);
+       regla_1.setNumeroDivisiones(20);
+       regla_1.rotar(90);
+       objetos[9]=regla_1;
+
+       //regla 2
+       regla_2=new Regla(xp1+5f*radio,CR.pcApxY(15),CR.pcApxL(70),1.5f*radio);
+       regla_2.setColor(Color.GREEN);
+       regla_2.setColorLetras(Color.BLACK);
+       regla_2.setNumeroDivisiones(20);
+       regla_2.rotar(90);
+       objetos[10]=regla_2;
+
+
+        //tres flechas
+       //eje y
+       flecha_1=new Flecha(xp1+7f*radio,yp1,8*radio);
+       flecha_1.rotar(90);
+       objetos[11]=flecha_1;
+
+       //flecha señaladora de regla derecha
+       flecha_2=new Flecha(x1+0.5f*ancho_bloque,y1,2f*radio);
+       flecha_2.setColor(Color.BLACK);
+       objetos[12]=flecha_2;
+
+       //flecha señaladora de regla izquierda
+       flecha_3=new Flecha(x2-0.5f*ancho_bloque,y2,2f*radio);
+       flecha_3.setColor(Color.BLACK);
+       flecha_3.rotar(180);
+       objetos[13]=flecha_3;
+
+       //una marca
+       //despliega el nombre del Eje y
+       marca=new Marca("Eje y",xp1+7.3f*radio,yp1+5.6f*radio);
+       marca.setColor(Color.BLACK);
+       marca.setTamano(CR.pcApxL(3f));
+       marca.rotar(90);
+       objetos[14]=marca;
+
+        //desplegar la escena inicial
+       pizarra.setEstadoEscena(objetos);
+
+    }
+
+
+}
+
+
+Agregar el código a ActividadPrincipalMiVigesimaPrimeraApp.
+
+
+public class ActividadPrincipalMiVigesimaPrimeraApp extends Activity {
+
+   
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+
+       gestionarResolucion();
+
+
+       lanzarActividadControladora();
+
+
+
+   }//fin onCreate
+
+
+
+
+   /*Método auxiliar para asuntos de resolución*/
+   private void gestionarResolucion() {
+
+       //independencia de la resolución de la pantalla
+       DisplayMetrics displayMetrics = this.getApplicationContext().getResources().getDisplayMetrics();
+       int alto = displayMetrics.heightPixels;
+       int ancho = displayMetrics.widthPixels;
+
+       //guardar en almacen annho y alto de pantalla
+       AlmacenDatosRAM.ancho_pantalla =ancho;
+       AlmacenDatosRAM.alto_pantalla =alto;
+
+   }
+
+
+
+   private void lanzarActividadControladora(){
+
+       Intent intent = new Intent(this, ActividadControladora.class);
+       startActivity(intent);
+
+   }
+
+}
+
+
+Agregar el siguiente código al archivo manifiesto.
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools"
+   package="com.curso_simulaciones.mivigesimaprimeraapp">
+
+   <application
+       android:allowBackup="true"
+       android:dataExtractionRules="@xml/data_extraction_rules"
+       android:fullBackupContent="@xml/backup_rules"
+       android:icon="@mipmap/ic_launcher"
+       android:label="@string/app_name"
+       android:roundIcon="@mipmap/ic_launcher_round"
+       android:supportsRtl="true"
+       android:theme="@style/Theme.MiVigesimaPrimeraApp"
+       tools:targetApi="31" >
+       <!--Declarar la actividad que lanzara la aplicación-->
+       <activity android:name="com.curso_simulaciones.mivigesimaprimeraapp.ActividadPrincipalMiVigesimaPrimeraApp"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:configChanges="screenSize|orientation"
+           android:screenOrientation="landscape"
+           android:exported="true">
+
+           <intent-filter>
+               <action android:name="android.intent.action.MAIN" />
+               <category android:name="android.intent.category.LAUNCHER" />
+           </intent-filter>
+
+       </activity>
+
+       <!--declarando otras actividades-->
+       <activity
+           android:name=".controlador.ActividadControladora"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="landscape">
+       </activity>
+
+
+   </application>
+
+
+</manifest>
+
+
+Compilar y ejecutar. Se despliega la GUI de la Figura 11. Generar el .apk para distribución de la app.
+ Interfaz de usuario gráfica, Texto, Aplicación
+
+El contenido generado por IA puede ser incorrecto. 
+
+Figura 12
+EJECUTARLA en diferentes dispositivos el .apk
+TALLER
+Hacer una aplicación denominada MiVigesimaSegundaApp que despliega la escena física  (estado inicial) de la Figura siguiente y que usa la librería simulphysics. Debe ser probada en diferentes dispositivos para verificar la adaptabilidad (responsividad).
+ Gráfico, Gráfico en cascada
+
+Descripción generada automáticamente 
+
+Su instalación debe desplegar icono personal.
+FIN
+
+
+________________
+
+
+ANEXO: GENERANDO EL JAVADOC DE LA LIBRERÍA
+Documentar un proyecto es algo fundamental de cara a su futuro mantenimiento. Cuando se programa una clase, se debe generar documentación lo suficientemente detallada sobre ella como para que otros programadores sean capaces de usarla sólo con su interfaz. No debe existir necesidad de leer o estudiar su implementación, lo mismo que nosotros para usar una clase del API Java no leemos ni estudiamos su código fuente.
+Javadoc es el estándar para documentar clases de Java. La mayoría de los IDEs utilizan javadoc para generar de forma automática documentación de clases. Este es el caso de Android Studio.
+Las clases e interfaces para quedar documentadas con javadoc deben incluir en los métodos públicos y protegidos comentarios que han de empezar con una barra y doble asterisco, y terminar con un asterisco y barra simple.
+
+
+
+
+/**
+ * Esto es un comentario para javadoc ejemplo …
+ */
+
+
+
+
+	
+
+Si se observa, estos comentarios fueron realizados en las clases e interfaces del paquete simulphysics construido.  
+Nota:
+Debido a un bug presente en la generación con javadoc de la documentación en Android Studio (últimas versiones) es necesario seguir los  siguientes pasos:
+
+
+Se recomienda hacer esto después de haber realizado el ejercicio de MiVigesimaApp y de haber obtenido la librería simulphysics.jar para ser utilizada en apps más adelante. Esto debido a que la app MiVigesimaApp o la librería simuphysics.jar podrían quedar desconfiguradas al hacer esta “trampita” para obtener el javadoc. 
+
+
+* Localizar el archivo Android.jar el cual se encuentra en una carpeta como la siguiente (esta es la del compuador del auro de estas notas):
+C:/Users/Usuario/AppData/Local/Android/sdk/platforms/android-34/android.jar
+* Copiar el archivo android.jar y depositar la copia en alguna carpeta. En este ejemplo el autor la depositó en C:\simulaciones. 
+* Agregar el siguiente código en dependencies del archivo 
+
+
+
+
+Gradle Scripts> build.gradle.kts(Module:app)
+
+
+
+
+dependencies {
+
+   . . .
+    
+implementation (files("D:/simulaciones_mobile_edition_2026_01/modulo_8/javadoc/android.jar"))
+
+
+}
+
+
+
+
+Sicronizar, Figura A1. 
+
+
+ Interfaz de usuario gráfica, Texto, Aplicación
+
+El contenido generado por IA puede ser incorrecto. 
+
+Figura A1
+
+
+Con esto se subsana el bug para el uso de javadoc
+Continuando . . . 
+* Crear una carpeta en donde se depositará la documentación generada y proceder como sigue.
+* Para generar este javadoc con Android Studio ubicarse sobre simulphysics y seguir los pasos indicados en las Figuras A.2 y A.3. En el cuadro de la Figura A.3 escoger el directorio donde desea que quede la documentación de esta librería.
+
+
+ Interfaz de usuario gráfica, Texto, Aplicación, Correo electrónico
+
+El contenido generado por IA puede ser incorrecto. 
+
+Figura A.2
+
+
+ Interfaz de usuario gráfica, Aplicación
+
+El contenido generado por IA puede ser incorrecto. 
+
+Figura A.3
+
+
+
+
+Los archivos generados son los siguientes. Para entrar a leer la documentación hacer doble clic sobre index, Figura  A.4. Se despliega la página .html que permite navegar por la librería, Figura A.5.
+
+
+  
+
+Figura A.4
+
+
+ Interfaz de usuario gráfica, Texto, Aplicación, Correo electrónico
+
+Descripción generada automáticamente 
+
+Figura A.5
+
+
+* Una vez generado el javadoc, no olvidar borrar la línea que se agregada a dependencies y sincronizar.
+________________
+[1] Para las simulaciones se sugiere usar el patrón de diseño MVC (Modelo-Vista-Controlador). Con base en esto, las clases e interfaces se tratan de agrupar en paquetes con esos nombres (basándose en sus responsabilidades) para darle claridad al diseño de la app. En el ejemplo no aparece todavía un Modelo.
+[2] La clase AlmacenDatosRAM, servira como una  pequeña “base de datos” no persitente que almacenará datos de fácil acceso para todas las clases de la app.
