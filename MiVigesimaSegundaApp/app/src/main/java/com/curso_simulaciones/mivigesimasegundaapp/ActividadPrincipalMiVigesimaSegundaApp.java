@@ -23,8 +23,11 @@ public class ActividadPrincipalMiVigesimaSegundaApp extends Activity {
     /* Método auxiliar para asuntos de resolución */
     private void gestionarResolucion() {
 
-        // independencia de la resolución de la pantalla
-        DisplayMetrics displayMetrics = this.getApplicationContext().getResources().getDisplayMetrics();
+        // Usamos el WindowManager para obtener las métricas de la ventana ACTIVA (no
+        // del contexto global)
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
         int alto = displayMetrics.heightPixels;
         int ancho = displayMetrics.widthPixels;
 
@@ -38,6 +41,7 @@ public class ActividadPrincipalMiVigesimaSegundaApp extends Activity {
 
         Intent intent = new Intent(this, ActividadControladora.class);
         startActivity(intent);
+        finish(); // Cerramos la principal para quedar en la controladora
 
     }
 
