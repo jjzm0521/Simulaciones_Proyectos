@@ -32,7 +32,7 @@ android {
 }
 
 dependencies {
-
+    implementation(files("libs/comunicaciones.aar"))
     implementation(libs.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)
