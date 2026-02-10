@@ -1,301 +1,228 @@
 package com.curso_simulaciones.mivigesimanovenaapp.actividades_secundarias;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.view.Gravity;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.curso_simulaciones.mivigesimanovenaapp.R;
-import com.curso_simulaciones.mivigesimanovenaapp.datos.AlmacenDatosRAM;
-import com.curso_simulaciones.mivigesimanovenaapp.modelo.HiloAnimacion;
-import com.curso_simulaciones.mivigesimanovenaapp.vista.Boton;
-import com.curso_simulaciones.mivigesimanovenaapp.vista.Gaussimetro;
-import com.curso_simulaciones.mivigesimanovenaapp.vista.Graficador;
+import com.curso_simulaciones.mivigesimanovenaapp.utilidades.Boton;
+import com.curso_simulaciones.mivigesimanovenaapp.utilidades.Gaussimetro;
+import com.curso_simulaciones.mivigesimanovenaapp.utilidades.Graficador;
 
-public class ActividadDesplegadoraDatos extends Activity {
+public class ActividadDesplegadoraDatos extends Activity implements SensorEventListener {
 
-    private Boton bx, by, bz, b;
-
-    private Gaussimetro gaussimetro;
+    // UI Elements
+    private Boton botonBx, botonBy, botonBz, botonB;
+    private Gaussimetro gauge;
     public Graficador graficador;
 
-    /*
-     * Hilo responsable de la animación
-     * El trabajo de animación es mejor manejarlo en hilo
-     * aparte para evitar bloqueos de la aplicación
-     * debido al manejo simultáneo de la GUI con la Acivity
-     */
-    private HiloAnimacion hilo;
+    // Sensor Logic
+    private SensorManager sensorManager;
+    private Sensor magnetometro;
 
-    public void onCreate(Bundle savedInstanceState) {
+    // Estado
+    private int componenteSeleccionada = 4; // 1: Bx, 2: By, 3: Bz, 4: B (Magnitud)
+    private long tiempoInicio = 0;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // para crear elementos de la GUI
-        crearElementosGUI();
+        // Crear GUI
+        iniciarComponentesGUI();
+        setContentView(crearGUI());
 
-        /*
-         * Para informar cómo se debe pegar el administrador de
-         * diseño LinearLayout obtenido con el método crearGui()
-         */
-        ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        // Configurar Sensores
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        magnetometro = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
-        // pegar el contenedor con la GUI
-        this.setContentView(crearGUI(), parametro_layout_principal);
+        if (magnetometro == null) {
+            Toast.makeText(this, "No se detectó magnetómetro (Gaussímetro) en este dispositivo.", Toast.LENGTH_LONG)
+                    .show();
+        }
 
-        eventos();
+        configurarEventos();
+    }
 
-        hilo = new HiloAnimacion(this);
-        hilo.start();
+    private void iniciarComponentesGUI() {
+        botonBx = new Boton(this);
+        botonBx.setParametros("Bx", Color.GREEN);
 
-    }// fin del método onCreate
+        botonBy = new Boton(this);
+        botonBy.setParametros("By", Color.GREEN);
 
-    private void crearElementosGUI() {
+        botonBz = new Boton(this);
+        botonBz.setParametros("Bz", Color.GREEN);
 
-        // botones
-        // botones
-        bx = new Boton(this);
-        by = new Boton(this);
-        bz = new Boton(this);
-        b = new Boton(this);
+        botonB = new Boton(this);
+        botonB.setParametros("B", Color.rgb(255, 165, 0)); // Orange
 
-        // gauge
-        gaussimetro = new Gaussimetro(this);
+        gauge = new Gaussimetro(this);
+        gauge.setRango(0, 1000); // Rango inicial para B (µT)
 
-        // graficador
         graficador = new Graficador(this);
-        // se está muestreando cada segundo (1000 ms)
         graficador.setTituloEjeX("Tiempo (s)");
-        graficador.setTituloEjeY("Campo Magnético Bx (µT)");
-        graficador.setGrosorLinea(2f);
-        graficador.setColorLinea(Color.RED);
-        graficador.setColorValores(Color.YELLOW);
-        graficador.setColorMarcadores(Color.GREEN);
-        graficador.setColorFondo(Color.BLACK);
-        graficador.setColorTextoEjes(Color.WHITE);
-
+        graficador.setTituloEjeY("Campo B (µT)");
     }
 
-    /* método responsable de administrar el diseño de la GUI */
-    private ViewGroup crearGUI() {
-        // --- ROOT CONTAINER ---
-        android.widget.FrameLayout root = new android.widget.FrameLayout(this);
-        root.setBackgroundColor(Color.parseColor("#111111"));
-        root.setFitsSystemWindows(true);
+    private LinearLayout crearGUI() {
+        // Layout Principal (Horizontal)
+        LinearLayout linearPrincipal = new LinearLayout(this);
+        linearPrincipal.setOrientation(LinearLayout.HORIZONTAL);
+        linearPrincipal.setLayoutParams(
+                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        linearPrincipal.setBackgroundColor(Color.WHITE);
+        linearPrincipal.setWeightSum(10f);
 
-        // --- CONTENEDOR PRINCIPAL ---
-        LinearLayout linear_layout_principal = new LinearLayout(this);
-        linear_layout_principal.setOrientation(LinearLayout.HORIZONTAL);
-        linear_layout_principal.setGravity(Gravity.CENTER);
-        linear_layout_principal.setBackgroundResource(R.drawable.rounded_border_white);
-        linear_layout_principal.setPadding(20, 20, 20, 20);
-        linear_layout_principal.setWeightSum(10);
-        
-        android.widget.FrameLayout.LayoutParams params_principal = new android.widget.FrameLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, 
-            ViewGroup.LayoutParams.MATCH_PARENT
-        );
-        params_principal.setMargins(30, 30, 30, 30);
-        linear_layout_principal.setLayoutParams(params_principal);
-        root.addView(linear_layout_principal);
+        // Agregar padding para evitar solapamiento
+        linearPrincipal.setPadding(30, 30, 30, 30);
 
-        // --- SECCIÓN 1: GAUGE (Izquierda) ---
-        LinearLayout seccion_izquierda = new LinearLayout(this);
-        seccion_izquierda.setOrientation(LinearLayout.VERTICAL);
-        seccion_izquierda.setGravity(Gravity.CENTER);
-        seccion_izquierda.setBackgroundResource(R.drawable.rounded_border_black); // Usar borde negro
-        seccion_izquierda.setPadding(20, 20, 20, 20);
-        
-        LinearLayout.LayoutParams param_izq = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
-        param_izq.weight = 5.0f;
-        param_izq.setMargins(10, 10, 5, 10);
-        seccion_izquierda.setLayoutParams(param_izq);
-        
-        // Contenedor Interno (Rojo Cuadrado - Margen solamente)
-        LinearLayout contenedor_rojo = new LinearLayout(this);
-        contenedor_rojo.setOrientation(LinearLayout.VERTICAL);
-        contenedor_rojo.setGravity(Gravity.CENTER);
-        contenedor_rojo.setBackgroundResource(R.drawable.square_border_red); // Solo margen
-        // contenedor_rojo.setBackgroundColor(Color.RED); // REMOVED solid red
-        
-        // Agregar Gauge al contenedor rojo
-        LinearLayout.LayoutParams param_gauge = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        if (gaussimetro.getParent() != null) {
-            ((ViewGroup)gaussimetro.getParent()).removeView(gaussimetro);
+        // Columna 1: Gauge (50%)
+        LinearLayout columna1 = new LinearLayout(this);
+        columna1.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams paramCol1 = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 5f);
+        paramCol1.setMargins(10, 10, 5, 10);
+        columna1.setLayoutParams(paramCol1);
+        columna1.setBackgroundColor(Color.rgb(245, 245, 245)); // Gris muy claro
+        columna1.addView(gauge, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+
+        // Columna 2: Gráfica (40%)
+        LinearLayout columna2 = new LinearLayout(this);
+        columna2.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams paramCol2 = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 4f);
+        paramCol2.setMargins(5, 10, 5, 10);
+        columna2.setLayoutParams(paramCol2);
+        columna2.setBackgroundColor(Color.BLACK); // Fondo negro para gráfica
+        columna2.addView(graficador, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+
+        // Columna 3: Botones (10%)
+        LinearLayout columna3 = new LinearLayout(this);
+        columna3.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams paramCol3 = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
+        paramCol3.setMargins(5, 10, 10, 10);
+        columna3.setLayoutParams(paramCol3);
+        columna3.setBackgroundColor(Color.LTGRAY);
+        columna3.setWeightSum(4f);
+
+        // Añadir botones a columna 3
+        LinearLayout.LayoutParams paramBoton = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0,
+                1f);
+        paramBoton.setMargins(20, 20, 20, 20);
+        columna3.addView(botonBx, paramBoton);
+        columna3.addView(botonBy, paramBoton);
+        columna3.addView(botonBz, paramBoton);
+        columna3.addView(botonB, paramBoton);
+
+        // Ensamblar
+        linearPrincipal.addView(columna1);
+        linearPrincipal.addView(columna2);
+        linearPrincipal.addView(columna3);
+
+        return linearPrincipal;
+    }
+
+    private void configurarEventos() {
+        botonBx.setOnClickListener(v -> seleccionarComponente(1));
+        botonBy.setOnClickListener(v -> seleccionarComponente(2));
+        botonBz.setOnClickListener(v -> seleccionarComponente(3));
+        botonB.setOnClickListener(v -> seleccionarComponente(4));
+    }
+
+    private void seleccionarComponente(int comp) {
+        componenteSeleccionada = comp;
+        graficador.limpiarGrafica();
+        tiempoInicio = 0; // Reset so first sample sets t=0
+
+        switch (comp) {
+            case 1: // Bx
+                gauge.setRango(-1000, 1000);
+                graficador.setTituloEjeY("Bx (µT)");
+                break;
+            case 2: // By
+                gauge.setRango(-1000, 1000);
+                graficador.setTituloEjeY("By (µT)");
+                break;
+            case 3: // Bz
+                gauge.setRango(-1000, 1000);
+                graficador.setTituloEjeY("Bz (µT)");
+                break;
+            case 4: // B (Magnitud)
+            default:
+                gauge.setRango(0, 1000);
+                graficador.setTituloEjeY("Campo B (µT)");
+                break;
         }
-        contenedor_rojo.addView(gaussimetro, param_gauge);
-
-        // Agregar contenedor rojo a seccion izquierda
-        LinearLayout.LayoutParams param_rojo = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        seccion_izquierda.addView(contenedor_rojo, param_rojo);
-
-        // --- SECCIÓN 2: GRÁFICA (Centro) ---
-        LinearLayout seccion_central = new LinearLayout(this);
-        seccion_central.setOrientation(LinearLayout.VERTICAL);
-        seccion_central.setGravity(Gravity.CENTER);
-        // Usar borde NEGRO (reutilizamos el del gauge) para que sea el "recuadro negro"
-        seccion_central.setBackgroundResource(R.drawable.rounded_border_black);
-        // Importantísimo: Padding para que el contenido (grafica blanca) no tape el borde
-        seccion_central.setPadding(10, 10, 10, 10); 
-        
-        LinearLayout.LayoutParams param_cen = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
-        param_cen.weight = 4.0f;
-        param_cen.setMargins(5, 10, 5, 10);
-        seccion_central.setLayoutParams(param_cen);
-        
-        // 2. Gráfica
-        // Estilizar gráfico para que parezca osciloscopio limpio
-        graficador.setBackgroundColor(Color.WHITE); // Fondo BLANCO
-        graficador.setDrawGridBackground(false);
-        graficador.setDescription(null); // Quitar descripción default
-        
-        LinearLayout.LayoutParams parametros_grafica = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        if (graficador.getParent() != null) {
-            ((ViewGroup)graficador.getParent()).removeView(graficador);
-        }
-        seccion_central.addView(graficador, parametros_grafica);
-
-        // --- SECCIÓN 3: CONTROLES (Derecha) ---
-        LinearLayout seccion_derecha = new LinearLayout(this);
-        seccion_derecha.setOrientation(LinearLayout.VERTICAL);
-        seccion_derecha.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
-        seccion_derecha.setBackgroundResource(R.drawable.rounded_border_chart);
-        seccion_derecha.setPadding(0, 10, 0, 10);
-        
-        LinearLayout.LayoutParams param_der = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
-        param_der.weight = 1.0f;
-        param_der.setMargins(5, 10, 10, 10);
-        seccion_derecha.setLayoutParams(param_der);
-
-        // Botones
-        LinearLayout.LayoutParams param_btn = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1.0f);
-        param_btn.setMargins(10, 10, 10, 10);
-
-        bx.setText("Bx"); bx.setLayoutParams(param_btn);
-        by.setText("By"); by.setLayoutParams(param_btn);
-        bz.setText("Bz"); bz.setLayoutParams(param_btn);
-        b.setText("B");   b.setLayoutParams(param_btn);
-
-        if (bx.getParent() != null) ((ViewGroup)bx.getParent()).removeView(bx);
-        if (by.getParent() != null) ((ViewGroup)by.getParent()).removeView(by);
-        if (bz.getParent() != null) ((ViewGroup)bz.getParent()).removeView(bz);
-        if (b.getParent() != null)  ((ViewGroup)b.getParent()).removeView(b);
-
-        seccion_derecha.addView(bx);
-        seccion_derecha.addView(by);
-        seccion_derecha.addView(bz);
-        seccion_derecha.addView(b);
-
-        // Agregar secciones al layout principal
-        linear_layout_principal.addView(seccion_izquierda);
-        linear_layout_principal.addView(seccion_central);
-        linear_layout_principal.addView(seccion_derecha);
-
-        return root;
-    }
-
-    private void eventos() {
-
-        bx.setOnClickListener(new View.OnClickListener() {
-
-            public void onClick(View v) {
-
-                lanzarDatosBx();
-
-            }
-        });
-
-        by.setOnClickListener(new View.OnClickListener() {
-
-            public void onClick(View v) {
-
-                lanzarDatosBy();
-            }
-        });
-
-        bz.setOnClickListener(new View.OnClickListener() {
-
-            public void onClick(View v) {
-
-                lanzarDatosBz();
-            }
-        });
-
-        b.setOnClickListener(new View.OnClickListener() {
-
-            public void onClick(View v) {
-
-                lanzarDatosB();
-            }
-        });
-
-    }
-
-    private void lanzarDatosBx() {
-
-        resetear();
-        gaussimetro.setComponenteCampo(1);
-        gaussimetro.setRango(-100, 100);
-
-        graficador.setTituloEjeY("Campo Magnético Bx (µT)");
-        hilo.corriendo = true;
-
-    }
-
-    private void lanzarDatosBy() {
-
-        resetear();
-        gaussimetro.setComponenteCampo(2);
-        gaussimetro.setRango(-100, 100);
-        graficador.setTituloEjeY("Campo Magnético By (µT)");
-        hilo.corriendo = true;
-
-    }
-
-    private void lanzarDatosBz() {
-
-        resetear();
-        gaussimetro.setComponenteCampo(3);
-        gaussimetro.setRango(-100, 100);
-        graficador.setTituloEjeY("Campo Magnético Bz (µT)");
-        hilo.corriendo = true;
-
-    }
-
-    private void lanzarDatosB() {
-
-        resetear();
-        gaussimetro.setComponenteCampo(4);
-        gaussimetro.setRango(0, 100);
-        graficador.setTituloEjeY("Campo Magnético B (µT)");
-        hilo.corriendo = true;
-
-    }
-
-    protected void onPause() {
-
-        hilo.corriendo = false;
-        AlmacenDatosRAM.datos.clear();
-        hilo.contador = 0;
-        super.onPause();
     }
 
     @Override
-    public void onRestart() {
-        super.onRestart();
-        hilo.corriendo = true;
+    protected void onResume() {
+        super.onResume();
+        if (magnetometro != null) {
+            sensorManager.registerListener(this, magnetometro, SensorManager.SENSOR_DELAY_UI);
+        }
+
+        // Limpiar gráfica para evitar líneas de retorno al reiniciar tiempo
+        if (graficador != null) {
+            graficador.limpiarGrafica();
+        }
+        tiempoInicio = System.currentTimeMillis();
     }
 
-    private void resetear() {
-
-        hilo.corriendo = false;
-        AlmacenDatosRAM.datos.clear();
-        hilo.tiempo = 0;
-        hilo.contador = 0;
-
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(this);
     }
 
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+            float bx = event.values[0];
+            float by = event.values[1];
+            float bz = event.values[2];
+            float b = (float) Math.sqrt(bx * bx + by * by + bz * bz);
+
+            float valorMostrar = 0;
+            switch (componenteSeleccionada) {
+                case 1:
+                    valorMostrar = bx;
+                    break;
+                case 2:
+                    valorMostrar = by;
+                    break;
+                case 3:
+                    valorMostrar = bz;
+                    break;
+                case 4:
+                    valorMostrar = b;
+                    break;
+            }
+
+            // Actualizar Gauge
+            gauge.setMedida(valorMostrar);
+
+            // Actualizar Gráfica
+            long tiempoActual = System.currentTimeMillis();
+            if (tiempoInicio == 0)
+                tiempoInicio = tiempoActual;
+            float tiempoSegundos = (tiempoActual - tiempoInicio) / 1000f;
+
+            graficador.agregarDato(tiempoSegundos, valorMostrar);
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        // No necesario
+    }
 }

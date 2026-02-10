@@ -1,0 +1,3108 @@
+﻿SIMULACIONES
+IV + IoT + DL 
+Industria 5.0
+Copyright 2026 para:
+Diego L. Aristizábal Ramírez
+Profesor, Facultad de Ciencias, Departamento de Física
+Universidad Nacional de Colombia
+Medellín
+
+
+	IV CON SENSORES
+DEL MÓVIL ANDROID
+
+
+	11
+	
+
+
+
+
+
+Temas
+	* INTRODUCCIÓN
+* ¿QUÉ ES UN DATALOGGER?
+* ¿QUÉ ES UN INSTRUMENTO VIRTUAL?
+* SISTEMA DE COORDENADAS DE DISPOSITIVO
+* SENSORES DE LOS DISPOSITIVOS MÓVILES
+* DETECTANDO LOS SENSORES DEL DISPOSITIVO
+* LIBRERÍA MPAndroidChart
+* UNA APP DESPLEGANDO DATOS DEL SENSOR DE LUZ
+* UNA APP DESPLEGANDO DATOS DEL ACELERÓMETRO
+* TALLER
+* REFERENCIAS
+* ANEXO I: SOBRE EL LUXOMETRO DEL DISPOSITIVO
+* ANEXO II: SOBRE EL ACELERÓMETRO DEL DISPOSITIVO
+* ANEXO III: SOBRE EL GAUSSIMETRO DEL DISPSOITIVO
+* ANEXO IV: SOBRE EL SONIDO
+	
+
+INTRODUCCIÓN
+En este módulo se diseña e implementa instrumentación virtual (IV) para sensores que estén disponibles en los dispositivos móviles. Se comienza con una app que ilustra la forma como se consulta sobre los sensores disponibles en el dispositivo e información sobre éstos (fabricante, rangos, resolución, …). Luego se construye una app que despliega los datos del sensor de luz del móvil a través de un instrumento virtual y de una gráfica touch. Esta última utiliza la librería MPAndroidChart (de libre uso) la cual es importada como archivo .jar via Internet directamente desde la sincronización en desarrollo de la app. Por último se desarrolla una app similar a la anterior pero desplegando los datos del acelerómetro no inercial del dispositivo. La diferencia entre los dos sensores empleados en estas app es que el de luz es de dimensión 1 (sólo tiene una componente) y el acelerómero de dimensión 3 (tiene tres componentes).
+
+
+¿QUÉ ES UN DATALOGGER?
+Datalogger es un dispositivo electrónico que registra datos en tiempo real por medio de instrumentos y sensores propios o externos. Comercialmente los precios de estos equipos están alrededor de 350 US sin tener en cuenta los sensores que se le acoplan para medir las magnitudes problema (presión, temperatura, campo magnético, aceleración…).
+
+
+Un dispositivo móvil a través de software se puede convertir en uno de estos valiosos y útiles instrumentos.
+
+
+¿QUÉ ES UN INSTRUMENTO VIRTUAL?
+
+
+Un instrumento virtual (IV) es un módulo software que simula el panel frontal de instrumentos de medida que, apoyándose en elementos hardware accesibles por computadora o por dispositivos móviles a través de algún protocolo de comunicación (USB, RS232, WiFi, Bluetooth, ZigBee, LoRA,  Sigfox, PUB-SUB de IoT…), realiza una serie de medidas como si se tratase de un instrumento real. De este modo, cuando se ejecuta un programa que funciona como instrumento virtual (IV) o VI (Virtual Instrument, por sus siglas en inglés) en la pantalla de la computadora o el dispositivo móvil aparece un panel cuya función es idéntica a la de un instrumento físico, facilitando la visualización y el control del aparato. A partir de los datos reflejados en el panel frontal, el IV debe actuar recogiendo o generando señales como lo haría un “instrumento real".
+
+
+SISTEMA DE COORDENADAS DE DISPOSITIVO
+Los dispositivos móviles tienen un sistema de coordenadas rectangular asignado por convención. El eje z es ortogonal a la pantalla del dispositivo y apuntando hacia el observador. El eje y está en el plano de la pantalla del dispositivo y apuntando en la dirección del dispositivo en su orientación normal. El eje x está también en el plano de la pantalla del dispositivo, es ortogonal al eje y con orientación tal que debe seguir la regla de la mano derecha, Figura 1
+
+
+
+
+
+
+  
+
+
+
+
+
+	  
+
+	Ejes teléfono celular
+	Ejes tablet
+	
+
+Figura 1: Ejes de los dispositivos móviles
+	
+
+SENSORES DE LOS DISPOSITIVOS MÓVILES
+Los dispositivos móviles poseen un conjunto de sensores los cuales permiten obtener información del mundo exterior (en este conjunto no se incluye la cámara, el micrófono o el GPS) y son manipulados homogéneamente por Android.
+En la siguiente Tabla 1 se listan sensores que los dispositivos móviles pueden tener incorporados. Estos son usados por el dispositivo para tareas específicas, sin embargo, a través de software se puede hacer uso de estos para otras aplicaciones.
+
+
+Tabla 1. Tipos de Sensores soportados en la plataforma Android.
+
+
+Sensor
+	Tipo
+	Descripción
+	Dimensión
+	Desde la API
+	Usos comunes
+	TYPE_ACCELEROMETER
+	Hardware
+	Mide la aceleración en m/s2  del  dispositivo que generaría las fuerzas que actúa sobre éste teniendo en cuenta la fuerza de gravedad. Esto en las direcciones de los tres ejes (x, y, z).
+	3
+	3
+	Para detector movimiento del dispositivo).
+	TYPE_AMBIENT_TEMPERATURE
+	Hardware
+	Mide la temperatura ambiente en grados Celsius  (°C).
+	1
+	14
+	Monitorea la temperatura del aire.
+Monitorear medio ambiente
+	TYPE_GRAVITY
+	Software o Hardware
+	Mide la aceleración de la gravedad  en m/s2 en los tres ejes (x, y, z).
+	3
+	9
+	Detección de movimiento del dispositivo
+	TYPE_GYROSCOPE
+	Hardware
+	Mide la velocidad angular en rad/s de rotación del dispositivo alrededor de cada uno de sus tres (x, y, z).
+	3
+	3
+	Detección de rotación del dispositivo
+	TYPE_LIGHT
+	Hardware
+	Mide la iluminancia en el ambiente en unidades lx.
+	1
+	3
+	Se usa para controlar el brillo de la pantalla
+	TYPE_LINEAR_ACCELERATION
+	Software or Hardware
+	Mide la aceleración del dispositivo en m/s2  que generaría todas las fuerzas que actúan sobre éste pero sin tener en cuenta la fuerza de gravedad. Esto en la dirección de los tres ejes de rotación (x, y, z), 
+	3
+	9
+	Detección de movimiento del dispositivo.
+	TYPE_MAGNETIC_FIELD
+	Hardware
+	Mide en μT el campo geomagnético  en las direcciones de los tres ejes  (x, y, z).
+	3
+	3
+	Orientación basada en el campo magnético de la Tierra.
+	TYPE_ORIENTATION
+	Software
+	Mide los grados de rotación que un dispositivo hace alrededor de los tres ejes (x, y, z). A partir de la API 3 se puede obtener la matriz de inclinación y la matriz de rotación de un dispositivo utilizando el sensor de gravedad y el sensor de campo geomagnético con el método getRotationMatrix ( ).
+	3
+	3
+	Determina orientación del dispositivo.
+	TYPE_PRESSURE
+	Hardware
+	Mide la presión atmosférica  en hPa  or mbar. Sirve también para estimar la altura sobre el nivel del mara. Es decir sirve de barómetro y de altímetro.
+	
+
+	
+
+	Monitorear medio ambiente.
+	TYPE_PROXIMITY
+	Hardware
+	Mide la proximidad de un objeto en cm con relación a la pantalla de visualización de un dispositivo. Este sensor suele utilizarse para determinar si el auricular está cerca al oído de una persona.
+
+
+	
+
+	3
+	Posición del dispositivo en una llamada.
+	TYPE_RELATIVE_HUMIDITY
+	Hardware
+	Mide la Humedad relativa ambiente en porcentaje (%). Mide el punto de rocío, humedad absoluta y relativa.
+	1
+	14
+	Monitorear medio ambiente..
+	TYPE_TEMPERATURE
+	Hardware
+	Mide la temperatura del dispositivo en (°C).  Evitar sobrecalentamiento del dispositivo.
+	1
+	3
+	Monitorear temperatura interna del dispositivo..
+	
+
+
+
+DETECTANDO LOS SENSORES DEL DISPOSITIVO
+Para identificar los sensores que se encuentran en un dispositivo, primero se debe obtener una referencia al servicio del sensor. Para ello, se crea una instancia de la clase SensorManager llamando al método getSystemService() y pasando SENSOR_SERVICE como argumento. La actividad cuyo código se da a continuación despliega los sensores que posee el dispositivo móvil y alguna información importante sobre ellos, Figura 2. 
+Crear un proyecto denominado MiVigesimaSextaApp que sólo tendrá la actividad ActividadPrincipalMiVigesimaSextaApp con el siguiente código.
+
+
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
+import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+public class ActividadPrincipalMiVigesimaSextaApp extends Activity {
+
+   private TextView textView;
+
+   //variable tamaño de las letras basado en resolución de pantalla
+   private int tamanoLetraResolucionIncluida;
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+
+       //gestionar la resolución
+       gestionarResolucion();
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       //para informar cómo se debe pegar el adminitrador de
+       //diseño obtenido con el método GUI
+       ViewGroup.LayoutParams parametroLayoutPrincipal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametroLayoutPrincipal);
+
+
+
+
+       detectarSensores();
+
+
+   }//fin onCreate
+
+
+
+   /*Método auxiliar para asuntos de resolución*/
+   private void gestionarResolucion() {
+
+       //independencia de la resolución de la pantalla
+       DisplayMetrics displayMetrics = this.getApplicationContext().getResources().getDisplayMetrics();
+       int alto = displayMetrics.heightPixels;
+       int ancho = displayMetrics.widthPixels;
+
+       /*
+        Tamaño de las letras con independencia de
+        tamaño y resolución de pantalla
+       */
+       int dimensionReferencia;
+
+       //tomar el menor entre alto y ancho de pantalla
+       if(alto>ancho){
+
+           dimensionReferencia=ancho;
+       }
+
+       else {
+
+           dimensionReferencia=alto;
+       }
+
+
+       //una estimación de un buen tamaño
+       int tamanoLetra= dimensionReferencia / 25;
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       tamanoLetraResolucionIncluida = (int) (tamanoLetra / displayMetrics.scaledDensity);
+
+   }
+
+
+   /*método responsable de la creación de los elementos de la GUI*/
+   private void crearElementosGUI() {
+
+       textView= new TextView(this);
+       textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       //darle la propiedad de tener el scrolling
+       textView.setMovementMethod(new ScrollingMovementMethod());
+
+
+   }//fin crearElementosGUI
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+       //el linear principal
+       LinearLayout linearPrincipal = new LinearLayout(this);
+       linearPrincipal.setOrientation(LinearLayout.VERTICAL);
+       linearPrincipal.setBackgroundColor(Color.BLACK);
+
+
+       linearPrincipal.addView(textView);
+
+
+       return linearPrincipal;
+
+
+   }//fin gui
+
+   /*
+     Los sensores más importantes de dispositivos android son:
+     Aceleración (TYPE_ACCELEROMETER)
+     Temperatura ambiente (TYPE_AMBIENT_TEMPERATURE)
+     Gravedad (TYPE_GRAVITY)
+     Giróscopo (TYPE_GYROSCOPE)
+     Iluminacia (TYPE_LIGHT)
+     Aceleración Lineal (TYPE_LINEAR_ACCELERATION)
+     Campo magnético (TYPE_MAGNETIC_FIELD)
+     Orientación (TYPE_ORIENTATION)
+     prsión atmosférica (TYPE_PRESSURE)
+     Proximidad (TYPE_PROXIMITY)
+     Humedad Relativa (TYPE_RELATIVE_HUMIDITY)
+     Temperaura del dispositivo (TYPE_TEMPERATURE)
+    */
+
+   /*
+     Se detectará la presencia de los sensores anteriores
+     e información básica acerca de ellos
+    */
+
+   public void detectarSensores() {
+
+       //Instancia de SensorManger
+       SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+
+       Sensor sensor=null;
+
+       //Lista con la información de los sensores
+       // List<Sensor> listSensor  = sensorManager.getSensorList(Sensor.TYPE_ALL);
+
+       if(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) !=null) {
+           sensor=sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+           setInformacioSensor(sensor);
+       }
+
+       if(sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE) !=null) {
+           sensor=sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
+           setInformacioSensor(sensor);
+       }
+
+       if(sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY) !=null) {
+           sensor=sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+           setInformacioSensor(sensor);
+       }
+
+       if(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) !=null) {
+           sensor=sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+           setInformacioSensor(sensor);
+       }
+
+       if(sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) !=null) {
+           sensor=sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+           setInformacioSensor(sensor);
+       }
+
+
+       if(sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) !=null) {
+           sensor=sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+           setInformacioSensor(sensor);
+       }
+
+       if(sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) !=null) {
+           sensor=sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+           setInformacioSensor(sensor);
+       }
+
+       if(sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION) !=null) {
+           sensor=sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+           setInformacioSensor(sensor);
+       }
+
+       if(sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) !=null) {
+           sensor=sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+           setInformacioSensor(sensor);
+       }
+
+       if(sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) !=null) {
+           sensor=sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+           setInformacioSensor(sensor);
+       }
+
+       if(sensorManager.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY) !=null) {
+           sensor=sensorManager.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY);
+           setInformacioSensor(sensor);
+       }
+
+       if(sensorManager.getDefaultSensor(Sensor.TYPE_TEMPERATURE) !=null) {
+           sensor=sensorManager.getDefaultSensor(Sensor.TYPE_TEMPERATURE);
+           setInformacioSensor(sensor);
+       }
+
+
+   }
+
+
+   private void setInformacioSensor(Sensor sensor){
+
+       String unidades=" "+getUnidades(sensor.getType());
+       textView.append("\n" + " Nombre:" +(sensor.getName()));
+       textView.append("\n" + " Corriente: "+ sensor.getPower()+ " mA") ;
+       textView.append("\n" + " Máximo delay: "+sensor.getMaxDelay()+ " μs");
+       textView.append("\n" + " Mínimo delay: "+ sensor.getMinDelay()+ " μs");
+       textView.append("\n" + " Máximo rango: " +sensor.getMaximumRange()+ unidades);
+       textView.append("\n" + " Resolución: "+sensor.getResolution()+ unidades);
+       textView.append("\n" + " Vendedor: "+ sensor.getVendor());
+       textView.append("\n" + " Versión: "+sensor.getVersion());
+       textView.append("\n" + " ");
+
+
+   }
+
+   private String getUnidades(int tipoSensor ){
+
+       String unidades="";
+
+       if(tipoSensor==Sensor.TYPE_ACCELEROMETER) {
+
+           unidades="m/s^2";
+
+       }
+
+       if(tipoSensor==Sensor.TYPE_GRAVITY) {
+
+           unidades="m/s^2";
+
+       }
+
+       if(tipoSensor==Sensor.TYPE_AMBIENT_TEMPERATURE) {
+
+           unidades="°C";
+
+       }
+
+       if(tipoSensor==Sensor.TYPE_GYROSCOPE) {
+
+           unidades="rad/s";
+
+       }
+
+       if(tipoSensor==Sensor.TYPE_MAGNETIC_FIELD) {
+
+           unidades="μT";
+
+       }
+
+
+       if(tipoSensor==Sensor.TYPE_LIGHT) {
+
+           unidades="lx";
+
+       }
+
+       if(tipoSensor==Sensor.TYPE_RELATIVE_HUMIDITY) {
+
+           unidades="%";
+
+       }
+
+       if(tipoSensor==Sensor.TYPE_LINEAR_ACCELERATION) {
+
+           unidades="m/s^2";
+
+       }
+
+       if(tipoSensor==Sensor.TYPE_PROXIMITY) {
+
+           unidades="cm";
+
+       }
+
+       if(tipoSensor==Sensor.TYPE_PRESSURE) {
+
+           unidades="hPa";
+
+       }
+
+       if(tipoSensor==Sensor.TYPE_TEMPERATURE) {
+
+           unidades="°C";
+
+       }
+
+       if(tipoSensor==Sensor.TYPE_ORIENTATION) {
+
+           unidades="°";
+
+       }
+
+
+
+
+       return unidades;
+
+   }
+
+   public void onDestroy() {
+
+       super.onDestroy();
+       finish();
+
+   }
+
+
+
+}
+
+
+El archivo manifiesto.
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools"
+   package="com.curso_simulaciones.mivigesimasextaapp">
+
+   <application
+       android:allowBackup="true"
+       android:dataExtractionRules="@xml/data_extraction_rules"
+       android:fullBackupContent="@xml/backup_rules"
+       android:icon="@mipmap/ic_launcher"
+       android:label="@string/app_name"
+       android:roundIcon="@mipmap/ic_launcher_round"
+       android:supportsRtl="true"
+       android:theme="@style/Theme.MiVigesimaSextaApp"
+       tools:targetApi="31">
+
+       <!--Declarar la actividad que lanzara la aplicación-->
+       <activity android:name="com.curso_simulaciones.mivigesimasextaapp.ActividadPrincipalMiVigesimaSextaApp"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="portrait"
+           android:exported="true">
+
+           <intent-filter>
+               <action android:name="android.intent.action.MAIN" />
+               <category android:name="android.intent.category.LAUNCHER" />
+           </intent-filter>
+
+       </activity>>
+
+   </application>
+
+
+</manifest>
+
+
+Compilar y ejecutar. Se despliega la GUI de la Figura 2.
+
+
+  
+
+Figura 2
+LIBRERÍA MPAndroidChart
+Librerías para desplegar datos científicos hay muchas y de libre uso: MPAndroidChart, AChartEngine, GraphView, AndroidPlot, AFreeChart, WilliamChart, HelloChart, GraphLib (éstas sólo son algunas).
+Para el desarrollo de las app en este curso se decidió usar MPAndroidChart. Está muy bien referenciada y con documentación aceptable (adicionalmente se encuentran “googleando” ejemplos ilustrativos de cómo usarla). Sin embargo, en general, cualquiera se hubiera podido usar.
+Las características básicas de esta librería son:
+* Soporta múltiples tipos de gráficas: líneas, barras, tortas, etc.
+* Funciones de zoom (soporta zoom con 2 dedos), arrastre, escalado (zoom), selección.
+* Totalmente personalizable, colores, fondo, lineas, etiquetas y más.
+* Compatible con Android versión 2.2 en adelante (API 8).
+* Uso libre bajo licencia Apache License, Versión 2.0
+UNA APP DESPLEGANDO DATOS DEL SENSOR DE LUZ
+Montar el proyecto de la Figura 3, MiVigesimaSeptimaApp, el cual tiene como objetivo desplegar datos del sensor de luz del dispositivo móvil. Para mejor comprensión de lo que se está midiendo revisar el anexo I.
+  
+
+Figura 3
+
+
+En este proyecto se usa para graficar la librería MPAndroidChart. Para agregar la librería hay dos opciones. Una es obtener directamente el .jar de la librería y seguir el procedimiento ilustrado para usar la libreria simulpysics en los ejenplos de los módulos 9 y 10. La otra opción es obtener el .jar de la librería desde la Internet sincronizando en desarrollo de la app con el repositorio de la librería siguiendo las instrucciones dadas por el autor de ésta, que este caso son: 
+* Agregar al archivo settings.gradle.kts(Projects Settings) el código siguiente marcado en amarillo. 
+dependencyResolutionManagement {
+   repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+   repositories {
+       google()
+       mavenCentral()
+       maven { url = uri("https://jitpack.io")}
+   }
+}
+
+
+* Adicionalmente hay que agregar estas dos líneas en el archivo gradle.properties ,
+android.useAndroidX=true
+android.enableJetifier=true
+
+
+* En el archivo build.gradle.kts(Module:…) agregar el siguiente código matcado en amarillo,
+
+
+dependencies {
+
+ . . . 
+
+   implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+}
+
+
+* Sicronizar: File > Syc Project width Gardle Files.
+En esta app se usarán las imágenes de la Figura 4 por lo que éstas se deben incluir en la carpeta app > src >main > res > drawable.
+
+
+ Forma
+
+Descripción generada automáticamente 
+
+Figura 4
+
+
+A continuación se presenta el código de las clases.
+
+
+Clase AlmacenDatosRAM.
+
+
+public class AlmacenDatosRAM {
+
+   public static float datoActual;
+
+   /*
+     ArrayList es una clase que permite almacenar
+     objetos con la diferencia respecto a los
+     arreglos [], que ella misma va cambiando
+     dinámicamente su tamaño a medida que se le
+     agregan elementos
+    */
+
+   public static ArrayList datos = new ArrayList<>();
+
+}
+
+
+
+
+La clase Boton.
+
+
+public class Boton extends ImageView {
+
+   private Bitmap imagen;
+   Bitmap imagen_escalada = null;
+   private float tamamano_letra;
+   private String cadena = "";
+
+
+   public Boton(Context context) {
+
+       super(context);
+
+
+   }
+
+
+   public void setText(String cadena) {
+
+       this.cadena = cadena;
+
+
+   }
+
+
+   public String getText() {
+
+       this.cadena = cadena;
+
+       return cadena;
+
+
+   }
+
+
+   public void setImagen(int imagen_importada) {
+
+
+       imagen = BitmapFactory.decodeResource(getResources(), imagen_importada);
+
+
+   }
+
+
+   protected void onDraw(Canvas canvas) {
+
+
+       Paint pincel = new Paint();
+       pincel.setAntiAlias(true);
+       pincel.setLinearText(true);
+
+       float ancho=getWidth();
+       float alto=getHeight();
+       float escala=1;
+       if(ancho>alto){
+           escala=alto;
+       } else {escala=ancho;}
+
+       if (imagen != null) {
+
+           imagen_escalada = escalarImagen(imagen, (int) (0.9f * escala), (int) (0.9f * escala));
+
+       }
+
+       int ex = (getWidth() - imagen_escalada.getWidth()) / 2;
+       int ey = (getHeight() - imagen_escalada.getHeight()) / 2;
+
+       tamamano_letra = 0.08f * getWidth();
+
+       if (imagen != null) {
+           canvas.drawBitmap(imagen_escalada, ex, ey, null);//dimension,dimension, null);
+       }
+
+
+       pincel.setTextSize(tamamano_letra);
+       float anchoCadenaUnidades = pincel.measureText(cadena);
+       float posicion_x_letra = (getWidth() - anchoCadenaUnidades) / 2;
+       float posicion_y_letra = ey + imagen_escalada.getHeight() + tamamano_letra;
+
+       pincel.setColor(Color.BLACK);
+       canvas.drawText(cadena, posicion_x_letra, posicion_y_letra, pincel);
+
+
+       invalidate();
+
+   }
+
+   /*
+      Se escala con Matrix para no dañar la resolución
+    */
+
+
+   public Bitmap escalarImagen(Bitmap bitmap, int newWidth, int newHeight) {
+       Bitmap scaledBitmap = Bitmap.createBitmap(newWidth, newHeight, bitmap.getConfig());
+
+       float scaleX = newWidth / (float) bitmap.getWidth();
+       float scaleY = newHeight / (float) bitmap.getHeight();
+
+       Matrix scaleMatrix = new Matrix();
+       scaleMatrix.setScale(scaleX, scaleY, 0, 0);
+
+       Canvas canvas = new Canvas(scaledBitmap);
+       canvas.setMatrix(scaleMatrix);
+       Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
+       paint.setAntiAlias(true);
+       paint.setDither(true);
+       paint.setFilterBitmap(true);
+       canvas.drawBitmap(bitmap, 0, 0, paint);
+
+       return scaledBitmap;
+
+   }
+
+
+}
+
+
+La clase GaugeSimple.
+
+
+public class GaugeSimple extends View {
+
+   private float largo;
+   private float minimo = 0;
+   private float maximo = 100f;
+   private float medida = 0.0f;//tomar como medida inicial
+   private String unidades = "UNIDADES";
+
+   //color de los sectores
+   private int colorPrimerTercio = Color.rgb(200, 200, 0);
+   private int colorSegundoTercio = Color.rgb(0, 180, 0);
+   private int colorTercerTercio = Color.RED;
+
+   //color del marco
+   private int colorFondoTacometro = Color.rgb(240,240,240);
+   private int colorBordeTacometro= Color.BLACK;
+
+   //color franja dinámica
+   private int colorFranjaDinamica = Color.RED;
+
+
+   private int angPrimertercio = 100;
+   private int angSegundoTercio = 100;
+   private int angTercerTercio = 40;
+
+   private int colorLineas = Color.BLACK;
+   private int colorNumeros =Color.BLACK;
+
+   private int colorNumerosDesplieggue = Color.BLACK;
+
+   private int numeroDivisiones= 25;
+   private int separacionDivisionesGrandes = 5;
+
+
+   /**
+    * Constructor de GaugeSimple
+    */
+   public GaugeSimple(Context context) {
+
+       super(context);
+
+       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+           this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
+       }
+   }
+
+   /**
+    * Modifica el rango de medicion
+    * desde minimo hasta maximo
+    *
+    * @param minimo
+    * @param maximo
+    */
+   public void setRango(float minimo, float maximo) {
+
+       this.minimo = minimo;
+       this.maximo = maximo;
+
+   }
+
+   public void setSeparacionesDivisionesGrandes(int separacionDivisionesGrandes){
+
+       this.separacionDivisionesGrandes = separacionDivisionesGrandes;
+
+
+   }
+
+
+   private void setNumeroDivisiones(int numeroDivisiones){
+
+       this.numeroDivisiones =numeroDivisiones;
+
+
+   }
+
+
+   /**
+    * Modifica el valor medido
+    *
+    * @param medida
+    */
+   public void setMedida(float medida) {
+
+       this.medida = medida;
+
+   }
+
+
+   /**
+    * Regresa el valor medido
+    *
+    * @return medida
+    */
+   public float getMedida() {
+
+       return medida;
+   }
+
+
+   /**
+    * Modifica las unidades del instrumento virtual
+    *
+    * @param unidades
+    */
+   public void setUnidades(String unidades) {
+
+       this.unidades = unidades;
+
+   }
+
+   /**
+    * Modifica el color del borde del marco
+    * @param colorBordeMarco
+    */
+
+   public void setColorBordeTacometro(int colorBordeMarco){
+
+       this.colorBordeTacometro = colorBordeMarco;
+
+   }
+
+
+   /**
+    * Modifica los colores de los sectores circulares
+    *
+    * @param colorPrimerTercio
+    * @param colorSegundoTercio
+    * @param colorTercerTercio
+    */
+   public void setColorSectores(int colorPrimerTercio, int colorSegundoTercio, int colorTercerTercio) {
+
+       this.colorPrimerTercio = colorPrimerTercio;
+       this.colorSegundoTercio = colorSegundoTercio;
+       this.colorTercerTercio = colorTercerTercio;
+
+   }
+
+   /**
+    * Modifica los angulos de los sectores circulares
+    * Deben sumar 250 grados
+    *
+    * @param angPrimerTercio
+    * @param angSegundoTercio
+    * @param angTercerTercio
+    */
+   public void setAngulosSectores(int angPrimerTercio, int angSegundoTercio, int angTercerTercio) {
+       this.angPrimertercio = angPrimerTercio;
+       this.angSegundoTercio = angSegundoTercio;
+       this.angTercerTercio = angTercerTercio;
+
+   }
+
+
+
+   /**
+    * Modifica el color de fondo del tacometro
+    *
+    * @param colorFondoTacometro
+    */
+   public void setColorFondoTacometro(int colorFondoTacometro) {
+
+       this.colorFondoTacometro = colorFondoTacometro;
+
+
+   }
+
+
+   /**
+    * Modifica el color de las lineas del tacometro
+    *
+    * @param color_lineas
+    */
+   public void setColorLineasTacometro(int color_lineas) {
+
+       this.colorLineas = color_lineas;
+
+
+   }
+
+
+   public void setColorNumeros(int colorNumeros){
+
+       this.colorNumeros = colorNumeros;
+
+   }
+
+
+   /**
+    * Modifica el color del numero que se despliega
+    *
+    * @param colorNumerosDesplieggue
+    */
+
+   public void setColorNumeroDespliegue(int colorNumerosDesplieggue) {
+
+       this.colorNumerosDesplieggue = colorNumerosDesplieggue;
+
+   }
+
+
+   /**
+    * Modifica el color de la franja dinámica
+    * @param colorFranjaDinamica
+    */
+   public void setColorFranjaDinámica(int colorFranjaDinamica) {
+
+       this.colorFranjaDinamica = colorFranjaDinamica;
+
+
+   }
+
+
+   /**
+    * @param canvas
+    */
+
+   //método para dibujar
+   protected void onDraw(Canvas canvas) {
+       super.onDraw(canvas);
+
+       /*
+       se graba el estado actual del canvas
+       para al final restaurarlo
+       */
+       canvas.save();
+
+
+        /*
+        La vista tendra las mismas dimensiones de su
+        contenedor
+        */
+       float ancho = this.getWidth();//ancho de la vista
+       float alto = this.getHeight();//alto de la vista
+
+       /*
+        Se define la variable largo como el 80%
+        del menor valor entre alto y largo del
+        contenedor
+        */
+
+       if (ancho > alto) {
+
+           largo = 0.8f * alto;
+
+       } else {
+
+           largo = 0.8f * ancho;
+
+
+       }
+
+       /*
+         se hace tralación del (0,0) al centro
+         del contenedor
+       */
+       canvas.translate(0.5f * ancho, 0.5f * alto);
+
+       //configurando el pincel
+       Paint pincel = new Paint();
+       //evita efecto sierra
+       pincel.setAntiAlias(true);
+       //tamaño texto
+       pincel.setTextSize(0.05f * largo);
+       //para mejor manejo de la métrica de texto
+       pincel.setLinearText(true);
+       //para efectos de buen escalado de bitmaps
+       pincel.setFilterBitmap(true);
+       //para buen manejo de gradientes de color
+       pincel.setDither(true);
+
+
+
+       //dibujar fondo del tacómetro
+       //marco borde: circulo no relleno
+       pincel.setStyle(Paint.Style.STROKE);
+       //grosor y color
+       pincel.setStrokeWidth(0.02f*largo);
+       pincel.setColor(colorBordeTacometro);
+       canvas.drawCircle(0, 0, 0.5f * largo, pincel);
+       //marco fondo: círculo relleno
+       pincel.setStyle(Paint.Style.FILL);
+       pincel.setColor(colorFondoTacometro);
+       canvas.drawCircle(0, 0, 0.48f * largo, pincel);
+
+
+
+       //dibujar los tres segementos circulares
+       float esquinaSuperiorIzquierdaX = -0.45f * largo;
+       float esquinaSuperiorIzquierdaY = -0.45f * largo;
+       float esquinaInferiorDerechaX = 0.45f * largo;
+       float esquinaInferiorDerechaY = 0.45f * largo;
+
+       RectF rect = new RectF(esquinaSuperiorIzquierdaX, esquinaSuperiorIzquierdaY,
+               esquinaInferiorDerechaX, esquinaInferiorDerechaY);
+
+       //grosor líneas
+       pincel.setStrokeWidth(0.02f*largo);
+       //arcos
+       pincel.setStyle(Paint.Style.STROKE);
+       pincel.setColor(colorPrimerTercio);
+       //con argumento false solo dibuja el arco y no el sector circular
+       canvas.drawArc(rect, 150, angPrimertercio, false, pincel);
+       pincel.setColor(colorSegundoTercio);
+       canvas.drawArc(rect, 150 + angPrimertercio, angSegundoTercio, false, pincel);
+       pincel.setColor(colorTercerTercio);
+       canvas.drawArc(rect, 150 + angPrimertercio + angSegundoTercio, angTercerTercio, false, pincel);
+
+
+       //dibujar la escala
+       float indent = (float) (0.05 * largo);
+       float posicionY = (float) (0.5 * largo);
+
+
+
+        /*
+        Divisiones grandes, pequeñas y números
+        Se dibuja primero la división vertical.
+        Luego se repite rotando de a 50 grados comenzando
+        en 235 grados.
+         */
+       pincel.setStyle(Paint.Style.FILL);
+
+
+       for (int i = 0; i < numeroDivisiones +1; i = i + 1) {//6
+           // float anguloRotacion = 235 + 50 * i;
+           float salto = 240f/numeroDivisiones;
+           //float anguloRotacion = 235 + 50 * i;
+           float anguloRotacion = 240 + salto * i;
+           canvas.save();
+           canvas.rotate(anguloRotacion, 0, 0);
+           pincel.setColor(colorLineas);
+
+           if(i%separacionDivisionesGrandes ==0) {
+               //dibujar líneas grandes
+               pincel.setStrokeWidth(0.01f * largo);
+               canvas.drawLine(0, -posicionY, 0, -posicionY + indent, pincel);
+
+               //dibujar los números
+               float valorIncrementoMarcas = (maximo - minimo) /numeroDivisiones;
+               int valorMarca = (int) (minimo + valorIncrementoMarcas * i);
+               String numero = "" + valorMarca;
+
+               //ancho de la cadena del número
+               float anchoCadenaNumero = pincel.measureText(numero);
+
+               //dibuja números rotados
+               //endereza los números a orientación horizontal
+               canvas.rotate(-anguloRotacion, 0, -posicionY + 2.5f * indent);
+               pincel.setColor(colorNumeros);
+               canvas.drawText(numero, -0.5f * anchoCadenaNumero, -posicionY + 2.5f * indent, pincel);
+           } else {
+               //divisiones pequeñas
+               pincel.setStrokeWidth(0.005f * largo);
+               canvas.drawLine(0, -posicionY, 0, -posicionY + (float) (0.6 * indent), pincel);
+
+           }
+
+           canvas.restore();
+
+       }
+
+       /*
+       dibujar la aguja
+       */
+       //aqui empieza dibujo de la aguja
+       //calcular angulo para ubicar la aguja de acuerdo al valor medido
+       float angulo_rotacion_medida = 240 + (240f / (maximo - minimo)) * (medida - minimo);
+       //Dibujar aguja
+       pincel.setStrokeWidth(0.005f * largo);
+       pincel.setColor(Color.RED);
+       canvas.rotate(angulo_rotacion_medida, 0, 0);
+       float b = (float) (1.5f* indent);
+       canvas.drawLine(0, -posicionY, 0, b, pincel);
+       canvas.rotate(-angulo_rotacion_medida, 0, 0);
+       pincel.setStyle(Paint.Style.FILL);
+       pincel.setColor(colorFondoTacometro);
+       canvas.drawCircle(0, 0, (float) (0.4 * indent), pincel);
+       pincel.setColor(Color.RED);
+       pincel.setStyle(Paint.Style.STROKE);
+       canvas.drawCircle(0, 0, (float) (0.4 * indent), pincel);
+       //aquí termina dibujo de la aguja
+
+
+
+
+       //franja dinámica
+       float a = (float) 0.03* largo;
+       rect = new RectF(esquinaSuperiorIzquierdaX - a, esquinaSuperiorIzquierdaY - a,
+               esquinaInferiorDerechaX + a, esquinaInferiorDerechaY + a);
+       pincel.setColor(colorFranjaDinamica);
+       pincel.setStrokeWidth(0.01f*largo);
+       canvas.drawArc(rect, 150, angulo_rotacion_medida - 240, false, pincel);
+
+
+       //Dibujar las unidades
+       pincel.setStyle(Paint.Style.FILL);
+       pincel.setColor(colorLineas);
+       pincel.setTextSize(0.08f * largo);
+       float anchoCadenaUnidades = pincel.measureText(unidades);
+       canvas.drawText(unidades, -0.5f * anchoCadenaUnidades,- 0.15f * largo, pincel);
+       //aqui termina dibujo de las unidades
+
+       //aqui despliegue de la medida
+       pincel.setTextSize(0.1f * largo);
+       float anchoCadenaNumero = pincel.measureText("" + medida);
+       pincel.setColor(colorNumerosDesplieggue);
+       canvas.drawText("" + medida, -0.5f * anchoCadenaNumero, 0.2f * largo, pincel);
+
+       //marcar empresa
+       String empresa = "IoT.PhysicsSensor";
+       pincel.setTextSize(0.05f * largo);
+       float anchoCadenaNombreEmpresa = pincel.measureText(empresa);
+       canvas.drawText(empresa, -0.5f * anchoCadenaNombreEmpresa, 0.35f * largo, pincel);
+
+
+
+       //se restaura el canvas al estado incial
+       //el que se garbó al principio de este método
+       canvas.restore();
+
+       //para efectos de animación
+       invalidate();
+
+   }//fin onDraw
+
+
+}
+
+
+
+
+La clase Luxometro.
+
+
+public class Luxometro extends GaugeSimple implements SensorEventListener {
+
+   private SensorManager sensorManager;
+
+   public Luxometro(Context context){
+       super(context);
+
+       captarSensor(context);
+
+
+   }
+
+
+   private void captarSensor(Context context) {
+
+       //captamos el servicio del sensor
+       sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+       sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT), SensorManager.SENSOR_DELAY_FASTEST);
+
+   }
+
+   //se activa sólo cuando hay cambios
+   public void onSensorChanged(SensorEvent event) {
+
+       float medida = event.values[SensorManager.DATA_X];
+       //para reportar con un decimal
+       medida = (float)Math.floor(medida*100)/100f;
+       this.setMedida(medida);
+       cambiarEscala(medida);
+       //almacenar dato actual
+       AlmacenDatosRAM.datoActual=medida;
+
+   }
+
+   @Override
+   public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+   }
+
+
+   private void cambiarEscala(float medida){
+
+       float maximo=100f;
+       float minimo=0f;
+
+       if(medida>0 && ((medida < 100)^(medida==100f ))){
+
+           maximo=100f;
+           minimo=0f;
+
+       }
+
+       if(medida>100 && ((medida < 200)^(medida==200f ))){
+
+           maximo=200f;
+           minimo=100f;
+
+       }
+
+       if(medida>200 && ((medida < 500)^(medida==500f ))){
+
+           maximo=500f;
+           minimo=200f;
+
+       }
+
+       if(medida>500 && ((medida < 1000)^(medida==1000f ))){
+
+           maximo=1000f;
+           minimo=500f;
+
+       }
+
+
+       if(medida>1000 && ((medida < 5000)^(medida==5000f ))){
+
+           maximo=5000f;
+           minimo=1000f;
+
+       }
+
+       if(medida>5000 && ((medida < 10000)^(medida==10000f ))){
+
+           maximo=10000f;
+           minimo=5000f;
+
+       }
+
+       if(medida>10000 && ((medida < 50000)^(medida==50000f ))){
+
+           maximo=50000f;
+           minimo=10000f;
+
+       }
+
+
+       this.setRango(minimo,maximo);
+
+   }
+
+}
+
+
+La clase Graficador. Esta clase hereda de la clase LineChart de la librería importada.
+
+
+public class Graficador extends LineChart {
+
+
+   private LineDataSet lineDataSet;
+   private String tituloEjeY="";
+   private int colorLinea;
+   private float grosorLinea=1f;
+   private int colorValores;
+   private int colorMarcadores;
+
+
+
+   public Graficador(Context context) {
+
+       super(context);
+
+       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+           this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
+       }
+
+
+   }
+
+
+   public void setDatos(ArrayList datos) {
+
+       LineDataSet lineDataSet = new LineDataSet(datos, tituloEjeY);
+       lineDataSet.setLineWidth(grosorLinea);
+       lineDataSet.setColor(colorLinea);
+       lineDataSet.setValueTextColor(colorValores);
+       lineDataSet.setCircleColor(colorMarcadores);
+       LineData lineData = new LineData(lineDataSet);
+       this.setData(lineData);
+
+       /*
+        Esta instrucción es de la librería y es necesaria para
+        que el eje se vaya desplazando a medida que entran datos
+        */
+
+       this.moveViewTo(lineData.getEntryCount() - 7, 50f, YAxis.AxisDependency.LEFT);
+
+
+   }
+
+
+   /*
+    Modifica el grosr del trazo de la gráfica
+    */
+   public void setGrosorLinea(float grosorLinea){
+
+       this.grosorLinea=grosorLinea;
+   }
+
+   public void setColorLinea(int colorLinea){
+
+       this.colorLinea=colorLinea;
+
+   }
+
+
+   public  void setColorFondo(int colorFondo){
+
+       this.setBackgroundColor(colorFondo);
+
+   }
+
+
+   public void setColorTextoEjes(int colorTextoEjes){
+
+       //texto eje y izquierda
+       this.getAxisLeft().setTextColor(colorTextoEjes);
+       //texto eje y derecha
+       this.getAxisRight().setTextColor(colorTextoEjes);
+       //texto eje x
+       this.getXAxis().setTextColor(colorTextoEjes);
+       //texto título eje y
+       this.getLegend().setTextColor(colorTextoEjes);
+       //texto título eje x
+       this.getDescription().setTextColor(colorTextoEjes);
+
+   }
+
+   public void setColorValores(int colorValores){
+
+       this.colorValores=colorValores;
+
+
+   }
+
+
+   public void setTituloEjeX(String tituloEjeX){
+
+
+       this.getDescription().setText(tituloEjeX);
+
+   }
+
+
+   public void setTituloEjeY(String tituloEjeY){
+
+       this.tituloEjeY=tituloEjeY;
+
+   }
+
+
+   public void setColorMarcadores(int colorMarcadores){
+
+       this.colorMarcadores=colorMarcadores;
+   }
+
+
+}
+
+
+La clase HiloAnimación.
+
+
+public class HiloAnimacion extends Thread {
+
+
+   public boolean corriendo;
+   private long periodo_muestreo = 500;
+   public float tiempo = 0;
+   public int contador = 0;
+
+
+   private ActividadDesplegadoraDatos actividad;
+
+
+   public HiloAnimacion(ActividadDesplegadoraDatos actividad) {
+
+       this.actividad =actividad;
+
+   }
+
+
+
+
+   @Override
+   public void run() {
+       corriendo = true;
+       while (corriendo) {
+
+
+           try {
+               Thread.sleep(periodo_muestreo);
+
+               //graficador.setDatos(AlmacenDatosRAM.datos);
+               AlmacenDatosRAM.datos.add((new Entry(tiempo, AlmacenDatosRAM.datoActual)));
+               actividad.graficador.setDatos(AlmacenDatosRAM.datos);
+
+               tiempo = tiempo + 0.001f * periodo_muestreo;//en segundos
+
+               //se desplegarán sólo 21 datos (podrían ser muchos más)
+               if (contador > 20) {
+                   corriendo = false;
+               }
+
+               //numero datos
+               contador = contador + 1;
+
+           } catch (InterruptedException e) {
+               e.printStackTrace();
+
+           }
+
+       }
+
+
+   }
+
+
+}
+
+
+
+
+La clase ActividadDesplegadoraDatos.
+
+
+public class ActividadDesplegadoraDatos extends Activity {
+
+
+   private Luxometro luxometro;
+   public Graficador graficador;
+
+   /*Hilo responsable de la animación
+   El trabajo de animación es mejor manejarlo en hilo
+   aparte para evitar bloqueos de la aplicación
+   debido al manejo simultáneo de la GUI con la Acivity
+  */
+   private HiloAnimacion hilo;
+
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       /*
+       Para informar cómo se debe pegar el administrador de
+       diseño LinearLayout obtenido con el método crearGui()
+       */
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+       hilo = new HiloAnimacion(this);
+       hilo.start();
+
+   }//fin del método onCreate
+
+
+   private void crearElementosGUI() {
+
+
+       //gauge
+       luxometro = new Luxometro(this);
+       luxometro.setUnidades("lx");
+       luxometro.setAngulosSectores(100,100,50);
+       luxometro.setColorSectores(Color.YELLOW,Color.YELLOW,Color.RED);
+
+       //graficador
+       graficador = new Graficador(this);
+       //se está muestreando cada segundo (1000 ms)
+       graficador.setTituloEjeX("Tiempo (s)");
+       graficador.setTituloEjeY("Iluminancia (lx)");
+       graficador.setGrosorLinea(2f);
+       graficador.setColorLinea(Color.RED);
+       graficador.setColorValores(Color.YELLOW);
+       graficador.setColorMarcadores(Color.GREEN);
+       graficador.setColorFondo(Color.BLACK);
+       graficador.setColorTextoEjes(Color.WHITE);
+
+
+
+   }
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+
+       LinearLayout linear_layout_principal = new LinearLayout(this);
+       linear_layout_principal.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.CENTER_HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.FILL);
+       linear_layout_principal.setBackgroundColor(Color.WHITE);
+       linear_layout_principal.setPadding(20, 20, 20, 20);
+       linear_layout_principal.setWeightSum(10);
+
+
+       //LinearLayout primera columna
+       LinearLayout linear_layout_primera_columna = new LinearLayout(this);
+       linear_layout_primera_columna.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_primera_columna.setGravity(Gravity.FILL);
+       linear_layout_primera_columna.setBackgroundColor(Color.rgb(245, 245, 245));
+       LinearLayout.LayoutParams parametros_primera_columna = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_primera_columna.weight = 5.0f;
+       parametros_primera_columna.setMargins(10, 10, 5, 10);
+       linear_layout_primera_columna.setLayoutParams(parametros_primera_columna);
+
+
+       //LinearLayout segunda columna
+       LinearLayout linear_layout_segunda_columna = new LinearLayout(this);
+       linear_layout_segunda_columna.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_segunda_columna.setGravity(Gravity.FILL);
+       linear_layout_segunda_columna.setBackgroundColor(Color.rgb(245, 245, 245));
+       linear_layout_segunda_columna.setWeightSum(1.0f);
+       LinearLayout.LayoutParams parametros_segunda_columna = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_segunda_columna.weight = 5.0f;
+       parametros_segunda_columna.setMargins(5, 10, 10, 10);
+       linear_layout_segunda_columna.setLayoutParams(parametros_segunda_columna);
+
+
+       linear_layout_primera_columna.addView(luxometro);
+
+       //pegar grafico en segunda columna
+       LinearLayout.LayoutParams parametros_grafica = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_grafica.weight = 1.0f;
+       linear_layout_segunda_columna.addView(graficador, parametros_grafica);
+
+       linear_layout_principal.addView(linear_layout_primera_columna);
+       linear_layout_principal.addView(linear_layout_segunda_columna);
+
+       return linear_layout_principal;
+   }
+
+
+
+
+   protected void onPause() {
+
+       resetear();
+       super.onPause();
+   }
+
+   @Override
+   public void onRestart() {
+       super.onRestart();
+       hilo.corriendo = true;
+   }
+
+   @Override
+   public void onDestroy() {
+       super.onDestroy();
+       resetear();
+   }
+
+
+   private void resetear() {
+
+       hilo.corriendo = false;
+       AlmacenDatosRAM.datos.clear();
+       hilo.tiempo = 0;
+       hilo.contador=0;
+
+   }
+
+}
+
+
+La clase ActividadPrincipalMiVigesimaSeptimaApp.
+
+
+public class ActividadPrincipalMiVigesimaSeptimaApp extends Activity {
+
+
+   private Boton consultar, salir;
+
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       /*
+       Para informar cómo se debe pegar el administrador de
+       diseño LinearLayout obtenido con el método crearGui()
+       */
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+       existenciaSensor();
+
+       eventos();
+
+
+   }//fin del método onCreate
+
+
+   private void crearElementosGUI() {
+
+       consultar = new Boton(this);
+       consultar.setImagen(R.drawable.consultar);
+
+       salir = new Boton(this);
+       salir.setImagen(R.drawable.salir);
+
+   }
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+
+       LinearLayout linear_layout_principal = new LinearLayout(this);
+       linear_layout_principal.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_principal.setGravity(Gravity.CENTER_HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.FILL);
+       linear_layout_principal.setBackgroundColor(Color.WHITE);
+       linear_layout_principal.setWeightSum(10);
+
+
+       //LinearLayout primera fila
+       LinearLayout linear_layout_primera_fila = new LinearLayout(this);
+       linear_layout_primera_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_primera_fila.setGravity(Gravity.FILL);
+       linear_layout_primera_fila.setBackgroundColor(Color.WHITE);
+       LinearLayout.LayoutParams parametros_primera_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);//ViewGroup.LayoutParams.WRAP_CONTENT);
+       parametros_primera_fila.weight = 8.0f;
+       linear_layout_primera_fila.setLayoutParams(parametros_primera_fila);
+
+
+       //fondo primera fila
+       Drawable fondo = getResources().getDrawable(R.drawable.imagen_entrada_app_27);
+       linear_layout_primera_fila.setBackgroundDrawable(fondo);
+
+       //LinearLayout segunda fila
+       LinearLayout linear_layout_segunda_fila = new LinearLayout(this);
+       linear_layout_segunda_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_segunda_fila.setGravity(Gravity.FILL);
+       LinearLayout.LayoutParams parametros_segunda_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_segunda_fila.weight = 2.0f;
+       linear_layout_segunda_fila.setWeightSum(2.0f);
+       linear_layout_segunda_fila.setLayoutParams(parametros_segunda_fila);
+
+
+       LinearLayout.LayoutParams parametros_pegado_boton = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_boton.weight = 1.0f;
+       consultar.setLayoutParams(parametros_pegado_boton);
+       salir.setLayoutParams(parametros_pegado_boton);
+       linear_layout_segunda_fila.addView(consultar);
+       linear_layout_segunda_fila.addView(salir);
+
+
+       linear_layout_principal.addView(linear_layout_primera_fila);
+       linear_layout_principal.addView(linear_layout_segunda_fila);
+
+
+       return linear_layout_principal;
+
+
+   }
+
+
+   private void eventos() {
+
+       consultar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+
+               lanzarDatos();
+
+
+           }
+       });
+
+       salir.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               finish();
+           }
+       });
+
+
+   }
+
+
+   private void lanzarDatos() {
+
+       Intent intent = new Intent(this, ActividadDesplegadoraDatos.class);
+       startActivity(intent);
+
+   }
+
+
+   //preguntar si el sensor existe
+   private boolean existenciaSensor() {
+
+       boolean existe = false;
+       SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+       if (sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null) {
+
+           existe = true;
+
+
+       } else {
+
+           desplegarAviso();
+
+       }
+
+       return existe;
+   }
+
+   private void desplegarAviso() {
+
+       Toast toast = Toast.makeText(getApplicationContext(), "SU DISPOSITIVO NO POSEE LUXOMETRO", Toast.LENGTH_SHORT);
+       toast.show();
+
+   }
+
+
+   @Override
+   public void onDestroy() {
+       super.onDestroy();
+       finish();
+   }
+  
+}
+
+
+
+
+
+
+El archivo manifiesto.
+Nota:
+A partir de Android 12 para muestrear sensores del dispositivo a altas tasas (SensorManager.SENSOR_DELAY_FASTEST) exige solicitar permiso en el archivo manifiesto. Esto evita posibles fallas como las que se presentron a algunos compañeros en la versión 2022-02 de este curso. El autor de estas notas no presentó fallas en la presente app pero si en el siguiente ejemplo. Para prevenir esta falla, agregar en el archivo manifiesto este permiso (está remarcado en amarillo):
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools">
+
+   <application
+       android:allowBackup="true"
+       android:dataExtractionRules="@xml/data_extraction_rules"
+       android:fullBackupContent="@xml/backup_rules"
+       android:icon="@mipmap/ic_launcher"
+       android:label="@string/app_name"
+       android:supportsRtl="true"
+       android:theme="@style/Theme.MiVigesimaSeptimaApp"
+       tools:targetApi="31" >
+
+       <!--Declarar la actividad que lanzara la aplicación-->
+       <activity android:name="com.curso_simulaciones.mivigesimaseptimaapp.ActividadPrincipalMiVigesimaSeptimaApp"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="portrait"
+           android:exported="true">
+
+           <intent-filter>
+               <action android:name="android.intent.action.MAIN" />
+               <category android:name="android.intent.category.LAUNCHER" />
+           </intent-filter>
+
+       </activity>
+
+       <activity android:name=".actividades_secundarias.ActividadDesplegadoraDatos"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:configChanges="screenSize|orientation"
+           android:screenOrientation="landscape">
+
+       </activity>
+
+   </application>
+
+   <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"/>
+
+</manifest>
+
+
+
+
+Compilar y ejecutar. Se despliegan la GUI de la Figura 5.
+Haciendo clic en el botón DATOS se despliega la GUI de la Figura 6. El gráfico es touch. Se pueda hacer zoom con dos dedos y desplazar con un dedo.
+
+
+ C:\Users\Diego\AppData\Local\Microsoft\Windows\Temporary Internet Files\Content.Word\Screenshot_20191116-122249_MiTrigesimaSextaApp.jpg 
+
+Figura 5
+ Gráfico
+
+Descripción generada automáticamente 
+
+Figura 6
+
+
+UNA APP DESPLEGANDO DATOS DEL ACELERÓMETRO
+Montar el proyecto de la Figura 7, MiVigesimaOctavaApp, el cual tiene como objetivo desplegar datos del sensor acelerómetro del dispositivo móvil. Para mejor comprensión de lo que se está midiendo revisar el anexo II.
+
+
+  
+
+Figura 7
+
+
+En este proyecto se usa para graficar la librería MPAndroidChart. Proceder a obtenerla tal y como se indicó en la app anterior.
+Adicionalmente en el directorio app > src >main > res > drawable agregar las imágenes que se usarán en la app, Figura 8.
+ Imagen que contiene Diagrama
+
+Descripción generada automáticamente 
+
+Figura 8
+Los códigos fuente de las clases AlmacenDatosRAM, Boton, GaugeSimple, Graficador e HiloAimación son idénticos al código del ejemplo anterior.
+A continuación se presenta el código de las otras clases.
+Clase Acelerometro.
+
+
+public class Acelerometro extends GaugeSimple implements SensorEventListener {
+
+   private SensorManager sensorManager;
+   private int componenteAceleracion = 1;
+
+   public Acelerometro(Context context) {
+       super(context);
+
+       captarSensor(context);
+
+       this.setRango(-20, 20);
+
+
+   }
+
+
+   public void setComponenteAcelerometro(int componenteAceleracion) {
+
+       this.componenteAceleracion = componenteAceleracion;
+
+   }
+
+   private void captarSensor(Context context) {
+
+       //captamos el servicio del sensor
+       sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+       sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_FASTEST);
+
+   }
+
+   //se activa sólo cuando hay cambios
+   public void onSensorChanged(SensorEvent event) {
+
+       //en x
+       float a = 0;
+       float medida_x = 0;
+       float medida_y = 0;
+       float medida_z = 0;
+       float medida = 0;
+
+       medida_x = event.values[SensorManager.DATA_X];
+       medida_y = event.values[SensorManager.DATA_Y];
+       medida_z = event.values[SensorManager.DATA_Z];
+       float resultado = medida_x * medida_x + medida_y * medida_y + medida_z * medida_z;
+       a = (float) (Math.sqrt(resultado));
+
+
+       if (componenteAceleracion == 1) {
+           medida = medida_x;
+           this.setUnidades(" ax (m/S2)");
+       }
+       if (componenteAceleracion == 2){
+           medida = medida_y;
+           this.setUnidades(" ay (m/S2)");
+       }
+       if (componenteAceleracion == 3){
+           medida = medida_z;
+           this.setUnidades(" az (m/S2)");
+       }
+       if (componenteAceleracion == 4){
+           medida = a;
+           this.setUnidades(" a (m/S2)");
+       }
+
+       //un decimal
+       medida = (float) (Math.round(medida * 10) / 10.0f);
+       this.setMedida(medida);
+       //almacenar dato actual
+       AlmacenDatosRAM.datoActual = medida;
+
+   }
+
+   @Override
+   public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+   }
+
+}
+
+
+
+
+Clase ActividadDesplegadoraDatos.
+
+
+public class ActividadDesplegadoraDatos extends Activity {
+
+
+   private Boton ax, ay, az, a;
+
+   private Acelerometro acelerometro;
+   public Graficador graficador;
+
+   /*Hilo responsable de la animación
+    El trabajo de animación es mejor manejarlo en hilo
+    aparte para evitar bloqueos de la aplicación
+    debido al manejo simultáneo de la GUI con la Acivity
+   */
+   private HiloAnimacion hilo;
+
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       /*
+       Para informar cómo se debe pegar el administrador de
+       diseño LinearLayout obtenido con el método crearGui()
+       */
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+
+       eventos();
+
+       hilo = new HiloAnimacion(this);
+       hilo.start();
+
+   }//fin del método onCreate
+
+   private void crearElementosGUI() {
+
+
+       //botones
+       ax = new Boton(this);
+       ax.setImagen(R.drawable.ax);
+       ay = new Boton(this);
+       ay.setImagen(R.drawable.ay);
+       az = new Boton(this);
+       az.setImagen(R.drawable.az);
+       a = new Boton(this);
+       a.setImagen(R.drawable.a);
+
+       //gauge
+       acelerometro = new Acelerometro(this);
+
+       //graficador
+       graficador = new Graficador(this);
+       //se está muestreando cada segundo (1000 ms)
+       graficador.setTituloEjeX("Tiempo (s)");
+       graficador.setTituloEjeY("Aceleración ax (m/s2)");
+       graficador.setGrosorLinea(2f);
+       graficador.setColorLinea(Color.RED);
+       graficador.setColorValores(Color.YELLOW);
+       graficador.setColorMarcadores(Color.GREEN);
+       graficador.setColorFondo(Color.BLACK);
+       graficador.setColorTextoEjes(Color.WHITE);
+
+
+   }
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+
+       LinearLayout linear_layout_principal = new LinearLayout(this);
+       linear_layout_principal.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.CENTER_HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.FILL);
+       linear_layout_principal.setBackgroundColor(Color.WHITE);
+       linear_layout_principal.setPadding(20, 20, 20, 20);
+       linear_layout_principal.setWeightSum(10);
+
+
+       //LinearLayout primera columna
+       LinearLayout linear_layout_primera_columna = new LinearLayout(this);
+       linear_layout_primera_columna.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_primera_columna.setGravity(Gravity.FILL);
+       linear_layout_primera_columna.setBackgroundColor(Color.rgb(245, 245, 245));
+       //parámetro para pegar la primera columna al principal
+       LinearLayout.LayoutParams parametros_primera_columna = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_primera_columna.weight = 4.0f;
+       parametros_primera_columna.setMargins(10, 10, 5, 10);
+       linear_layout_primera_columna.setLayoutParams(parametros_primera_columna);
+
+
+       //LinearLayout segunda columna
+       LinearLayout linear_layout_segunda_columna = new LinearLayout(this);
+       linear_layout_segunda_columna.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_segunda_columna.setGravity(Gravity.FILL);
+       linear_layout_segunda_columna.setBackgroundColor(Color.rgb(245, 245, 245));
+       linear_layout_segunda_columna.setWeightSum(1.0f);
+       //parámetro para pegar la segunda columna al principal
+       LinearLayout.LayoutParams parametros_segunda_columna = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_segunda_columna.weight = 4.0f;
+       parametros_segunda_columna.setMargins(5, 10, 10, 10);
+       linear_layout_segunda_columna.setLayoutParams(parametros_segunda_columna);
+
+       //LinearLayout tercera columna
+       LinearLayout linear_layout_tercera_columna = new LinearLayout(this);
+       linear_layout_tercera_columna.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_tercera_columna.setGravity(Gravity.FILL);
+       linear_layout_tercera_columna.setBackgroundColor(Color.YELLOW);
+       linear_layout_tercera_columna.setWeightSum(4.0f);
+       //parámetro para pegar la tercera columna al principal
+       LinearLayout.LayoutParams parametros_tercera_columna = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_tercera_columna.weight = 2.0f;
+       parametros_tercera_columna.setMargins(5, 10, 10, 10);
+       linear_layout_tercera_columna.setLayoutParams(parametros_tercera_columna);
+
+
+       //peado de las tres columnas al principal
+       linear_layout_principal.addView(linear_layout_primera_columna);
+       linear_layout_principal.addView(linear_layout_segunda_columna);
+       linear_layout_principal.addView(linear_layout_tercera_columna);
+
+
+       //pegar gauge primera columna
+       linear_layout_primera_columna.addView(acelerometro);
+
+       //pegar grafico en segunda columna
+       LinearLayout.LayoutParams parametros_grafica = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_grafica.weight = 1.0f;
+       linear_layout_segunda_columna.addView(graficador, parametros_grafica);
+
+       //pegar botones tercera columna
+       LinearLayout.LayoutParams parametros_pegado_boton = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_pegado_boton.weight = 1.0f;
+       linear_layout_tercera_columna.addView(ax, parametros_pegado_boton);
+       linear_layout_tercera_columna.addView(ay, parametros_pegado_boton);
+       linear_layout_tercera_columna.addView(az, parametros_pegado_boton);
+       linear_layout_tercera_columna.addView(a, parametros_pegado_boton);
+
+
+       return linear_layout_principal;
+
+
+   }
+
+
+   private void eventos() {
+
+       ax.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+
+               lanzarDatosAx();
+
+
+           }
+       });
+
+       ay.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               lanzarDatosAy();
+           }
+       });
+
+       az.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               lanzarDatosAz();
+           }
+       });
+
+       a.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               lanzarDatosA();
+           }
+       });
+
+
+   }
+
+   private void lanzarDatosAx() {
+
+       resetear();
+       acelerometro.setComponenteAcelerometro(1);
+       acelerometro.setRango(-20,20);
+
+       graficador.setTituloEjeY("Aceleración ax (m/s2)");
+       hilo.corriendo = true;
+
+   }
+
+   private void lanzarDatosAy() {
+
+       resetear();
+       acelerometro.setComponenteAcelerometro(2);
+       acelerometro.setRango(-20,20);
+       graficador.setTituloEjeY("Aceleración ay (m/s2)");
+       hilo.corriendo = true;
+
+   }
+
+   private void lanzarDatosAz() {
+
+       resetear();
+       acelerometro.setComponenteAcelerometro(3);
+       acelerometro.setRango(-20,20);
+       graficador.setTituloEjeY("Aceleración az (m/s2)");
+       hilo.corriendo = true;
+
+   }
+
+   private void lanzarDatosA() {
+
+       resetear();
+       acelerometro.setComponenteAcelerometro(4);
+       acelerometro.setRango(0,20);
+       graficador.setTituloEjeY("Aceleración a (m/s2)");
+       hilo.corriendo = true;
+
+   }
+
+
+
+
+
+   protected void onPause() {
+
+       hilo.corriendo = false;
+       AlmacenDatosRAM.datos.clear();
+       hilo.contador = 0;
+       super.onPause();
+   }
+
+   @Override
+   public void onRestart() {
+       super.onRestart();
+       hilo.corriendo = true;
+   }
+
+
+   private void resetear() {
+
+       hilo.corriendo = false;
+       AlmacenDatosRAM.datos.clear();
+       hilo.tiempo = 0;
+       hilo.contador = 0;
+
+   }
+
+}
+
+
+
+
+Clase ActividadPrincipalMiVigesimaOctavaApp.
+
+
+public class ActividadPrincipalMiVigesimaOctavaApp extends Activity {
+
+
+   private Boton consultar, salir;
+
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       /*
+       Para informar cómo se debe pegar el administrador de
+       diseño LinearLayout obtenido con el método crearGui()
+       */
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+       existenciaSensor();
+
+       eventos();
+
+
+   }//fin del método onCreate
+
+
+   private void crearElementosGUI() {
+
+       consultar = new Boton(this);
+       consultar.setImagen(R.drawable.consultar);
+
+       salir = new Boton(this);
+       salir.setImagen(R.drawable.salir);
+
+   }
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+
+       LinearLayout linear_layout_principal = new LinearLayout(this);
+       linear_layout_principal.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_principal.setGravity(Gravity.CENTER_HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.FILL);
+       linear_layout_principal.setBackgroundColor(Color.WHITE);
+       linear_layout_principal.setWeightSum(10);
+
+
+       //LinearLayout primera fila
+       LinearLayout linear_layout_primera_fila = new LinearLayout(this);
+       linear_layout_primera_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_primera_fila.setGravity(Gravity.FILL);
+       linear_layout_primera_fila.setBackgroundColor(Color.WHITE);
+       LinearLayout.LayoutParams parametros_primera_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);//ViewGroup.LayoutParams.WRAP_CONTENT);
+       parametros_primera_fila.weight = 8.0f;
+       linear_layout_primera_fila.setLayoutParams(parametros_primera_fila);
+
+
+       //fondo primera fila
+       Drawable fondo = getResources().getDrawable(R.drawable.imagen_entrada_app_28);
+       linear_layout_primera_fila.setBackgroundDrawable(fondo);
+
+       //LinearLayout segunda fila
+       LinearLayout linear_layout_segunda_fila = new LinearLayout(this);
+       linear_layout_segunda_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_segunda_fila.setGravity(Gravity.FILL);
+       LinearLayout.LayoutParams parametros_segunda_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_segunda_fila.weight = 2.0f;
+       linear_layout_segunda_fila.setWeightSum(2.0f);
+       linear_layout_segunda_fila.setLayoutParams(parametros_segunda_fila);
+
+
+       LinearLayout.LayoutParams parametros_pegado_boton = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_boton.weight = 1.0f;
+       consultar.setLayoutParams(parametros_pegado_boton);
+       salir.setLayoutParams(parametros_pegado_boton);
+       linear_layout_segunda_fila.addView(consultar);
+       linear_layout_segunda_fila.addView(salir);
+
+
+       linear_layout_principal.addView(linear_layout_primera_fila);
+       linear_layout_principal.addView(linear_layout_segunda_fila);
+
+
+       return linear_layout_principal;
+
+
+   }
+
+
+   private void eventos() {
+
+       consultar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+
+               lanzarDatos();
+
+
+           }
+       });
+
+       salir.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               finish();
+           }
+       });
+
+
+   }
+
+
+   private void lanzarDatos() {
+
+       Intent intent = new Intent(this, ActividadDesplegadoraDatos.class);
+       startActivity(intent);
+
+   }
+
+
+
+   //preguntar si el sensor existe
+   private boolean existenciaSensor(){
+
+       boolean existe=false;
+       SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+       if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)!=null){
+
+           existe =true;
+
+
+       } else {
+
+           desplegarAviso();
+
+       }
+
+       return existe;
+   }
+
+
+   private void desplegarAviso() {
+
+       Toast toast = Toast.makeText(getApplicationContext(), "SU DISPOSITIVO NO POSEE ACELEROMETRO", Toast.LENGTH_SHORT);
+       toast.show();
+
+   }
+
+
+   @Override
+   public void onDestroy() {
+       super.onDestroy();
+       finish();
+   }
+}
+
+
+El archivo manifiesto.
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools">
+
+   <application
+       android:allowBackup="true"
+       android:dataExtractionRules="@xml/data_extraction_rules"
+       android:fullBackupContent="@xml/backup_rules"
+       android:icon="@mipmap/ic_launcher"
+       android:label="@string/app_name"
+       android:supportsRtl="true"
+       android:theme="@style/Theme.MiVigesimaOctavaApp"
+       tools:targetApi="31" >
+
+       <!--Declarar la actividad que lanzara la aplicación-->
+       <activity android:name=".ActividadPrincipalMiVigesimaOctavaApp"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="portrait"
+           android:exported="true">
+
+           <intent-filter>
+               <action android:name="android.intent.action.MAIN" />
+               <category android:name="android.intent.category.LAUNCHER" />
+           </intent-filter>
+
+       </activity>
+
+       <activity android:name=".actividades_secundarias.ActividadDesplegadoraDatos"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:configChanges="screenSize|orientation"
+           android:screenOrientation="landscape">
+
+       </activity>
+
+
+   </application>
+
+   <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"/>
+
+
+</manifest>
+
+
+
+
+Complilar ye ejecutar. Se despliega la GUI de la Figura 9. 
+
+
+ Aplicación
+
+Descripción generada automáticamente 
+
+Figura 9
+Hacer clic en el botón DATOS y se despliega la GUI de la Figura 10. La gráfica desplegada es touch. Con dos dedos permite zoom y con un dedo el arrastre.
+
+
+ Gráfico
+
+Descripción generada automáticamente 
+
+Figura 10
+
+
+TALLER
+Crear un proyecto denominado MiVigesimaNovenaApp el cual tendrá como objetivo desplegar información del gaussimetro (en µT) del dispositivo (tiene dimensión 3: Bx, By, Bz, B). Diseñar la app con la misma jerarquía de paquetes y clases de MiVigesimaOctavaApp, Figura 11. Para desplegar las gráficas usar la clase Graficador que hereda de LineChart de la librería MPAndroidChart (la misma clase que se diseñó en las dos últimas apps de este módulo). El aspecto de la GUI que despliega los datos es la de la Figura 12.
+
+
+ Interfaz de usuario gráfica, Texto, Aplicación
+
+Descripción generada automáticamente 
+
+Figura 11
+ Imagen que contiene Diagrama
+
+Descripción generada automáticamente 
+
+Figura 12
+El apk debe tener un icono lanzador personal. Se puede reutilizar el código de los ejemplos.
+Nota muy importante: si su dispositivo móvil no posee gaussimetro, debe conseguir uno prestado para desarrollar la app.
+FIN        
+________________
+REFERENCIAS
+* Kike. (2017). Los Sensores en nuestro Teléfono Android . 08/06/2107, de Aprende Android.com Sitio web: www.aprendeandroid.com/l9/sensores_android.htm.
+* Android: Programación de Aplicaciones. 13/06/2017. http://androideric.blogspot.com.co/2013/04/510-los-sensores-en-android.html
+* Developers. SensorEvent. 13/06/2017. 
+https://developer.android.com/reference/android/hardware/SensorEvent.html
+
+
+* Developers. Permisos. 25/03/2018
+https://developer.android.com/training/permissions/requesting.html?hl=es-419
+
+
+
+
+
+
+
+
+
+
+________________
+
+
+ANEXO I: SOBRE EL LUXOMETRO DEL DISPOSITIVO
+En un sentido más amplio, la luz es la zona del espectro de radiación electromagnética que se extiende desde el infrarrojo hasta el ultravioleta, e incluye la energía radiante que produce la sensación de visión (luz visible), Figura 1. 
+
+
+
+
+  
+
+
+
+Figura 1: Espectro electromagnético
+La energía radiante tiene una naturaleza dual y obedece leyes que pueden explicarse a partir de una corriente de partículas o paquetes de energía, los llamados fotones, o a partir de un tren de ondas transversales. El concepto de fotón se emplea para explicar las interacciones de la luz con la materia que producen un cambio en la forma de energía, como ocurre con el efecto fotoeléctrico o la luminiscencia. El concepto de onda suele emplearse para explicar la propagación de la luz y algunos de los fenómenos de formación de imágenes. En las ondas de luz, como en todas las ondas electromagnéticas, existen campos eléctricos y magnéticos en cada punto del espacio, que fluctúan con rapidez. Como estos campos tienen, además de una magnitud, una dirección determinada, son cantidades vectoriales. Los campos eléctrico y magnético son perpendiculares entre sí y también perpendiculares a la dirección de propagación de la onda. La onda luminosa más sencilla es una onda sinusoidal pura, llamada así porque una gráfica de la intensidad del campo eléctrico o magnético trazada en cualquier momento a lo largo de la dirección de propagación sería la gráfica de una función seno. En el espectro visible, las diferencias en longitud de onda se manifiestan como diferencias de color. El rango visible va desde 380 nanómetros (violeta) hasta 750 nanómetros (rojo) aproximadamente (un nanómetro, nm, es una milmillonésima de metro), Tabla 1. La luz blanca es una mezcla de todas las longitudes de onda visibles. No existen límites definidos entre las diferentes longitudes de onda, pero puede considerarse que la radiación ultravioleta va desde los 350 nm hasta los 10 nm. Los rayos infrarrojos, que incluyen la energía calorífica radiante, abarcan las longitudes de onda situadas aproximadamente entre 750 nm y 1 mm.
+
+
+
+
+Tabla 1: Región visible del espectro electromagnético
+Espectro
+	Color
+	Longitud de onda
+λ
+(nm)
+	  
+
+	violeta
+	380–450
+	azul
+	450–495
+	verde
+	495–570
+	amarillo
+	570–590
+	naranja
+	590–620
+	rojo
+	620–750
+	
+
+Surge una pregunta: si ya se tiene el Joule (J) como unidad de energía (la luz propaga energía electromagnética), el Watt (1 W = J.s-1)  como unidad de potencia y el W.m-2 como unidad de intensidad, ¿Por qué es necesario definir otras magnitudes como flujo luminoso,  intensidad luminosa, iluminancia y luminancia? La razón es más simple de lo que parece: no toda la luz emitida por una fuente llega al ojo y produce sensación luminosa.
+Flujo luminoso (ϕ)
+Cuando se habla por ejemplo que una bombilla (Figura 2) es de 25 W se está refiriendo es a la potencia eléctrica consumida por la bombilla para funcionar óptimamente.  Sin embargo no toda la energía que radia lo hace en forma de luz visible.  La energía en el visible emitida por unidad de tiempo es lo que se denomina como flujo luminoso (  ): se podría medir también con el W ya que correspondería a la magnitud física potencia,  pero se prefiere definir una nueva unidad denominada lumen (lm). Empíricamente una fuente que radia como un cuerpo negro (el cual se denomina como un cuerpo que físicamente es el mejor radiador de energía electromagnética) en una longitud de onda es 555 nm (verde) y con una potencia es 1 W le corresponde un flujo luminoso de 683 lm:
+
+
+  
+                                            Ecuación 1
+ http://4.bp.blogspot.com/-AQnX59wk2-c/TcVtOKveydI/AAAAAAAAAFg/vjdAHOUSUXM/s1600/BOmbilla.png 
+
+Figura 2: Bombilla
+
+
+Intensidad luminosa (I)
+El flujo luminoso da una idea de la cantidad de luz visible que emite la fuente pero en todas las direcciones del espacio. Sin embargo, si se observa un proyector, se concluye que solo emite en una dirección privilegiada: realmente emite en un ángulo sólido determinado (todo el espacio, o mejor, a una esfera  le corresponde un ángulo sólido de 4π estereorradianes –sr-). Para comprender esto el ángulo sólido  Ω subtendido por una superficie cuya área es S, Figura 3, se define como,
+  
+                                                       Ecuación 2
+
+
+
+
+  
+
+Figura 3: Definición de estereorradián
+
+
+A todas las esferas les corresponde un ángulo sólido igual a 4π sr.
+Se define intensidad luminosa I al flujo luminoso dividido por el ángulo sólido subtendido en una dirección concreta, ecuación 3. Su unidad de medida es la candela (cd) y es una unidad fundamental del SI.
+  
+                                                            Ecuación 3
+
+
+Iluminancia (E)
+Si se ilumina la mano con una linterna se proyecta un círculo de luz sobre ésta. Si se ilumina una pared más distante se proyecta un círculo mayor pero más débilmente iluminada. Esta sencilla experiencia describe muy bien el concepto de iluminancia. La iluminancia E se define como el flujo luminoso por unidad de área S. Su unidad es el lux (lx=1 lm.m-2).
+
+
+  
+                                                                Ecuación 4
+
+
+Considerando el frente de onda luminoso esférico, se cumple la denominada ley del inverso cuadrado, 
+
+
+  
+                                                               Ecuación 5
+
+
+Luminancia (L)
+El flujo luminoso y la intensidad luminosa están más relacionados es con la fuente; la iluminancia con la luz que llega a una superficie. Si se refiere a la luz que llega al ojo, Figura 4, se habla de luminancia L y su unidad es cd.m-2. Sólo “vemos” luminancias no iluminancias.
+
+
+
+
+  
+                                                               Ecuación 6
+  
+
+Figura 4: Luminancia
+
+
+Sobre el sensor luxómetro del dispositivo móvil
+El luxómetro mide la iluminancia real E y no subjetiva de un ambiente. El luxómetro moderno funciona según el principio de una fotocelda, la cual al recibir una cierta cantidad de luz (fotones) la transforma en una corriente eléctrica. Por ejemplo, una fotorresistencia puede ser usada en la construcción del luxómetro. Con el voltaje generado se puede  hacer que proporcionalmente (con la calibración debida) se desplace una aguja sobre un tablero debidamente marcado (luxómetro análogo) o despliegue en un display una cifra (luxómetro digital, Figura 5) que indique el  valor de la iluminancia en lux. En la Figura 6 se ilustra la ubicación del sensor de iluminancia de un teléfono celular: este es usado para medir la iluminancia del ambiente y con base en ese valor regular el brillo de la pantalla. 
+
+
+ http://www.krealo.es/blog/wp-content/uploads/luxometro-gama-media.jpg 
+
+	  
+
+
+
+	Figura 5: Luxómetro digital
+	Figura 6: Luxómetro del celular Samsung Galxy Note 3
+	
+
+En las Tablas 2 y 3 se ilustran valores de la iluminancia en algunos lugares y para algunas actividades.
+Tabla 2: Niveles de luz comunes exteriores
+Condición
+	Iluminancia (lux)
+	Luz solar al  medio día (máxima)
+	100 000
+	Luz solar al medio día (mínimo)
+	10 000
+	Día nublado
+	1 000
+	Día muy oscuro
+	100
+	Crepúsculo
+	10
+	Luna llena
+	0,1
+	Luna menguante
+	0,01
+	Luz de las estrellas
+	0,001
+	Noche nublada
+	0,0001
+	
+
+Tabla 3: Iluminancia para algunas actividades
+Actividad
+	Iluminancia (lx)
+	Almacenes, Casas, Teatros
+	150
+	Trabajo sencillo de oficina, Clases
+	250
+	Trabajo normal de oficina, Trabajo en PC, Biblioteca, Laboratorios
+	500
+	Supermercados, Trabajos Mecánicos
+	750
+	Trabajo de Dibujo Normal, Quirófanos
+	1000
+	Trabajo de Dibujo Detallado
+	1500
+	Para recordar:
+* Una vela común emite luz con una intensidad lumínica de aproximadamente una candela.
+* Una intensidad luminosa de 1 candela, proporciona un flujo luminoso de 1 lumen, que dispersado a 1 m de distancia sobre la superficie de 1 m2, equivale a la iluminación de 1 lux.
+________________
+ANEXO II: SOBRE EL ACELERÓMETRO DEL DISPOSITIVO
+
+
+¿Qué es lo que mide un acelerómetro?
+Un acelerómetro NO MIDE directamente el valor de la aceleración inercial de un cuerpo, NI TAMPOCO MIDE directamente la gravedad. Un acelerómetro mide la aceleración que generará la fuerza neta que actúa sobre el cuerpo en el cual se encuentra apoyado pero sin tener en cuenta el peso del mismo. Esta aceleración, que en estas notas se denotará como    , con base en la segunda ley de Newton cumple,
+
+
+  
+
+  
+
+  
+
+en donde    corresponde a la aceleración del cuerpo medida desde un marco de referencia inercial y en donde se tienen en cuenta todas las fuerzas que actúan sobre este incluyendo su peso. Esta es la aceleración que generalmente se busca medir en el laboratorio. Por lo tanto medida la aceleración    por el acelerómetro se puede calcular   de la siguiente expresión,
+
+
+  
+
+La unidad utilizada por los acelerómetros es la unidad g que es en magnitud la aceleración con la cual se mueve un cuerpo en el planeta Tierra en “caída libre", es decir en condiciones ideales (sin atmósfera u otro rozamiento). Una aceleración de 1 g es igual a la gravedad estándar, que es de 9,806 65 m/s2 (aproximada a 9,81 m/s2).
+
+
+Sobre el sensor acelerómetro del dispositivo móvil
+En este anexo se analiza el acelerómetro de un dispositivo móvil. Para este caso se considera que el sistema de coordenadas es el que se ilustra en la Figura A1 izquierda  (convención internacional).
+
+
+
+
+  
+
+
+
+	  
+
+	Ejes teléfono celular
+	Ejes tablet
+	
+
+Figura A1: Sistema de coordenada de los dispositivos móviles
+
+
+Un dispositivo móvil apoyado en una superficie horizontal (en reposo,   ) con el eje Z apuntando hacia arriba debe marcar los siguientes valores en sus componentes rectangulares (aplicar ecuación [1]):   ,    y   . Cuando el dispositivo se inclina los valores de las componentes rectangulares de la gravedad cambian y es con base en estos cambios que el dispositivo informa cuál es su orientación, por ejemplo, para rotar la interfaz gráfica desplegada en la pantalla.
+
+
+Los dispositivos móviles no poseen acelerómetro como hardware para medir la aceleración inercial    y cuando en la especificaciones dicen que lo poseen la denominan la aceleración lineal y es un acelerómetro virtual, es decir, mide la aceleración    y mediante software emplea la ecuación [1] para desplegar el valor de   .
+
+
+________________
+
+
+ANEXO III: SOBRE EL GAUSSIMETRO DEL DISPOSITIVO
+
+
+Desde los antiguos griegos se experimentaba con la electricidad y el magnetismo. La electricidad la experimentaban frotando el ámbar (en griego elektron) y el magnetismo lo experimentaban con la magnetita (palabra que proviene de Magnesia que era la provincia griega donde se encontró por primera vez).
+La electricidad y el magnetismo parecían dos fenómenos que no tenían ninguna relación hasta principios del siglo XIX. Sin embargo Oesterd (en 1819) obtuvo efectos magnéticos con corrientes eléctricas y Faraday (en 1831) obtuvo efectos eléctricos (genera corrientes eléctricas en alambres) mediante movimientos relativos entre imanes y alambres. Es Maxwell (en 1873) quien genialmente logra resumir todas estas observaciones para formular las hoy conocidas leyes del electromagnetismo, las cuales se podrían resumir en las siguientes ideas:
+
+
+   * Hay dos formas de generar campo eléctrico   : 
+      * Con las cargas eléctricas como fuente.
+      * Con las variaciones temporales del campo magnético (más exactamente, del flujo magnético) como fuente.
+      * Hay dos formas de generar campo magnético   :
+         * Con las cargas eléctricas en movimiento (corriente eléctrica) como fuente.
+         * Con las variaciones temporales del campo eléctrico (más exactamente, del flujo de campo eléctrico) como fuente.
+Como se puede concluir, los fenómenos eléctricos y magnéticos están íntimamente relacionados: hoy se conocen con el nombre de fenómenos electromagnéticos.
+
+
+Campo magnético
+El campo magnético    es una magnitud vectorial: por razones históricas también se le denomina inducción magnética. Recordando lo expresado en los párrafos anteriores, hay dos fuentes de campo magnético:
+         * Las cargas eléctricas en movimiento.
+         * Los flujos de campos eléctricos variables en el tiempo.
+La unidad de campo magnético en el SI es el Tesla (T). Esta es una unidad muy grande por lo que a veces se emplea el Gauss (G): 1T= 104 G. En la Tabla 4 se dan valores de campo magnético en algunas situaciones físicas.
+
+
+Tabla 4: Valores de algunos campos magnéticos
+Situación física
+	Campo magnético
+	Campo magnético en G
+	Corrientes cerebrales
+	1 pT
+	10-8
+	Corazón
+	100 pT
+	10-6
+	Debajo de líneas de alto voltaje
+	1µT
+	0,01
+	Planeta Tierra en su superficie
+	50 µT
+	0,5
+	Planeta Tierra en su núcleo
+	2,5 mT
+	25
+	Imán de nevera
+	10 mT
+	100
+	Cerca de imán de hierro
+	100 mT
+	1 000 
+	Cerca de imán de Neodimio
+	200 mT
+	2 000 
+	Manchas solares
+	1 T
+	10 000
+	Máquina de resonancia magnética médica
+	7 T
+	70 000
+	Estrella de neutrones
+	10 000 000 000 000 T
+	100 000 000 000 000 000
+	
+
+Líneas de campo
+Las líneas de campo se deben a Michel Faraday (1791-1867)  quien las denominó “líneas de fuerza” y las empleó para “visualizar” el campo magnético. Hoy son empleadas para “visualizar” cualquier campo vectorial, por ejemplo también el campo eléctrico. En el caso del campo magnético estas líneas son cerradas, Figura 1: salen del norte magnético (polo norte)  y entran al sur magnético (polo sur).
+ 
+  
+
+Figura 1: Líneas de campo magnético de un imán de barra
+
+
+Donde las líneas de campo están más juntas el campo tiene mayor intensidad.  Es necesario aclarar que las líneas de campo magnético son cerradas debido a que no es posible encontrar monopolos magnéticos: no hay forma de separar el polo norte del polo sur. En cambio en el campo eléctrico si hay posibilidad de tener líneas de campo abiertas ya que existen monopolos eléctricos (carga eléctrica positiva y carga eléctrica negativa) 
+A cada punto de la línea de campo magnético  le corresponde un único vector de campo magnético que es tangente a ésta en ese punto: vectores rojos en la Figura 1.    
+Campo magnético generado por una corriente eléctrica
+En la Figura 2 se ilustran las líneas el campo magnético generado por una corriente eléctrica rectilínea: La líneas negras son las líneas de campo y los vectores azules tangentes a la respectiva línea de campo representan el campo magnético en esos puntos. Su dirección se puede obtener siguiendo la conocida regla de la mano derecha, como se ilustra en la misma figura.
+
+
+  
+
+Figura 2: Campo magnético generado por corriente eléctrica rectilínea
+
+
+La intensidad del campo magnético en un punto P a una distancia r de del alambre es,
+
+
+  
+                                                                    Ecuación 7
+
+
+en donde µo = 4πx10-7 T.m.A-1 corresponde a la permeabilidad del vacío, i a la intensidad de la corriente eléctrica. En los experimentos de Física Básica se usan corrientes del orden de 100 mA  que corresponde a campos magnéticos para una corriente rectilínea iguales a unos 0,02 Gauss a 1 cm del alambre: recordar que el campo magnético de la tierra en promedio es alrededor de 0,5 Gauss.
+Campo magnético generado en una bobina
+En la Figura 3 se ilustra el campo magnético generado por una corriente eléctrica  que circula en una bobina (también conocida con el nombre de solenoide). Es similar al de un imán de barra.
+
+
+  
+
+Figura 3: Bobina
+
+
+La intensidad del campo magnético en un punto P en el interior de la bobina es uniforme y está dado por,
+
+
+  
+                                                                 Ecuación 8
+
+
+en donde µo = 4πx10-7 T.m.A-1 corresponde a la permeabilidad del vacío, i a la intensidad de la corriente eléctrica que circula en la bobina y n la densidad lineal de espiras (espiras/m). En la 
+Tabla 5 se ilustran valores del campo magnético al interior de diferentes bobinas con diferentes corrientes. En la Figura 4 se ilustran diferentes bobinas.
+
+
+Tabla 5: Campo magnético al interior de diferentes bobinas con diferentes corrientes
+Número de espiras en 10 cm
+	Corriente eléctrica
+	Campo magnético en Gauss
+	10
+	0,1 A (100 mA)
+	0,1
+	100
+	0,1 A (100 mA)
+	1
+	1000
+	0,1 A (100 mA)
+	10
+	100
+	1 A
+	10
+	1000
+	1 A
+	100
+	
+
+
+
+  
+
+Figura 4: Diferentes bobinas
+
+
+Imanes permanentes
+En el interior de la materia existen pequeñas corrientes eléctricas cerradas debido al movimiento de los electrones que contienen los átomos; cada una de ellas se comporta como un imán microscópico. Cuando estos pequeños imanes están orientados aleatoriamente se anulan sus efectos magnéticos y el material no presenta propiedades magnéticas. En cambio, si ellos se alinean, actúan como un único imán y es cuando se dice que la sustancia está magnetizada, Figura 5. En la Figura 6 se ilustra un imán de barra permanente
+  
+
+Figura 5: Modelo de la magnetización de un material
+  
+
+Figura 6: Imán permanente
+
+
+En la Figura 7 se ilustran imanes de neodimio, los cuales son el orden de 1 000 Gauss.
+ http://www.ceiarteuntref.edu.ar/badarte/sites/default/files/iman-neodimio_0.jpg 
+
+Figura 7: Imanes de neodimio
+Campo magnético Terrestre
+El campo magnético de la Tierra es similar al de un imán de barra y está inclinado 10,5o respecto su eje de rotación. La magnitud del campo magnético medido en la superficie de la Tierra es alrededor de 0,5 G: varía en el rango de 0,3 G en las proximidades del Ecuador hasta a 0,7 G en las regiones polares; en la ciudad de Medellín su valor es 0,346 G. Las líneas de fuerza entran en la Tierra por el hemisferio norte: el norte geográfico corresponde al sur magnético y el sur geográfico corresponde al norte magnético, Figura 8.
+Actualmente se argumenta que el campo magnético de la Tierra se debe al denominado efecto dínamo de circulación de corriente eléctrica en el que la rotación de la Tierra desempeña un papel: este efecto consiste en el proceso a través del cual un fluido en rotación, convección, y conductor de la electricidad puede mantener un campo magnético en escalas de tiempo astronómicas. Esta corriente no ha tenido sentido constante: evidencias geológicas informan 171 inversiones del campo magnético durante los últimos 71 millones de años.
+
+
+Componente horizontal del campo magnético de la Tierra
+En la Figura 8 se muestra un modelo simplificado del campo magnético terrestre. Como puede apreciarse en la Figura 9, la componente horizontal (local) del campo magnético terrestre Bh se dirige siempre hacia el polo Norte.
+
+
+
+
+  
+
+Figura 8: Campo magnético de la Tierra
+
+
+
+
+  
+
+Figura 9: Componente horizontal del campo magnético (Bh)
+
+
+Como los ángulos de inclinación α del campo magnético terrestre, Figura 10, varían con la latitud, conocida ésta, se puede determinar la latitud en la que se encuentra. 
+
+
+  
+
+Figura 10: Ángulo de inclinación del campo magnético de la Tierra
+
+
+
+
+
+
+
+
+La brújula
+ http://1.bp.blogspot.com/-bHTKBSdrQqw/UM3plOIpurI/AAAAAAAABGk/E9X2Mo-io_A/s1600/bug+in+-+compass.jpg 
+
+	Figura 11: Brújula
+	La brújula, también llamada compás magnético, es un instrumento que al orientarse con las líneas de fuerza del campo magnético de la tierra, proporciona para la navegación o el vuelo una indicación permanente del rumbo respecto al Norte magnético terrestre, Figura 11. Este instrumento es la referencia básica para mantener la dirección de navegación o de vuelo. 
+Fue inventada en China aproximadamente en el siglo IX con el fin de determinar las direcciones en mar abierto, e inicialmente consistía en una aguja imantada flotando en una vasija llena de agua. 
+
+
+El gaussímetro
+Un magnetómetro (gaussimetro/teslametro) es un instrumento para medir la magnitud y dirección de un campo magnético. Los más comunes utilizan un sensor de efecto Hall, el cual es conectado a una interface que, entre otras funciones, se encarga de amplificar la señal generada en el sensor Hall al ser expuesto a un campo magnético, traducirla al valor de dicho campo magnético y hacer posible la visualización en un display, Figura 12 (Imagen tomada de http://www.nauticexpo.es).
+  
+
+Figura 12: Gaussímetro
+
+
+Sobre el sensor geomagnético del dispositivo móvil
+El sensor geomagnético del dispositivo móvil
+Los teléfonos celulares o tabletas son capaces de reconocer y medir el campo magnético de la Tierra. Calibrado el sensor y lejos de fuentes magnéticas diferentes a la del campo magnético de la Tierra mide las componentes de éste en las tres direcciones del eje del dispositivo, Figura 13. Es muy común que este sensor se descalibre, por ejemplo por el uso en un entorno en el que estos dispositivos se mueven pueden haber quedado magnetizados (el simple cierre magnético de algunas fundas o estuches puede haberles afectado) midiendo valores incluso muy elevados comparados con el valor del campo magnético de la Tierra; en este caso se recurre a la “autocalibración” del sensor, la cual se logra  moviendo el dispositivo (quitándole el estuche que puede que posea un imán) varias veces en el aire siguiendo una trayectoria en forma de ocho (8). Una vez “calibrado” se pueden estimar tanto el campo magnético terrestre como otros campos magnéticos. 
+
+
+  
+
+Figura 13: Ejes de los dispositivos móviles. Izquierda teléfono, derecha tableta.
+Midiendo el campo magnético de la Tierra con corrección de inclinación
+El acelerómetro, el sensor geomagnético y el giroscopio, son útiles para determinar la posición física de un dispositivo en relación con el planeta Tierra. Por ejemplo, se puede utilizar el sensor de campo magnético terrestre en combinación con el acelerómetro para determinar la posición relativa de un dispositivo con respecto al polo norte magnético.  
+También en una buena medida del campo magnético de la Tierra debe tenerse la corrección respecto a la inclinación del sensor geomeagnético: el uso común de éste (o de la brújula) supone su horizontalidad respecto a la superficie terrestre, pero una inclinación en su uso introduce errores en la medición que pueden corregirse con el uso de un inclinómetro o un acelerómetro como se describe a continuación.
+Primero que todo es necesario definir los ángulos denominados azimuth, yaw, roll y picth. Con la información aportada en la Figura 14 se puede comprender el signifcado de cada uno de éstos. 
+
+
+  
+
+Figura 14: Ángulos para orientación del dispositivo móvil
+Para cálculos locales donde está operando el dispositivo, la superficie de la Tierra se puede considerar plana y horizontal. Suponiendo el dispositivo con una inclinación respecto a la superficie terrestre, Figura 15, mediante una transformación de las coordenadas del dispositivo a las coordenadas del sistema fijo a la Tierra, se puede demostrar que las coordenadas    y    de la proyección del dispositivo sobre ésta cumplen,
+
+
+  
+               Ecuación 9
+
+
+en donde    corresponde al roll y    corresponde al pitch.
+
+
+  
+
+Figura 15: Ejes coordenados de la Tierra y del dispositivo
+
+
+Calculando las coordenadas    y    con la ecuación 3, se obtiene el azimut con la siguiente expresión,
+
+
+  
+                                                       Ecuación 10
+
+
+Calculado el azimut    con el ajuste  debido a la inclinación del dispositivo, ecuación 4, se proyecta el campo magnético en la dirección norte magnético de la brújula. 
+Como puede deducirse, para realizar la medida del azimuth con el sensor geomagnético con la respectiva corrección debido a la inclinación del dispositivo, es necesario saber los valores de los ángulos pitch y roll; para obtener estos valores se debe usar otro sensor adicional el cual podría ser perfectamente un acelerómetro. En definitiva, el sensor geomagnético y el sensor acelerómetro hacen una buena pareja para obtener buenas medidas en lo que se refiere al campo magnético de la Tierra y su utilidad para efectos de orientación. 
+________________
+ANEXO IV: SOBRE EL SONIDO
+
+
+La onda sonora
+Las ondas que se propagan a lo largo de un resorte como consecuencia de una compresión longitudinal del mismo constituyen un modelo de ondas mecánicas que se asemeja bastante a la forma en la que el sonido se genera y se propaga. Las ondas sonoras en los fluidos se producen también como consecuencia de una compresión del medio a lo largo de la dirección de propagación. Son, por tanto, ondas longitudinales.
+
+
+Para que se produzca un sonido, es necesario que exista un cuerpo que vibre y un medio elástico que propague esas vibraciones. Los sonidos son diferentes unos de otros, la voz de un ser humano se puede distinguir del sonido que emiten los pájaros, de un instrumento musical o del viento; pero para que pueda transmitirse requiere de un medio que puede ser gaseoso, sólido o líquido. El ser humano requiere del aire para comunicarse mediante los diversos sonidos, los peces del agua y algunos animales como los topos y castores de la tierra que es sólida. En el vacío el sonido no se propaga.
+
+
+El sonido se propaga más rápido en el estado sólido que en el estado líquido y se propaga más rápido en el estado líquido que en el gaseoso. La razón de esto tiene que ver con la cercanía de las partículas en cada uno de estos medios y en la magnitud de la interacción eléctrica entre ellas. El sonido en el hierro se propaga a unos 5 000 m/s, en el agua a unos 1 500 m/s y en el aire a temperatura ambiente a unos 340 m/s.
+
+
+En relación a la frecuencia, el oído humano es capaz de captar sonidos emitidos entre los 16 Hz y los 20 000 Hz. Los ultrasonidos tienen una frecuencia mayor a los 20 000 Hz y los infrasonidos una frecuencia menor a los 16 Hz.
+
+
+Cuando se propaga una onda sonora en un gas, simultáneamente varían tres magnitudes físicas: la elongación, la densidad y la presión. Es decir se puede hablar de la propagación simultánea de tres ondas: onda de elongación (oscilación de las partículas alrededor de las posiciones de equilibrio), onda de densidad y onda de presión (onda de presión manométrica: variación de la presión alrededor de la presión atmosférica). Las tres viajan a la misma velocidad (velocidad del sonido en el gas) pero no se encuentran en fase: la onda de elongación y la de presión se encuentran desfasadas en π/2, es decir en un cuarto de longitud de onda (λ/4), Figura 1. En la práctica la magnitud que se mide es la presión: por lo tanto se suele decir que el sonido en un gas es una onda de presión. 
+
+
+  
+
+Figura 1: Fotograma de una simulación que ilustra una onda sonora propagándose en una columna de gas. Arriba se observa la columna de gas perturbada, y abajo se observan las respectivas gráficas respecto a la posición en esta columna (en un instante) de la elongación y de la presión manométrica (claramente se deduce el desfase de λ/4 entre ambas ondas).    
+
+
+En resumen, las ondas sonoras en los gases son longitudinales y mecánicas.
+
+
+Velocidad del sonido en el aire
+A mayor temperatura del aire mayor es la velocidad de propagación del sonido: aumenta 0,6 m/s por cada grado Celsius de aumento en la temperatura según la siguiente ecuación:
+
+
+  
+                                                       Ecuación 1
+
+
+en donde t es la temperatura del aire en grados Celsius y V  la velocidad del sonido en el aire en m/s.
+
+
+Cualidades del sonido
+El oído humano es capaz de distinguir unos sonidos de otros porque es sensible a las diferencias que puedan existir entre ellos en lo que concierne a alguna de las tres cualidades que caracterizan todo sonido y que son la intensidad, el tono y el timbre. Aun cuando todas ellas se refieren al sonido fisiológico, están relacionadas con diferentes propiedades de las ondas sonoras.
+
+
+Timbre y tono
+
+
+Si la forma de la onda sonora es una función seno o coseno se dice que es armónica. En la Figura 2 se ilustra el sonido generado por un diapasón de 250 Hz, en la Figura 3 el sonido de la vocal a generado por una mujer y por un hombre: observar que aunque son periódicos no son armónicos.
+
+
+  
+
+Figura 2: Sonido generado por un diapasón de frecuencia 250 Hz y periodo es igual a 0,004 s.
+  
+
+  
+
+Figura 3: Sonido generando la vocal a: Tatiana (173 Hz –arriba-)  y Diego (134 Hz-abajo-).
+En la Figura 3 se puede obtener el periodo P de la señal y  con base en este se calcula la frecuencia f  (recordar que fx P=1). De nuevo, recordar que la onda sonora ya no es sinusoidal pero es periódica: a la frecuencia calculada con este periodo se le denomina frecuencia fundamental y es la que da la sensación del tono del sonido. Para Tatiana el periodo es igual a 0,00579 s y  para Diego es 0,00743 s correspondiendo a frecuencias fundamentales iguales a 173 Hz y 134 Hz. Es decir, el tono de Tatiana es más agudo que el de Diego (esto es lo normal en los seres humanos para los sexos: las mujeres tonos agudos y los hombres tonos graves).
+
+
+La forma de las ondas son las que explican la sensación de  lo que se denomina el timbre del sonido.  El timbre es una especie de “huella digital”.  El timbre es la cualidad del sonido que permite distinguir sonidos procedentes de diferentes instrumentos, aun cuando posean igual tono e intensidad.
+
+
+El tono es la cualidad del sonido mediante la cual el oído le asigna un lugar en la escala musical, permitiendo, por tanto, distinguir entre los graves y los agudos. La magnitud física que está asociada al tono es la frecuencia fundamental. Los sonidos percibidos como graves corresponden a frecuencias fundamentales bajas, mientras que los agudos son debidos a frecuencias fundamentales altas.
+
+
+Intensidad y nivel de intensidad
+La intensidad del sonido percibido, o propiedad que hace que éste se capte como fuerte o como débil, está relacionada con la intensidad de la onda sonora correspondiente, también llamada intensidad acústica. 
+
+
+La intensidad acústica es una magnitud que da idea de la cantidad de energía que está fluyendo por el medio como consecuencia de la propagación de la onda. Se define como la energía que atraviesa por segundo una superficie unidad dispuesta perpendicularmente a la dirección de propagación. Equivale a la potencia por unidad de superficie y se expresa en W.m-2.
+
+
+La ley de Weber-Fechner establece una relación cuantitativa entre la magnitud de un estímulo físico y como este es percibido (sensación). La ley expresa que la relación entre el estímulo y la percepción corresponde a una escala logarítmica. Aplicada esta ley al sonido expresa que el nivel sonoro crece con el logaritmo de la intensidad, es decir cuando la intensidad crece en progresión geométrica, la sonoridad crece en progresión aritmética. A esta escala se le denomina nivel de intensidad β y se expresa en dB (decibeles):
+
+
+
+
+  
+                                              Ecuación 2
+
+
+donde I0 es una intensidad de referencia. Para el caso del aire se ha tomado 10-12  W.m-2. Una intensidad acústica de 10 decibelios corresponde a una energía diez veces mayor que una intensidad de cero decibelios; una intensidad de 20 dB representa una energía 100 veces mayor que la que corresponde a 0 decibelios y así sucesivamente. El nivel de intensidad mide la sensación y la intensidad mide el estímulo. En la Tabla 1 se ilustra las equivalencias entre las intensidades y los niveles de intensidad de ondas sonoras en el aire con algunos ejemplos.
+
+
+
+
+Tabla 1: Intensidad y nivel de intensidad de algunos sonidos
+Intensidad
+en W.m-2
+	Nivel de Intensidad
+en db
+	Ejemplo
+	10-12
+	0
+	Sonido más tenue que percibe el oído humano
+	10-11
+	10
+	Susurro, respiración normal, pisadas suaves.
+	10-10
+	20
+	Rumor de las hojas en el campo al aire libre
+	10-9
+	30
+	Murmullo, oleaje suave en la costa
+	10-8
+	40
+	Biblioteca, habitación en silencio
+	10-7
+	50
+	Tráfico ligero, conversación  normal
+	10-6
+	60
+	Oficina grande en horario de trabajo
+	10-5
+	70
+	Conversación en voz muy alta, gritería, tráfico intenso de ciudad.
+	10-4
+	80
+	Timbre, camión pesado moviéndose
+	10-3
+	90
+	Aspiradora funcionando, maquinaria de una fábrica trabajando.
+	10-2
+	100
+	Banda de música rock.
+	10-1
+	110
+	Explosión de petardos o cohetes empleados en pirotecnia.
+	1=100
+	120
+	Umbral de dolor
+	101
+	130
+	Martillo neumático (de aire)
+	103
+	150
+	Avión de reacción durante el despegue.
+	106
+	180
+	Motor de un cohete espacial durante el despegue.
+	
+
+         1. Ley del inverso cuadrado
+En general la onda sonora no es plana sino esférica, debido a que las fuentes son en general puntuales. Por tanto, la intensidad decrece a medida que el sonido avanza, de acuerdo a la ley del inverso cuadrado,
+
+
+
+
+  
+                                                           Ecuación 3
+
+
+siendo I1, I2 las correspondientes intensidades de la onda sonora a las distancias r1 y r2 de la fuente.
+
+
+Sobre la adquisición del sonido con el dispositivo móvil
+Digitalización del sonido
+Cuando se habla de digitalización hay que definir dos conceptos: la cuantización (quantization) y el muestreo (sampling). 
+Cuantización
+Se refiere a la discretización del rango de la señal, es decir, al número de niveles de la amplitud de ésta (número de niveles en que se parte la amplitud de la señal análoga correspondiente). Esta discretización depende del número de bits asignados: a 8 bits le corresponde 28 = 256 niveles, a 16 bits le corresponde 216 = 65 536  niveles, a 24 bits le corresponde 224 = 16 777 216 niveles. A este concepto se le conoce también con el nombre Profundidad de Bit (Bit Depth).
+Muestreo
+Se refiere a la discretización del dominio de la señal, es decir, al número de muestras que se toman de la señal análoga correspondiente. El denominado teorema del muestreo exige que la frecuencia con la cual se muestrea debe ser como mínimo el doble de la frecuencia más alta presente en la señal análoga que se digitaliza. En el caso del sonido, la frecuencia más alta perceptible por ser humano es alrededor de los 20 000 Hz, por lo tanto se debe muestrear mínimo a 40 000 Hz para no perder calidad del sonido. Normalmente se muestrea a 44 100 Hz.  
+Como ejemplo, para los Compact Discs el Bit Depth de 16 bits y la frecuencia de muestreo es de     44 100 Hz. Hay sistemas de grabación de sonido con Bit Depth de 24 bits y frecuencia de muestreo de 96 000 Hz. La mayoría de los dispositivos móviles actuales manejan el audio para frecuencias de muestreo de 44 100 Hz y cuantización de 16 bits.
+Adquisición del sonido con el micrófono del dispositivo
+Los dispositivos móviles tienen un micrófono. A través de éste se pueden captar los sonidos para ser analizados.
+Adquisición del sonido con un micrófono externo
+Adicionalmente se le  puede adaptar un micrófono externo al dispositivo móvil. Para esto se usa una tarjeta USB externa la cual se acopla al dispositivo móvil a través del puerto USB usando un cable OTG, como se indicará más adelante. A esta tarjeta se le conecta un micrófono externo. Los móviles de última generación, USB tipo C, aceptan directamente micrófonos por este puerto.  Cuando se introduce sonido por el jack 3.5 mm sufre mucha distorsión debido a los filtros utilizados allí.

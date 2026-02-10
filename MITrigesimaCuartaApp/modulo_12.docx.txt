@@ -1,0 +1,5222 @@
+﻿SIMULACIONES
+IV + IoT + DL 
+Industria 5.0
+Copyright 2026 para:
+Diego L. Aristizábal Ramírez
+Profesor, Facultad de Ciencias, Departamento de Física
+Universidad Nacional de Colombia
+Medellín
+
+
+	FLUJO DE DATOS
+
+
+	12
+	
+
+
+
+
+
+Temas
+	* INTRODUCCIÓN
+* GENERALIZACIÓN DEL FLUJO DE DATOS
+* SERIALIZACIÓN
+* ACCESO A ARCHIVOS: LECTURA Y ESCRITURA DE ARCHIVOS
+* ALMACENAR EN MEMORIA INTERNA: APP EJEMPLO
+* ALMACENAR EN MEMORIA EXTERNA: APP EJEMPLO
+* UNA APP PARA GUARDAR DATOS DEL LUXOMETRO
+* UNA APP PARA LEER LOS DATOS GUARDADOS DEL LUXOMETRO
+* TAREA
+* REFERENCIAS
+	
+
+INTRODUCCIÓN
+Una de las primeras invenciones del sistema operativo UNIX fue la canalización. Una canalización es un flujo no interpretado de bytes que puede utilizarse para comunicación entre programas, o para leer de ellos y escribir a dispositivos periféricos o archivos arbitrarios. Esta unificación de formas dispersas de comunicación facilitó el camino para toda una serie de invenciones relacionadas, culminando en la abstracción conocida como flujos.   
+
+
+
+
+Un flujo (stream) es una ruta de acceso de comunicación entre el origen (fuente) de cierta información y su destino (sumidero).
+
+
+	
+
+
+
+En este módulo se aborda los flujos y las clases I/O (E/S, Entrada /Salida) en java:
+
+
+
+
+
+
+
+
+
+
+Flujos:
+
+
+* Flujos de entrada: cómo crear, utilizar y detectar su fin, y flujos de entrada con filtro, los cuales pueden estar anidados para mayor eficiencia.
+
+
+* Flujos de salida que son en su mayoría análogos (aunque opuestos) a los de entrada.
+
+
+ I/O:
+
+
+* Lectores, los cuales se crean y utilizan como flujos de entrada y lectores con filtros, que pueden estar anidados para mayor eficiencia.
+
+
+* Escritores, que en su mayoría son análogos (aunque opuestos) a los lectores.
+
+
+Se comenzará el módulo con una generalización sobre el flujo de datos. Luego se abordan diferentes casos mediante ejemplos. 
+
+
+GENERALIZACIÓN DEL FLUJO DE DATOS
+
+
+La información, un flujo de bytes no interpretado, puede venir de cualquiera de los “orígenes de la canalización” (memoria del dispositivo e incluso internet). El origen y el destino de un flujo son productores y consumidores de bytes completamente arbitrarios (al leer de un flujo no necesitan saber el origen de la información; al escribir de un flujo no necesita saber del destino de la información). Este es el poder de la abstracción del flujo.
+
+
+Los métodos generales que pueden leer de cualquier origen aceptan un argumento de flujo para especificar ese origen; los métodos generales para escribir aceptan un flujo para escribir el destino. Los procesadores (o filtros) de datos tienen dos argumentos de flujo. Leen del primero, procesan los datos, y escriben sus resultados en el segundo. Estos procesadores no tienen idea del origen ni del destino de los datos que están procesando. Los orígenes y destinos pueden variar ampliamente: desde los búffers de memoria en el dispositivo local, hasta los flujos de datos en tiempo real de una sonda de la NASA en el espacio lejano.
+
+
+Al desacoplar el consumo, procesamiento y producción de los datos de sus orígenes o destinos, puede mezclar y hacer corresponder cualquier combinación de ellos a voluntad al escribirse un programa. 
+
+
+Un buen resumen sobre la generalización de flujo de datos es el siguiente:
+
+
+1. Para obtener la información, el programa abre un conducto (stream) de entrada a la fuente de información (archivo, memoria, red...), Figura 1.
+
+
+  
+
+
+
+
+
+  
+
+
+
+Figura 1
+
+
+2. Para enviar información, el programa abre un conducto (stream) de salida al destino externo de información (archivo, red, memoria...), Figura 2.
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+Figura 2
+
+
+3. Pasos para leer (Input):
+
+
+Paso 1. Crear el canal o conducto de transporte.
+Paso 2. Abrir el canal o conducto (stream).
+Paso 3. Leer información mientras haya.
+Paso 4. Cerrar el canal.
+
+
+4. Pasos para escribir (Output):
+
+
+Paso 1. Crear el canal o conducto de transporte.
+Paso 2. Abrir el canal o conducto (stream).
+Paso 3. Escribir información mientras haya.
+Paso 4. Cerrar el canal.
+
+
+5. Los canales a utilizar dependerán esencialmente de dos factores:
+
+
+* De los tipos de datos a transportar (bytes: flujo de bytes o char: flujo de caracteres). Para cada uno de estos dos tipos de flujo tiene un par de clases: una para leer del flujo y otra para escribir en él. Dependiendo del tipo de flujo estas clases tienen distintos sufijos.
+
+
+
+
+	Flujo de entrada (lector)
+	Flujo de salida (escritor)
+	Caracteres
+	_Reader
+	_Writer
+	Bytes
+	_InputStream
+	_OutputStream
+	
+
+
+
+Flujo de Bytes
+Cuando el stream (el flujo) es de bytes operan con byte como unidad de trabajo (flujos de a 8 bits). Son utilizados para leer y escribir información que esta almacenada en forma binaria (archivos binarios: al abrirlos dan la impresión de una colección de garabatos).
+
+
+La superclase utilizada para leer streams orientados a byte es la clase InputStream. A partir de esta clase  -la cual es abstracta– heredan todas las clases concretas que se utilizan para leer información en forma binaria.
+La superclase utilizada para escribir streams orientados a bytes es la clase OutputStream. A partir de esta clase - la cual es abstracta – heredan todas las clases concretas que se utilizan para escribir información en forma binaria.
+Flujo de caracteres
+Cuando el stream (el flujo) es de caracteres operan con caracteres como unidad de trabajo. Los caracteres a leer están formados por 2 bytes (flujos de a un carácter, es decir, flujos de a 2 bytes -16 bits por carácter-). Son utilizados para leer y escribir información que esta almacenada en forma de texto (archivos de texto: al abrirlos son comprensible para ser leídos).
+La superclase utilizada para leer streams orientados a carácter es la clase Reader. A partir de esta clase - la cual es abstracta – heredan todas las clases concretas que se utilizan para leer información en forma textual.
+La Superclase utilizada para escribir streams orientados a carácter es la clase Writer. A partir de esta clase - la cual es abstracta – heredan todas las clases concretas que se utilizan para escribir información en forma textual.
+
+
+* De la fuente o sumidero (ficheros -archivos de  disco-, memoria, otro programa, puerto, red). El prefijo de la clase se referirá a la fuente o sumidero de los datos, el cual puede tomar los siguientes valores:
+
+
+Prefijo
+	Fuente
+	File_
+	Acceso a ficheros
+	Piped_
+	Comunicación entre programas mediante tuberías (pipes)
+	String_
+	Acceso a una cadena en memoria (solo caracteres)
+	CharArray_
+	Acceso a un array de caracteres en memoria (solo caracteres)
+	ByteArray_
+	Acceso a un array de bytes en memoria (solo bytes)
+	
+
+
+
+Por ejemplo, la clase FileInputStream permite leer datos binarios de un fichero y FileWriter permite escribir caracteres en él.
+
+
+6. Adicionalmente se pueden diferenciar los flujos de datos según su propósito, pudiendo ser:
+
+
+* Canales de datos, simplemente para leer datos de una fuente externa o escribir éstos en un sumidero externo.
+* Flujos de procesamiento, que además de enviar o recibir datos realizan algún procesamiento con ellos. Se tienen por ejemplo flujos que realizan un filtrado de los datos que viajan a través de ellos (con prefijo Filter), conversores de datos (con prefijo Data), bufferes de datos (con prefijo Buffered), preparados para la impresión de elementos (con prefijo Print). Estos son acoples que se la hacen a los canales (son mangueras conectadas) para darles más funcionalidad (poder de procesamiento). Ejemplos:
+
+
+   * Bytes: BufferedInputStream (BufferedOutputStream) y DataInputStream  (DataOutputStream). 
+   * Caracteres: BufferedReader (BufferedWriter).
+
+
+ 
+Un tipo de filtros de procesamiento a destacar son aquellos que permiten convertir un flujo de bytes a flujo de caracteres.  Estos son objetos tipo InputStreamReader y OutputStreamWriter. Como se puede ver en su sufijo, son flujos de caracteres, pero se construyen a partir de flujos de bytes, permitiendo de esta manera acceder a un flujo de bytes como si fuera un flujo de caracteres. No existen ReaderInpuStream y el WriterOutputStream.
+
+
+Para cada uno de los tipos básicos de flujo que se han visto existe una superclase, de la que heredan todas las subclases, y que contiene una serie de métodos que son comunes a todos ellos. Entre estos métodos se encuentran los métodos básicos para leer o escribir caracteres o bytes en el flujo a bajo nivel.  En la siguiente tabla se encuentran los métodos más importantes de cada objeto:
+
+
+Clase
+	Métodos
+	InputStream
+	read(), reset(), available(), close()
+	OutputStream
+	write(int b), flush(), close() 
+	Reader
+	read(), reset(), close()
+	Writer
+	write(int c), flush(), close()
+	
+
+
+
+Aparte de estos métodos se pueden encontrar variantes de los métodos de lectura y escritura o de otros métodos. Cada tipo específico de flujo podrá contener sus propios métodos adicionales. Todas las clases se encuentran en el paquete java.io. Para más detalles se puede consultar las especificaciones de la API de Android.
+
+
+En la Tabla siguiente se ilustran algunos de los canales de mayor uso (remarcados en amarillo los que se usarán más en las aplicaciones de éste curso).
+
+
+
+
+
+
+Fuente do sumidero
+	Tipo de datos
+	Canal para leer (Input)
+	Canal para escribir (Output)
+	Archivo de disco o cualquier dispositivo de almacenamiento  (File)
+	Bytes
+	
+
+FileInputStream
+
+
+	FileOutputStream
+	Caracteres
+	FileReader
+	FileWriter
+	Memoria (Array)
+	Bytes
+	
+
+
+
+ByteArrayInputStream
+
+
+
+
+	ByteArrayOutputStream
+	Caracteres
+	
+
+
+
+CharArrayReader
+
+
+
+
+	CharArrayWriter
+	Otros programas (Piped)
+	Bytes
+	
+
+
+
+PipedInputStream
+
+
+
+
+	PipedOutputStream
+	Caracteres
+	
+
+
+
+PipedReader
+
+
+
+
+	PipedWriter
+	Puerto Serial
+	Bytes
+	InputStream entrada
+
+
+SerialPort puerto: se crea
+
+
+entrada=
+puerto.getInputStream()
+	OutputStream salida
+
+
+SerialPort puerto: se crea
+
+
+salida=
+puerto.getOutputStream()
+	
+
+
+
+
+
+
+
+
+
+	
+
+
+
+	
+
+	Puerto Paralelo
+	Bytes
+	InputStream entrada
+
+
+ParallePort puerto: se crea
+
+
+entrada=
+puerto.getInputStream()
+	OutputStream salida
+
+
+ParallePort puerto: se crea
+
+
+salida=
+puerto.getOutputStream()
+	
+
+
+
+
+
+
+
+
+
+	
+
+	
+
+	
+
+Puerto USB
+	
+
+
+
+Bytes
+
+
+
+
+	Normalmente hay hardware que permite la comunicación USB como si fuera SERIAL.
+	
+
+
+
+
+
+	La Red
+	
+
+
+
+Bytes
+
+
+
+
+	InputStream entrada
+
+
+Socket socket: se crea
+
+
+entrada= socket.getInputStream()
+	OutputStream salida
+
+
+Socket socket: se crea
+
+
+salida=
+socket.getOutputStream()
+	Objetos serializados
+	
+
+
+
+ObjectInputStream
+
+
+
+
+	ObjectOutputStream
+	
+
+
+
+SERIALIZACIÓN[1]
+La serialización de un objeto consiste en obtener una secuencia de bytes que represente el estado de dicho objeto. Esta secuencia puede utilizarse de varias maneras (puede enviarse a través de la red, guardarse en un fichero para su uso posterior, utilizarse para recomponer el objeto original, etc.).
+
+
+Para poder transformar el objeto en una secuencia de bytes, el objeto debe ser serializable.
+Un objeto es serializable si su clase implementa la interface Serializable.
+La interface Serializable se encuentra en el paquete java.io. Es una interface vacía. No contiene ningún método.
+
+
+ACCESO A ARCHIVOS: LECTURA Y ESCRITURA DE ARCHIVOS
+Para trabajar con archivos (leerlos y escribirlos) se usa la API File. Se puede acceder a archivos bien por caracteres o bien de forma binaria (por bytes). Las clases que se utilizan en cada caso son:
+
+
+
+
+	Lectura
+	Escritura
+	Caracteres
+	FileReader
+	FileWriter
+	Bytes
+	FileInputStream
+	FileOutputStream
+	
+
+
+
+Nota: Un objeto  File se adapta para leer o escribir grandes cantidades de datos de principio a fin sin saltarse ningún elemento. Por ejemplo, es bueno para los archivos de imágenes o cualquier archivo intercambiado en una red.
+
+
+Almacenamiento externo e interno
+Todos los dispositivos Android tienen dos áreas de almacenamiento: internas y externas. Esos nombres vienen de las primeras etapas de Android, cuando la mayoría de los dispositivos ofrecían memoria interna no volátil (no RAM), almacenamiento interno, y elementos de almacenamiento externo como pueden ser las tarjetas de memoria SD. Algunos dispositivos dividen el espacio de almacenamiento permanente dentro de particiones internas y externas, así incluso sin un medio de almacenamiento extraíble hay dos espacios de almacenamiento y el comportamiento de la API es el mismo independientemente de que haya un almacenamiento externo o no. En la siguiente tabla se presenta un resumen de la información de estos tipos de espacios de almacenamiento.
+
+
+
+
+
+
+
+
+Almacenamiento interno
+	Almacenamiento externo
+	Siempre está disponible
+	No está siempre disponible ya que el usuario puede montar el almacenamiento externo mediante una memoria USB y en algunos casos puede extraerla desde el dispositivo.
+	Los archivos guardados aquí son accesibles por la app
+	Todos pueden leer los archivos, es decir, si se guardan aquí pueden estar fuera de tu control.
+	Cuando el usuario desinstala la app, el sistema elimina todos los archivos de ella  del almacenamiento interno. 
+	Cuando el usuario desinstala la app, el sistema elimina los archivos de la app únicamente si se guardaron en un directorioutilizando  getExternalFilesDir().
+	
+
+* El almacenamiento interno es la mejor opción cuando se quiere asegurar que ni el usuario ni otras apps puedan acceder a tus archivos. Sólo la aplicación puede acceder a este archivo.
+
+
+* El almacenamiento externo es el mejor lugar para los archivos que no necesitan restricciones de acceso y para archivos que se quieren compartir con otras apps o que el usuario pueda acceder a ellos desde un ordenador.
+Permisos para almacenamiento externo
+Para poder escribir en el almacenamiento externo, se necesita solicitar una petición del permiso  WRITE_EXTERNAL_STORAGE en el archivo manifiesto:
+
+
+<manifest ...>
+    <uses-permission 
+      android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    ...
+</manifest>
+Para leer en el almacenamiento externo se solicita el permiso como se ilustra a continuación.
+<manifest ...>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    ...
+</manifest>
+
+
+
+
+Recordar adicionalmente:
+Si el dispositivo tiene Android 6.0 o una versión posterior, y el nivel de SDK de destino de tu app es el 23 o uno posterior, los permisos deben estar indicados en el manifiesto de la app, y adicionalmente esta debe solicitar cada permiso riesgoso que necesite mientras la app esté en ejecución. El usuario puede conceder o negar cada permiso y la app puede continuar ejecutándose con capacidades limitadas aun cuando el usuario rechace una solicitud de permiso. Para esto se incluirá en la actividad principal o en la actividad responsable de leer o guardar datos un método que se denomniraá verificacionPermisos()  y el método onRequestPermissionsResult() cuyos códigos es el siguiente. El primero se recomienda invocarlo desde el método onCreate() de la respectiva actividad.
+
+
+/*
+ Los siguientes dos métodos son para confirmar los permisos.
+ Esto se exige en las versiones Android 6.0 hacia adelante.
+*/
+
+
+private void verificacionPermisos() {
+
+   if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+       Toast.makeText(this, "This version is not Android 6 or later " + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show();
+   } else {
+
+       int hasReadWritePermission = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+       if (hasReadWritePermission != PackageManager.PERMISSION_GRANTED) {
+
+
+           /* Request user permissions in runtime */
+           ActivityCompat.requestPermissions(ActividadPrincipalMiCuadragesimaPrimeraApp.this,
+                   new String[]{
+                           Manifest.permission.READ_EXTERNAL_STORAGE,
+                           Manifest.permission.WRITE_EXTERNAL_STORAGE
+                   },
+                   100);
+
+       } else {
+
+       }
+
+   }
+
+}
+
+@TargetApi(23)
+@Override
+public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+   switch (requestCode) {
+       case 100:
+           if (grantResults.length > 0
+                   || grantResults[0] == PackageManager.PERMISSION_GRANTED
+                   || grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+
+           } else {
+
+               Toast.makeText(ActividadPrincipalMiCuadragesimaPrimeraApp.this, "Permiso denegado.", Toast.LENGTH_SHORT).show();
+               finish();
+           }
+           return;
+   }
+}
+
+
+Guardar archivo en almacenamiento interno
+
+
+No se necesita ningún permiso para guardar archivos en el almacenamiento interno. La app siempre tiene permiso para leer y escribir archivos en su directorio del almacenamiento interno
+
+
+La forma más simple de realizar este proceso es usando   openFileOutput() para obtener el flujo de salida  FileOutputStream que escribirá un archivo en el directorio interno. Por ejemplo, así se puede escribir cualquier texto en un archivo:
+String filename = "myfile";
+String string = "Hello world!";
+FileOutputStream outputStream;
+ 
+try {
+  outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+  outputStream.write(string.getBytes());
+  outputStream.close();
+} catch (Exception e) {
+  e.printStackTrace();
+}
+
+
+Guardar archivo en almacenamiento externo
+En algunos casos las aplicaciones manejan un gran volumen de datos internos y lo mejor es proceder a guardar en almacenamiento externo. Cada aplicación cuenta con un directorio propio en almacenamiento externo, que será eliminado automáticamente cuando se desinstala la app. Para acceder a éste directorio se hace como sigue.
+
+
+File dir this.getExternalFilesDir(null);
+
+
+
+
+Archivos compartidos
+Hasta aquí se ha visto cómo utilizar los directorios propios de una app tanto en el almacenamiento interno como en el externo. También se puede optar por guardar datos en directorios públicos del almacenamiento externo, para así permitir el acceso desde otras aplicaciones. Para esto se puede obtener el directorio raíz del almacenamiento externo con el método Environment.getExternalStorageDirectory(). Es necesario anotar que esto último no lo permiten las versiones de Android 11 en adelante por seguridad de los datos de los usuarios (un poco más adelante se tratará esto)[2]. 
+Lectura y escritura de archivos
+Una vez conocida la ruta del archivo,  se puede utilizar los diferentes flujos de datos que se han tratado aquí para leer o escribir en él.  A continuación se darán dos ejemplos básicos, uno de almacenamiento interno y otro de almacenamiento externo en directorio público. Este último caso es el que más interesa en este curso. Hasta aquí sólo se ha trabajado flujo de datos en donde la fuente o el sumidero son tipo File (archivos). En los próximos módulos se trabajarán flujos de datos en comunicaciones por ejemplo de tipo red. 
+
+
+ALMACENAR EN MEMORIA INTERNA: APP EJEMPLO
+Escribir y leer archivos en memoria interna que sólo pueden ser accedidos por la app.
+
+
+En esta app se usarán los siguientes dos métodos básicos:
+
+
+
+
+private void guardarArchivoEnMemoriaInterna(){
+
+
+   OutputStreamWriter escritor=null;
+
+   try  {
+
+       /*
+         Paso 1 y Paso 2: Crear y abrir flujo de salida
+         Esto es, crear y abrir el canal de salida
+       */
+
+       FileOutputStream flujoSalida= this. openFileOutput("pruebaArchivo.txt", Context.MODE_PRIVATE);
+
+       /*
+        Agregar filtro. En este caso se le pasa a
+        OutputStreamWriter para que escriba
+      */
+       escritor=new OutputStreamWriter(flujoSalida);
+
+       /*
+         Paso 3: Escribir información mientras haya
+       */
+       escritor.write(String.valueOf(editTextEntrada.getText()));//"En un lugar de la Mancha ...");//+ System.getProperty("line.separator"));
+
+       /*
+       Paso 4: cerrar canal
+      */
+       escritor.flush();
+       escritor.close();
+
+
+   }
+
+   catch (Exception ex)
+   {
+
+
+   }
+
+
+}
+
+private void abrirArchivoDeMemoriaInterna(){
+
+   InputStreamReader lector=null;
+   BufferedReader lectorBuffer=null;
+
+
+   try  {
+
+        /*
+         Paso 1 y Paso 2: Crear y abrir flujo de entrada
+         Esto es, crear y abrir el canal de entrada
+       */
+       FileInputStream flujoEntrada= openFileInput("pruebaArchivo.txt");//si existe
+
+
+
+       /*
+        Agregar dos filtros. En este caso se le pasa a
+        InputStreamReader y luego a BufferedReader
+        para que leer
+      */
+
+       lector= new InputStreamReader(flujoEntrada);
+       lectorBuffer = new BufferedReader(lector);
+
+       /*
+         Paso 3: Leer información mientras haya
+       */
+
+       
+       StringBuilder result = new StringBuilder();
+       String linea=null;
+
+       while ((linea = lectorBuffer.readLine()) != null) {
+
+           result.append(linea+"\n");
+
+       }
+
+       texto_salida=result.toString();
+       textViewSalida.setText(texto_salida);
+
+       /*
+       Paso 4: cerrar canal
+      */
+
+       lectorBuffer.close();
+   }
+   catch (Exception ex)
+   {
+
+
+   }
+
+
+}
+
+
+
+
+Nota:
+
+
+¿Por qué usar el método flush() adicionalmente a close() cuando se escribe?
+Cuando se escriben datos mediante un flujo, puede ocurrir que existe algo aún en el buffer, y no se sabe con exactitud cuándo se enviará lo último que se haya enviado. Es por esto que debe usarse el método flush() en operaciones de escritura, el cual garantiza que todo lo que se ha enviado se escriba en el archivo. Por otro lado, siempre que se haya terminado de hacer cosas en un archivo, ya sean operaciones de lectura o escritura, se debe invocar el método close(). Cuando se realizan operaciones de I/O se están usando una cantidad de operaciones de recursos del sistema bastante grande, por tanto, cuando se haya terminado, invocando el método close() se liberan esos recursos.
+Para ilustrar lo tratado en este ejemplo crear un proyecto denominado MiTrigesimaApp que sólo tiene una clase denominada ActividadPrincipalMiTrigesimaApp con el siguiente código.
+
+
+public class ActividadPrincipalMiTrigesimaApp extends Activity {
+
+
+   //variable tamaño de las letras basado en resolución de pantalla
+   private int tamanoLetraResolucionIncluida;
+   private EditText editTextEntrada;
+   private TextView textViewSalida;
+   private Button botonGuardar, botonAbrir;
+   private String texto_entrada="Escribe aquí ...";
+   private String texto_salida=null;
+
+
+   protected void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       gestionandoResolucion();
+
+       /*llamada al método para crear los elementos de la interfaz gráfica de usuario (GUI)*/
+       crearElementosGui();
+
+       eventos();
+
+
+       /*para informar cómo se debe adaptar la GUI a la pantalla del dispositivo*/
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       /*pegar al contenedor la GUI: en el argumento se está llamando al método crearGui()*/
+       this.setContentView(crearGui(), parametro_layout_principal);
+
+
+
+   }
+
+
+   /*Método auxiliar para asuntos de resolución*/
+   private void gestionandoResolucion() {
+
+       //independencia de la resolución de la pantalla
+       DisplayMetrics displayMetrics = this.getApplicationContext().getResources().getDisplayMetrics();
+       int alto = displayMetrics.heightPixels;
+       int ancho = displayMetrics.widthPixels;
+
+       /*
+        Tamaño de las letras con independencia de
+        tamaño y resolución de pantalla
+       */
+       int dimensionReferencia;
+
+       //tomar el menor entre alto y ancho de pantalla
+       if(alto>ancho){
+
+           dimensionReferencia=ancho;
+       }
+
+       else {
+
+           dimensionReferencia=alto;
+       }
+
+
+       //una estimación de un buen tamaño
+       int tamanoLetra= dimensionReferencia / 25;
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       tamanoLetraResolucionIncluida = (int) (tamanoLetra / displayMetrics.scaledDensity);
+
+
+
+   }
+   //crear los objetos de la interfaz gráfica de usuario (GUI)
+   private void crearElementosGui(){
+
+       editTextEntrada=new EditText(this);
+       editTextEntrada.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       editTextEntrada.setTextColor(Color.YELLOW);
+       editTextEntrada.setGravity(Gravity.START);
+       editTextEntrada.setBackgroundColor(Color.BLACK);
+       editTextEntrada.setText(texto_entrada);
+
+       textViewSalida=new TextView(this);
+       textViewSalida.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       textViewSalida.setTextColor(Color.YELLOW);
+       textViewSalida.setBackgroundColor(Color.BLACK);
+
+       botonGuardar=new Button(this);
+       botonGuardar.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonGuardar.setTextColor(Color.BLACK);
+       botonGuardar.setText("GUARDAR");
+       botonGuardar.getBackground().setColorFilter(Color.argb(180, 250, 170, 50), PorterDuff.Mode.MULTIPLY);
+
+
+       botonAbrir=new Button(this);
+       botonAbrir.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonAbrir.setTextColor(Color.BLACK);
+       botonAbrir.setText("ABRIR");
+       botonAbrir.getBackground().setColorFilter(Color.argb(180, 250, 170, 50), PorterDuff.Mode.MULTIPLY);
+       botonAbrir.setEnabled(false);
+
+   }
+
+   //organizar la distribución de los objetos de de la GUI usando administradores de diseño
+   private LinearLayout crearGui(){
+
+       //administrador de diseño
+       //linear principal
+       LinearLayout linearPrincipal = new LinearLayout(this);
+       linearPrincipal.setOrientation(LinearLayout.VERTICAL);
+       linearPrincipal.setGravity(Gravity.CENTER_HORIZONTAL);
+       linearPrincipal.setGravity(Gravity.FILL);
+       linearPrincipal.setWeightSum(10.0f);
+
+       //linear secundarios
+       LinearLayout linearArriba = new LinearLayout(this);
+       linearArriba.setOrientation(LinearLayout.VERTICAL);
+       linearArriba.setBackgroundColor(Color.RED);
+       linearArriba.setWeightSum(1.0f);
+
+       LinearLayout linearCentro = new LinearLayout(this);
+       linearCentro.setOrientation(LinearLayout.VERTICAL);
+       linearCentro.setBackgroundColor(Color.BLUE);
+       linearCentro.setWeightSum(1.0f);
+
+       LinearLayout linearAbajo = new LinearLayout(this);
+       linearAbajo.setOrientation(LinearLayout.HORIZONTAL);
+       linearAbajo.setBackgroundColor(Color.BLACK);
+       linearAbajo.setWeightSum(2.0f);
+
+
+       //parámetro de pegada
+       LinearLayout.LayoutParams parametrosPrincipalArribaCentro= new LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT,0);
+       int margen=(int)(tamanoLetraResolucionIncluida);
+       parametrosPrincipalArribaCentro.setMargins(margen, margen,margen,margen);
+       parametrosPrincipalArribaCentro.weight = 4.5f;
+       linearPrincipal.addView(linearArriba,parametrosPrincipalArribaCentro);
+       linearPrincipal.addView(linearCentro,parametrosPrincipalArribaCentro);
+
+       LinearLayout.LayoutParams parametrosPrincipalAbajo= new LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT,0);
+       parametrosPrincipalAbajo.setMargins(margen, margen,margen,margen);
+       parametrosPrincipalAbajo.weight = 1.0f;
+       linearPrincipal.addView(linearAbajo,parametrosPrincipalAbajo);
+
+
+
+
+       //parámetro de pegada de elementos arriba y centro
+       LinearLayout.LayoutParams parametrosPegadaElementosArribaCentro= new LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT,0);
+       parametrosPegadaElementosArribaCentro.setMargins(margen, margen, margen, margen);
+       parametrosPegadaElementosArribaCentro.weight = 1.0f;
+       //pegar etidtext y textview
+       linearArriba.addView(editTextEntrada,parametrosPegadaElementosArribaCentro);
+       linearCentro.addView(textViewSalida,parametrosPegadaElementosArribaCentro);
+
+
+       //parámetro de pegada de elemenos abajo
+       LinearLayout.LayoutParams parametrosPegadaElementosAbajo= new LinearLayout.LayoutParams(0,android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+       parametrosPegadaElementosAbajo.weight = 1.0f;
+       //pegar button
+       linearAbajo.addView(botonGuardar,parametrosPegadaElementosAbajo);
+       linearAbajo.addView(botonAbrir,parametrosPegadaElementosAbajo);
+
+
+
+       return linearPrincipal;
+
+   }
+
+
+
+   private void eventos(){
+
+
+
+
+       //evento del boton activar
+       botonGuardar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+
+               botonGuardar.setEnabled(false);
+               botonAbrir.setEnabled(true);
+
+               guardarArchivoEnMemoriaInterna();
+
+           }
+       });
+
+       //evento del boton activar
+       botonAbrir.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               botonGuardar.setEnabled(true);
+               botonAbrir.setEnabled(false);
+
+               abrirArchivoDeMemoriaInterna();
+
+           }
+       });
+
+
+   }
+
+
+   private void guardarArchivoEnMemoriaInterna(){
+
+
+       OutputStreamWriter escritor=null;
+
+       try  {
+
+           /*
+             Paso 1 y Paso 2: Crear y abrir flujo de salida
+             Esto es, crear y abrir el canal de salida
+           */
+
+           FileOutputStream flujoSalida= this. openFileOutput("pruebaArchivo.txt", Context.MODE_PRIVATE);
+
+           /*
+            Agregar filtro. En este caso se le pasa a
+            OutputStreamWriter para que escriba
+          */
+           escritor=new OutputStreamWriter(flujoSalida);
+
+           /*
+             Paso 3: Escribir información mientras haya
+           */
+           escritor.write(String.valueOf(editTextEntrada.getText()));
+
+           /*
+           Paso 4: cerrar canal
+          */
+           escritor.flush();
+           escritor.close();
+
+
+       }
+
+       catch (Exception ex)
+       {
+
+
+       }
+
+
+   }
+
+   private void abrirArchivoDeMemoriaInterna(){
+
+       InputStreamReader lector=null;
+       BufferedReader lectorBuffer=null;
+
+
+       try  {
+
+            /*
+             Paso 1 y Paso 2: Crear y abrir flujo de entrada
+             Esto es, crear y abrir el canal de entrada
+           */
+           FileInputStream flujoEntrada= openFileInput("pruebaArchivo.txt");//si existe
+
+
+
+           /*
+            Agregar dos filtros. En este caso se le pasa a
+            InputStreamReader y luego a BufferedReader
+            para que leer
+          */
+
+           lector= new InputStreamReader(flujoEntrada);
+           lectorBuffer = new BufferedReader(lector);
+
+           /*
+             Paso 3: Leer información mientras haya
+           */
+
+           //texto_salida =lectorBuffer.readLine();
+
+           StringBuilder result = new StringBuilder();
+           String linea=null;
+
+           while ((linea = lectorBuffer.readLine()) != null) {
+
+               result.append(linea+"\n");
+
+           }
+
+           texto_salida=result.toString();
+           textViewSalida.setText(texto_salida);
+
+           /*
+           Paso 4: cerrar canal
+          */
+
+           lectorBuffer.close();
+       }
+       catch (Exception ex)
+       {
+
+
+       }
+
+   }
+
+}
+
+
+
+
+El archivo manifiesto tiene el siguiente código.
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools"
+   package="com.curso_simulaciones.mitrigesimaapp">
+
+   <application
+       android:allowBackup="true"
+       android:dataExtractionRules="@xml/data_extraction_rules"
+       android:fullBackupContent="@xml/backup_rules"
+       android:icon="@mipmap/ic_launcher"
+       android:label="@string/app_name"
+       android:roundIcon="@mipmap/ic_launcher_round"
+       android:supportsRtl="true"
+       android:theme="@style/Theme.MiTrigesimaApp"
+       tools:targetApi="31" >
+
+       <activity android:name=".ActividadPrincipalMiTrigesimaApp"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="portrait"
+           android:exported="true">
+
+           <intent-filter>
+               <action android:name="android.intent.action.MAIN" />
+
+               <category android:name="android.intent.category.LAUNCHER" />
+           </intent-filter>
+       </activity>
+
+   </application>
+
+
+</manifest>
+
+
+Compilar y ejecutar. Se despliega la GUI de la Figura 3. Escribir, guardar y leer archivos.
+
+
+  
+
+Figura 3
+
+
+ALMACENAR EN MEMORIA EXTERNA: APP EJEMPLO
+Almacenamiento externo en directorio público
+Escribir y leer archivos en memoria externa y que puedan ser accedidos por cualquier app. Recordar que aquí es necesario solicitar permisos en el archivo manifiesto para poder leer y guardar. Adicionalmente de Android 6.0 en adelante hay que hacerlo también en el código de la actividad (volver a verificar los permisos). 
+
+
+En esta app se usarán los siguientes dos métodos básicos:
+
+
+private void guardarArchivoEnMemoriaExterna(){
+
+
+   OutputStreamWriter escritor=null;
+
+
+
+   try  {
+
+       /*
+         Paso 1 y Paso 2: Crear y abrir flujo de salida
+         Esto es, crear y abrir el canal de salida
+       */
+
+       File file=null;
+
+       if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q){
+           //versiones inferiores a Android 10
+           file =  new File(Environment.getExternalStorageDirectory(), ruta+"/pruebaArchivo.txt");
+
+       } else {
+
+           //versiones desde Android 10 en adelante
+           file = new File(getExternalFilesDir(null), ruta+"pruebaArchivo.txt");
+
+       }
+
+
+       FileOutputStream flujoSalida= new FileOutputStream(file);
+
+       /*
+        Agregar filtro. En este caso se le pasa a
+        OutputStreamWriter para que escriba
+      */
+       escritor=new OutputStreamWriter(flujoSalida);
+
+       /*
+         Paso 3: Escribir información mientras haya
+       */
+       escritor.write(String.valueOf(editTextEntrada.getText()));
+
+       /*
+       Paso 4: cerrar canal
+      */
+       escritor.flush();
+       escritor.close();
+
+
+   }
+
+   catch (Exception ex)
+   {
+
+
+   }
+
+
+   Toast toast1 = Toast.makeText(getApplicationContext(), "El archivo se guardó en"+ruta, Toast.LENGTH_LONG);
+   toast1.show();
+
+}
+
+private void abrirArchivoDeMemoriaExterna(){
+
+   InputStreamReader lector=null;
+   BufferedReader lectorBuffer=null;
+
+
+   try  {
+
+       /*
+         Paso 1 y Paso 2: Crear y abrir flujo de entrada
+         Esto es, crear y abrir el canal de entrada
+       */
+       File file=null;
+       if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q){
+           //versiones inferiores a Android 10
+           file =  new File(Environment.getExternalStorageDirectory(), ruta+"/pruebaArchivo.txt");
+
+       } else {
+
+           //versiones desde Android 10 en adelante
+           file = new File(getExternalFilesDir(null), ruta+"pruebaArchivo.txt");
+
+       }
+
+       FileInputStream flujoEntrada=new FileInputStream(file);
+
+      /*
+        Agregar dos filtros. En este caso se le pasa a
+        InputStreamReader y luego a BufferedReader
+        para que leer
+      */
+
+       lector= new InputStreamReader(flujoEntrada);
+       lectorBuffer = new BufferedReader(lector);
+
+       /*
+         Paso 3: Leer información mientras haya
+       */
+
+       //texto_salida =lectorBuffer.readLine();
+
+       StringBuilder result = new StringBuilder();
+       String linea=null;
+
+       while ((linea = lectorBuffer.readLine()) != null) {
+
+           result.append(linea+"\n");
+
+       }
+
+       texto_salida=result.toString();
+       textViewSalida.setText(texto_salida);
+
+       /*
+       Paso 4: cerrar canal
+      */
+
+       lectorBuffer.close();
+   }
+   catch (Exception ex)
+   {
+
+
+   }
+
+
+}
+
+
+Para ilustrar lo tratado en este ejemplo crear un proyecto denominado MiTrigesimaPrimeraApp que sólo tiene una clase denominada ActividadPrincipalMiTrigesimaPrimeraApp con el siguiente código. Esta clase creará el directorio ="almacen_mis_datos/ejemplo_mi_app_31/" y  guardará el archivo .txt en ésta (pruebaArchivo.txt).
+MUY IMPORTANTE:
+A partir de Android 11 (nivel de API 30) se implementa el denominado Scoped Storage: no se puede acceder a archivos de almacenamiento externo sin una cantidad de permisos. De esta forma se brinda mayor protección a los datos de las apps y del usuario en el almacenamiento externo. 
+Con la siguiente forma de crear carpetas para la app se facilita la acción de guardar y leer archivos sin dar tanta vuelta aunque con muchas restricciones para los desarrolladores y los usuarios[3]. Estas restricciones se implementaron en plena pandemia de la COVID-19, en donde la seguridad de los dispositivos móviles pasa a ser una prioridad inaplazable.
+
+
+try  {
+
+   /*
+     Paso 1 y Paso 2: Crear y abrir flujo de entrada
+     Esto es, crear y abrir el canal de entrada
+   */
+   File file=null;
+   /*
+   A partir de Android 11 se implementa el denominado
+   Scoped Storage. No se puede acceder a archivos
+   de almacenamiento externo sin una cantidad de permisos
+   Con la siguiente forma de crear carpetas para la app se
+   facilita la acción de guardar y leer aechivos
+   sin dar tanta vuelta aunque con muchas restricciones
+   para los desarrolladores y los usuArios.  Consecuencia del
+   COVID-19 (CREO je..jejeje...)
+   */
+   if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q){
+       //versiones inferiores a Android 10
+       file =  new File(Environment.getExternalStorageDirectory(), ruta+"/pruebaArchivo.txt");
+
+   } else {
+
+       //versiones desde Android 10 en adelante
+       file = new File(getExternalFilesDir(null), ruta+"pruebaArchivo.txt");
+
+   }
+
+
+El código de ActividadPrincipalMiTrigesimaPrimeraApp es el siguiente.
+
+
+
+
+
+
+public class ActividadPrincipalMiTrigesimaPrimeraApp extends Activity {
+
+
+   //variable tamaño de las letras basado en resolución de pantalla
+   private int tamanoLetraResolucionIncluida;
+   private EditText editTextEntrada;
+   private TextView textViewSalida;
+   private Button botonGuardar, botonAbrir;
+   private String texto_entrada="Escribe aquí ...";
+   private String texto_salida=null;
+   private String ruta=null;
+
+
+   protected void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       gestionandoResolucion();
+
+       //crear los directorio para almecenar datos
+       crearDirectorioAlmacenamientoDatos();
+
+       /*llamada al método para crear los elementos de la interfaz gráfica de usuario (GUI)*/
+       crearElementosGui();
+
+       eventos();
+
+       //esto es necesario hacerlo a partir de la API 23 de android
+       verificacionPermisos();
+
+
+       /*para informar cómo se debe adaptar la GUI a la pantalla del dispositivo*/
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       /*pegar al contenedor la GUI: en el argumento se está llamando al método crearGui()*/
+       this.setContentView(crearGui(), parametro_layout_principal);
+
+
+   }
+
+
+   /*Método auxiliar para asuntos de resolución*/
+   private void gestionandoResolucion() {
+
+       //independencia de la resolución de la pantalla
+       DisplayMetrics displayMetrics = this.getApplicationContext().getResources().getDisplayMetrics();
+       int alto = displayMetrics.heightPixels;
+       int ancho = displayMetrics.widthPixels;
+
+       /*
+        Tamaño de las letras con independencia de
+        tamaño y resolución de pantalla
+       */
+       int dimensionReferencia;
+
+       //tomar el menor entre alto y ancho de pantalla
+       if(alto>ancho){
+
+           dimensionReferencia=ancho;
+       }
+
+       else {
+
+           dimensionReferencia=alto;
+       }
+
+
+       //una estimación de un buen tamaño
+       int tamanoLetra= dimensionReferencia / 25;
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       tamanoLetraResolucionIncluida = (int) (tamanoLetra / displayMetrics.scaledDensity);
+
+
+
+   }
+   //crear los objetos de la interfaz gráfica de usuario (GUI)
+   private void crearElementosGui(){
+
+       editTextEntrada=new EditText(this);
+       editTextEntrada.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       editTextEntrada.setTextColor(Color.YELLOW);
+       editTextEntrada.setGravity(Gravity.START);
+       editTextEntrada.setBackgroundColor(Color.BLACK);
+       editTextEntrada.setText(texto_entrada);
+
+       textViewSalida=new TextView(this);
+       textViewSalida.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       textViewSalida.setTextColor(Color.YELLOW);
+       textViewSalida.setBackgroundColor(Color.BLACK);
+
+       botonGuardar=new Button(this);
+       botonGuardar.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonGuardar.setTextColor(Color.BLACK);
+       botonGuardar.setText("GUARDAR");
+       botonGuardar.getBackground().setColorFilter(Color.argb(180, 250, 170, 50), PorterDuff.Mode.MULTIPLY);
+
+
+       botonAbrir=new Button(this);
+       botonAbrir.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonAbrir.setTextColor(Color.BLACK);
+       botonAbrir.setText("ABRIR");
+       botonAbrir.getBackground().setColorFilter(Color.argb(180, 250, 170, 50), PorterDuff.Mode.MULTIPLY);
+       botonAbrir.setEnabled(false);
+
+   }
+
+   //organizar la distribución de los objetos de de la GUI usando administradores de diseño
+   private LinearLayout crearGui(){
+
+       //administrador de diseño
+       //linear principal
+       LinearLayout linearPrincipal = new LinearLayout(this);
+       linearPrincipal.setOrientation(LinearLayout.VERTICAL);
+       linearPrincipal.setGravity(Gravity.CENTER_HORIZONTAL);
+       linearPrincipal.setGravity(Gravity.FILL);
+       linearPrincipal.setWeightSum(10.0f);
+
+       //linear secundarios
+       LinearLayout linearArriba = new LinearLayout(this);
+       linearArriba.setOrientation(LinearLayout.VERTICAL);
+       linearArriba.setBackgroundColor(Color.RED);
+       linearArriba.setWeightSum(1.0f);
+
+       LinearLayout linearCentro = new LinearLayout(this);
+       linearCentro.setOrientation(LinearLayout.VERTICAL);
+       linearCentro.setBackgroundColor(Color.BLUE);
+       linearCentro.setWeightSum(1.0f);
+
+       LinearLayout linearAbajo = new LinearLayout(this);
+       linearAbajo.setOrientation(LinearLayout.HORIZONTAL);
+       linearAbajo.setBackgroundColor(Color.BLACK);
+       linearAbajo.setWeightSum(2.0f);
+
+
+       //parámetro de pegada
+       LinearLayout.LayoutParams parametrosPrincipalArribaCentro= new LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT,0);
+       int margen=(int)(tamanoLetraResolucionIncluida);
+       parametrosPrincipalArribaCentro.setMargins(margen, margen,margen,margen);
+       parametrosPrincipalArribaCentro.weight = 4.5f;
+       linearPrincipal.addView(linearArriba,parametrosPrincipalArribaCentro);
+       linearPrincipal.addView(linearCentro,parametrosPrincipalArribaCentro);
+
+       LinearLayout.LayoutParams parametrosPrincipalAbajo= new LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT,0);
+       parametrosPrincipalAbajo.setMargins(margen, margen,margen,margen);
+       parametrosPrincipalAbajo.weight = 1.0f;
+       linearPrincipal.addView(linearAbajo,parametrosPrincipalAbajo);
+
+
+       //parámetro de pegada de elementos arriba y centro
+       LinearLayout.LayoutParams parametrosPegadaElementosArribaCentro= new LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT,0);
+       parametrosPegadaElementosArribaCentro.setMargins(margen, margen, margen, margen);
+       parametrosPegadaElementosArribaCentro.weight = 1.0f;
+       //pegar etidtext y textview
+       linearArriba.addView(editTextEntrada,parametrosPegadaElementosArribaCentro);
+       linearCentro.addView(textViewSalida,parametrosPegadaElementosArribaCentro);
+
+
+       //parámetro de pegada de elemenos abajo
+       LinearLayout.LayoutParams parametrosPegadaElementosAbajo= new LinearLayout.LayoutParams(0,android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+       parametrosPegadaElementosAbajo.weight = 1.0f;
+       //pegar button
+       linearAbajo.addView(botonGuardar,parametrosPegadaElementosAbajo);
+       linearAbajo.addView(botonAbrir,parametrosPegadaElementosAbajo);
+
+
+
+       return linearPrincipal;
+
+   }
+
+
+   /*
+   Se aprovecho este método para crear
+   las carrpetas.
+   */
+   protected void onPause() {
+       super.onPause();
+
+   }
+
+
+
+   private void crearDirectorioAlmacenamientoDatos() {
+
+
+       File path=null;
+
+       ruta="almacen_mis_datos/ejemplo_mi_app_31/";
+
+       if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q){
+           //versiones con android menores a 10
+           path = new File(Environment.getExternalStorageDirectory(), ruta);
+           if (!path.exists()) {
+               path.mkdirs();
+           }
+
+       } else{
+           //para versiones de 10 en adelante
+           path = new File(getExternalFilesDir(null), ruta);
+           if (!path.exists()) {
+               path.mkdirs();
+           }
+
+       }
+
+
+   }
+
+
+   private void eventos(){
+
+
+
+
+       //evento del boton activar
+       botonGuardar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+
+               botonGuardar.setEnabled(false);
+               botonAbrir.setEnabled(true);
+
+               guardarArchivoEnMemoriaExterna();
+
+           }
+       });
+
+       //evento del boton activar
+       botonAbrir.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               botonGuardar.setEnabled(true);
+               botonAbrir.setEnabled(false);
+
+               abrirArchivoDeMemoriaExterna();
+
+           }
+       });
+
+
+   }
+
+
+   private void guardarArchivoEnMemoriaExterna(){
+
+
+       OutputStreamWriter escritor=null;
+
+
+
+       try  {
+
+           /*
+             Paso 1 y Paso 2: Crear y abrir flujo de salida
+             Esto es, crear y abrir el canal de salida
+           */
+
+           File file=null;
+
+           if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q){
+               //versiones inferiores a Android 10
+               file =  new File(Environment.getExternalStorageDirectory(), ruta+"/pruebaArchivo.txt");
+
+           } else {
+
+               //versiones desde Android 10 en adelante
+               file = new File(getExternalFilesDir(null), ruta+"pruebaArchivo.txt");
+
+           }
+
+
+           FileOutputStream flujoSalida= new FileOutputStream(file);
+
+           /*
+            Agregar filtro. En este caso se le pasa a
+            OutputStreamWriter para que escriba
+          */
+           escritor=new OutputStreamWriter(flujoSalida);
+
+           /*
+             Paso 3: Escribir información mientras haya
+           */
+           escritor.write(String.valueOf(editTextEntrada.getText()));
+
+           /*
+           Paso 4: cerrar canal
+          */
+           escritor.flush();
+           escritor.close();
+
+
+       }
+
+       catch (Exception ex)
+       {
+
+
+       }
+
+
+       Toast toast1 = Toast.makeText(getApplicationContext(), "El archivo se guardó en"+ruta, Toast.LENGTH_LONG);
+       toast1.show();
+
+   }
+
+   private void abrirArchivoDeMemoriaExterna(){
+
+       InputStreamReader lector=null;
+       BufferedReader lectorBuffer=null;
+
+
+       try  {
+
+           /*
+             Paso 1 y Paso 2: Crear y abrir flujo de entrada
+             Esto es, crear y abrir el canal de entrada
+           */
+           File file=null;
+           if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q){
+               //versiones inferiores a Android 10
+               file =  new File(Environment.getExternalStorageDirectory(), ruta+"/pruebaArchivo.txt");
+
+           } else {
+
+               //versiones desde Android 10 en adelante
+               file = new File(getExternalFilesDir(null), ruta+"pruebaArchivo.txt");
+
+           }
+
+           FileInputStream flujoEntrada=new FileInputStream(file);
+
+          /*
+            Agregar dos filtros. En este caso se le pasa a
+            InputStreamReader y luego a BufferedReader
+            para que leer
+          */
+
+           lector= new InputStreamReader(flujoEntrada);
+           lectorBuffer = new BufferedReader(lector);
+
+           /*
+             Paso 3: Leer información mientras haya
+           */
+
+           //texto_salida =lectorBuffer.readLine();
+
+           StringBuilder result = new StringBuilder();
+           String linea=null;
+
+           while ((linea = lectorBuffer.readLine()) != null) {
+
+               result.append(linea+"\n");
+
+           }
+
+           texto_salida=result.toString();
+           textViewSalida.setText(texto_salida);
+
+           /*
+           Paso 4: cerrar canal
+          */
+
+           lectorBuffer.close();
+       }
+       catch (Exception ex)
+       {
+
+
+       }
+
+
+
+   }
+
+
+
+    /*
+     Los siguientes dos métodos son para confirmar los permisos.
+     Esto se exige en las versiones Android 6.0 hacia adelante.
+    */
+
+
+   private void verificacionPermisos() {
+
+       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+           Toast.makeText(this, "This version is not Android 6 or later " + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show();
+       } else {
+
+           int hasReadWritePermission = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+           if (hasReadWritePermission != PackageManager.PERMISSION_GRANTED) {
+
+
+               /* Request user permissions in runtime */
+               ActivityCompat.requestPermissions(ActividadPrincipalMiTrigesimaPrimeraApp.this,
+                       new String[]{
+                               Manifest.permission.READ_EXTERNAL_STORAGE,
+                               Manifest.permission.WRITE_EXTERNAL_STORAGE
+                       },
+                       100);
+
+           } else {
+
+           }
+
+       }
+
+   }
+
+   @TargetApi(23)
+   @Override
+   public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+       switch (requestCode) {
+           case 100:
+               if (grantResults.length > 0
+                       || grantResults[0] == PackageManager.PERMISSION_GRANTED
+                       || grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+
+               } else {
+
+                   Toast.makeText(ActividadPrincipalMiTrigesimaPrimeraApp.this, "Permission is denied.", Toast.LENGTH_SHORT).show();
+                   finish();
+               }
+               return;
+       }
+   }
+
+   protected void onDestroy() {
+       super.onDestroy();
+       finish();
+
+
+   }
+
+}
+
+
+El código del archivo manifiesto.
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools"
+   package="com.curso_simulaciones.mitrigesimaprimeraapp">
+
+   <application
+       android:allowBackup="true"
+       android:dataExtractionRules="@xml/data_extraction_rules"
+       android:fullBackupContent="@xml/backup_rules"
+       android:icon="@mipmap/ic_launcher"
+       android:label="@string/app_name"
+       android:roundIcon="@mipmap/ic_launcher_round"
+       android:supportsRtl="true"
+       android:theme="@style/Theme.MiTrigesimaPrimeraApp"
+       tools:targetApi="31" >
+
+       <activity android:name=".ActividadPrincipalMiTrigesimaPrimeraApp"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="portrait"
+           android:exported="true">
+
+
+           <intent-filter>
+               <action android:name="android.intent.action.MAIN" />
+
+               <category android:name="android.intent.category.LAUNCHER" />
+           </intent-filter>
+       </activity>
+
+   </application>
+
+   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+       tools:remove="android:maxSdkVersion" />
+   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+   <uses-permission android:name="android.permission.STORAGE" />
+
+
+</manifest>
+
+
+Compilar y ejecutar. Se despliega la GUI de la Figura 4. Escribir, guardar y leer archivos.
+
+
+  
+
+Figura 4
+
+
+Ejercicio para el lector:
+Encontrar en el dispositivo el archivo grabado.
+UNA APP PARA GUARDAR DATOS DEL LUXOMETRO
+En este ejemplo se realizará almacenamiento externo en directorio público de los datos obtenidos con el sensor de luz del dispositivo móvil.
+Crear un proyecto denominado MiTrigesimaSegundaApp con la jerarquía de clases de la Figura 5. En este proyecto se guardaran los datos en archivos .txt (esta es una de las formas de guardar datos en forma permanente, aunque obviamente no es la óptima en la mayor parte de los casos. Para aplicaciones mas profesionales el almacenamiento se hace en una base de datos).
+
+
+  
+
+Figura 5
+
+
+
+
+Se deben incluir las imágenes de la Figura 6 en la carpeta app > src > main > res > drawable.
+
+
+
+
+ Diagrama
+
+Descripción generada automáticamente 
+
+
+
+Figura 6
+
+
+
+
+
+
+El código de las clases es el siguiente.
+
+
+Clase AlmacenDatosRAM.
+
+
+
+
+
+
+public class AlmacenDatosRAM {
+
+   public static int dimensioReferencia, alto, ancho;
+   public static int tamanoLetraResolucionIncluida;
+   public static float datoActual;
+   public static boolean configurar;
+   public static int periodoMuestreo=500;//en ms
+   public static float tiempo;
+   public static int nDatos=50;
+   public static String path;
+
+}
+
+
+
+
+Clase GaugeSimple.
+
+
+
+
+public class GaugeSimple extends View {
+
+   private float largo;
+   private float minimo = 0;
+   private float maximo = 100f;
+   private float medida = 0.0f;//tomar como medida inicial
+   private String unidades = "UNIDADES";
+   private int colorPrimerTercio = Color.rgb(200, 200, 0);
+   private int colorSegundoTercio = Color.rgb(0, 180, 0);
+   private int colorTercerTercio = Color.RED;
+   private int colorLineas = Color.BLACK;
+   private int colorFondo = Color.WHITE;
+   private int colorNumerosDesplieggue = Color.BLACK;
+   private int colorFranjaDinamica = Color.rgb(0, 0, 255);
+   private int angPrimertercio = 100;
+   private int angSegundoTercio = 100;
+   private int angTercerTercio = 50;
+
+
+   /**
+    * Constructor de GaugeSimple
+    */
+   public GaugeSimple(Context context) {
+
+       super(context);
+
+       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+           this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
+       }
+   }
+
+   /**
+    * Modifica el rango de medicion
+    * desde minimo hasta maximo
+    *
+    * @param minimo
+    * @param maximo
+    */
+   public void setRango(float minimo, float maximo) {
+
+       this.minimo = minimo;
+       this.maximo = maximo;
+
+   }
+
+
+   /**
+    * Modifica el valor medido
+    *
+    * @param medida
+    */
+   public void setMedida(float medida) {
+
+       this.medida = medida;
+
+   }
+
+
+   /**
+    * Regresa el valor medido
+    *
+    * @return medida
+    */
+   public float getMedida() {
+
+       return medida;
+   }
+
+
+   /**
+    * Modifica las unidades del instrumento virtual
+    *
+    * @param unidades
+    */
+   public void setUnidades(String unidades) {
+
+       this.unidades = unidades;
+
+   }
+
+
+   /**
+    * Modifica los colores de los sectores circulares
+    *
+    * @param colorPrimerTercio
+    * @param colorSegundoTercio
+    * @param colorTercerTercio
+    */
+   public void setColorSectores(int colorPrimerTercio, int colorSegundoTercio, int colorTercerTercio) {
+
+       this.colorPrimerTercio = colorPrimerTercio;
+       this.colorSegundoTercio = colorSegundoTercio;
+       this.colorTercerTercio = colorTercerTercio;
+
+   }
+
+   /**
+    * Modifica los angulos de los sectores circulares
+    * Deben sumar 250 grados
+    *
+    * @param angPrimerTercio
+    * @param angSegundoTercio
+    * @param angTercerTercio
+    */
+   public void setAngulosSectores(int angPrimerTercio, int angSegundoTercio, int angTercerTercio) {
+       this.angPrimertercio = angPrimerTercio;
+       this.angSegundoTercio = angSegundoTercio;
+       this.angTercerTercio = angTercerTercio;
+
+   }
+
+   public void setColorFranjaDinámica(int colorFranjaDinamica) {
+
+       this.colorFranjaDinamica = colorFranjaDinamica;
+
+
+   }
+
+   /**
+    * Modifica el color de fondo del tacometro
+    *
+    * @param colorFondo
+    */
+   public void setColorFondoTacometro(int colorFondo) {
+
+       this.colorFondo = colorFondo;
+
+
+   }
+
+
+   /**
+    * Modifica el color de las lineas del tacometro
+    *
+    * @param color_lineas
+    */
+   public void setColorLineasTacometro(int color_lineas) {
+
+       this.colorLineas = color_lineas;
+
+
+   }
+
+
+   /**
+    * Modifica el color del numero que se despliega
+    *
+    * @param colorNumerosDesplieggue
+    */
+
+   public void setColorNumeroDespliegue(int colorNumerosDesplieggue) {
+
+       this.colorNumerosDesplieggue = colorNumerosDesplieggue;
+
+   }
+
+
+   /**
+    * @param canvas
+    */
+
+   //método para dibujar
+   protected void onDraw(Canvas canvas) {
+       super.onDraw(canvas);
+
+       /*
+       se graba el estado actual del canvas
+       para al final restaurarlo
+       */
+       canvas.save();
+
+
+        /*
+        La vista tendra las mismas dimensiones de su
+        contenedor
+        */
+       float ancho = this.getWidth();//ancho de la vista
+       float alto = this.getHeight();//alto de la vista
+
+       /*
+        Se define la variable largo como el 80%
+        del menor valor entre alto y largo del
+        contenedor
+        */
+
+       if (ancho > alto) {
+
+           largo = 0.8f * alto;
+
+       } else {
+
+           largo = 0.8f * ancho;
+
+
+       }
+
+       /*
+         se hace tralación del (0,0) al centro
+         del contenedor
+       */
+       canvas.translate(0.5f * ancho, 0.5f * alto);
+
+       //configurando el pincel
+       Paint pincel = new Paint();
+       //evita efecto sierra
+       pincel.setAntiAlias(true);
+       //tamaño texto
+       pincel.setTextSize(0.05f * largo);
+       //para mejor manejo de la métrica de texto
+       pincel.setLinearText(true);
+       //para efectos de buen escalado de bitmaps
+       pincel.setFilterBitmap(true);
+       //para buen manejo de gradientes de color
+       pincel.setDither(true);
+
+
+       float esquinaSuperiorIzquierdaX = -0.5f * largo;
+       float esquinaSuperiorIzquierdaY = -0.5f * largo;
+       float esquinaInferiorDerechaX = 0.5f * largo;
+       float esquinaInferiorDerechaY = 0.5f * largo;
+
+       //dibujar los tres segementos circulares
+       RectF rect = new RectF(esquinaSuperiorIzquierdaX, esquinaSuperiorIzquierdaY,
+               esquinaInferiorDerechaX, esquinaInferiorDerechaY);
+
+       pincel.setColor(colorPrimerTercio);
+       canvas.drawArc(rect, 145, angPrimertercio, true, pincel);
+       pincel.setColor(colorSegundoTercio);
+       canvas.drawArc(rect, 145 + angPrimertercio, angSegundoTercio, true, pincel);
+       pincel.setColor(colorTercerTercio);
+       canvas.drawArc(rect, 145 + angPrimertercio + angSegundoTercio, angTercerTercio, true, pincel);
+
+
+       float indent = (float) (0.05 * largo);
+       float posicionY = (float) (0.5 * largo);
+
+       //franja dinámica
+       //calcular angulo para ubicar la aguja de acuerdo al valor medido
+       float angulo_rotacion_medida = 235 + (250f / (maximo - minimo)) * (medida - minimo);
+       float a = (float) 0.01 * largo;
+       rect = new RectF(esquinaSuperiorIzquierdaX + a, esquinaSuperiorIzquierdaY + a,
+               esquinaInferiorDerechaX - a, esquinaInferiorDerechaY - a);
+       pincel.setColor(colorFranjaDinamica);
+       canvas.drawArc(rect, 145, angulo_rotacion_medida - 235, true, pincel);
+
+       /*
+        dibujar el tacometro sin la aguja
+       */
+       //aqui empieza el dibujo
+       float radio = (float) (0.48 * largo);
+       pincel.setColor(colorFondo);
+       canvas.drawCircle(0, 0, radio, pincel);
+       pincel.setColor(colorLineas);
+       pincel.setStyle(Paint.Style.STROKE);
+       canvas.drawCircle(0, 0, radio, pincel);
+       pincel.setStrokeWidth(1f);
+       canvas.drawCircle(0, 0, 0.5f * largo, pincel);
+
+       //grosor de las líneas
+       pincel.setStrokeWidth(0.01f * largo);
+
+
+
+        /*
+        Divisiones grandes
+        Se dibuja primero la división vertical.
+        Luego se repite rotando de a 50 grados comenzando
+        en 235 grados.
+         */
+       pincel.setStyle(Paint.Style.FILL);
+       for (int i = 0; i < 6; i = i + 1) {
+           float anguloRotacion = 235 + 50 * i;
+           canvas.rotate(anguloRotacion, 0, 0);
+           canvas.drawLine(0, -posicionY, 0, -posicionY + indent, pincel);
+           canvas.rotate(-anguloRotacion, 0, 0);
+
+           /*
+            Dibujar los números
+           */
+           int valorIncrementoMarcas = (int) ((maximo - minimo) / 5f);
+           int valorMarca = (int) (minimo + valorIncrementoMarcas * i);
+           String numero = "" + valorMarca;
+
+           //ancho de la cadena del número
+           float anchoCadenaNumero = pincel.measureText(numero);
+
+           canvas.save();
+           //dibuja números rotados
+           canvas.rotate(anguloRotacion, 0, 0);
+           //endereza los números a orientación horizontal
+           canvas.rotate(-anguloRotacion, 0, -posicionY + 2.5f*indent);
+           canvas.drawText(numero, -0.5f * anchoCadenaNumero, -posicionY + 2.5f * indent, pincel);
+           canvas.restore();
+
+       }
+
+       /*
+        Divisiones pequeñas
+        Se dibuja primero la división vertical.
+        Luego se repite rotando de a 10 grados comenzando
+        en 235 grados.
+        */
+       pincel.setStyle(Paint.Style.STROKE);
+       //grosor de las líneas
+       pincel.setStrokeWidth(0.005f * largo);
+       for (int i = 0; i < 26; i = i + 1) {
+
+           float anguloRotacion = 235 + 10 * i;
+           canvas.rotate(anguloRotacion, 0, 0);
+           canvas.drawLine(0, -posicionY, 0, -posicionY + (float) (0.6 * indent), pincel);
+           canvas.rotate(-anguloRotacion, 0, 0);
+
+       }
+       //aqui termina dibujo del tacometro sin aguja
+
+
+
+       /*
+       dibujar la aguja
+       */
+       //aqui empieza dibujo de la aguja
+       pincel.setStrokeWidth(0.005f * largo);
+       pincel.setColor(Color.RED);
+       canvas.rotate(angulo_rotacion_medida, 0, 0);
+       float b = (float) (1.5f* indent);
+       canvas.drawLine(0, -posicionY, 0, b, pincel);
+       canvas.rotate(-angulo_rotacion_medida, 0, 0);
+       pincel.setStyle(Paint.Style.FILL);
+       pincel.setColor(colorFondo);
+       canvas.drawCircle(0, 0, (float) (0.4 * indent), pincel);
+       pincel.setColor(Color.RED);
+       pincel.setStyle(Paint.Style.STROKE);
+       canvas.drawCircle(0, 0, (float) (0.4 * indent), pincel);
+
+       //dibujar circulo apoyo aguja
+
+       //aquí termina dibujo de la aguja
+
+       //Dibujar las unidades
+       pincel.setStyle(Paint.Style.FILL);
+       pincel.setColor(colorLineas);
+       pincel.setTextSize(0.08f * largo);
+       float anchoCadenaUnidades = pincel.measureText(unidades);
+       canvas.drawText(unidades, -0.5f * anchoCadenaUnidades,- 0.15f * largo, pincel);
+       //aqui termina dibujo de las unidades
+
+       //aqui despliegue de la medida
+       pincel.setTextSize(0.1f * largo);
+       float anchoCadenaNumero = pincel.measureText("" + medida);
+       pincel.setColor(colorNumerosDesplieggue);
+       canvas.drawText("" + medida, -0.5f * anchoCadenaNumero, 0.2f * largo, pincel);
+
+       //marcar empresa
+       String empresa = "IoT.PhysicsSensor";
+       pincel.setTextSize(0.05f * largo);
+       float anchoCadenaNombreEmpresa = pincel.measureText(empresa);
+       canvas.drawText(empresa, -0.5f * anchoCadenaNombreEmpresa, 0.35f * largo, pincel);
+
+
+
+       //se restaura el canvas al estado incial
+       //el que se garbó al principio de este método
+       canvas.restore();
+
+       //para efectos de animación
+       invalidate();
+
+   }//fin onDraw
+
+}
+
+
+
+
+
+
+
+
+Clase Luxometro.
+
+
+
+
+public class Luxometro extends GaugeSimple implements SensorEventListener {
+
+   private SensorManager sensorManager;
+
+   public Luxometro(Context context){
+       super(context);
+
+       captarSensor(context);
+
+
+   }
+
+
+   private void captarSensor(Context context) {
+
+       //captamos el servicio del sensor
+       sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+       sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT), SensorManager.SENSOR_DELAY_FASTEST);
+
+   }
+
+   //se activa sólo cuando hay cambios
+   public void onSensorChanged(SensorEvent event) {
+
+       float medida = event.values[SensorManager.DATA_X];
+       //solo con dos decimales
+       medida = (float)(Math.round(medida * 100) / 100f);
+
+       this.setMedida(medida);
+       cambiarEscala(medida);
+       //almacenar dato actual
+       AlmacenDatosRAM.datoActual=medida;
+
+   }
+
+   @Override
+   public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+   }
+
+
+   private void cambiarEscala(float medida){
+
+       float maximo=100f;
+       float minimo=0f;
+
+       if(medida>0 && ((medida < 100)^(medida==100f ))){
+
+           maximo=100f;
+           minimo=0f;
+
+       }
+
+       if(medida>100 && ((medida < 1000)^(medida==1000f ))){
+
+           maximo=1000f;
+           minimo=100f;
+
+       }
+
+
+       if(medida>1000 && ((medida < 5000)^(medida==5000f ))){
+
+           maximo=5000f;
+           minimo=1000f;
+
+       }
+
+       if(medida>5000 && ((medida < 10000)^(medida==10000f ))){
+
+           maximo=10000f;
+           minimo=5000f;
+
+       }
+
+       if(medida>10000 && ((medida < 50000)^(medida==50000f ))){
+
+           maximo=50000f;
+           minimo=10000f;
+
+       }
+
+
+       this.setRango(minimo,maximo);
+
+   }
+
+}
+
+
+
+
+Clase TablaSimple.
+
+
+
+
+public class TablaSimple extends LinearLayout {
+
+   private ScrollView panelScroll;
+   private TableLayout table;
+   private int tamanoLetraResolucionIncluida;
+   private int dimensionReferencia;
+   private Context context;
+   private int contador = -1;
+   private String etiquetaX="x";
+   private String etiquetaY="y";
+   private float x,y;
+   private int colorColumna1= Color.YELLOW;
+   private int colorColumna2=Color.BLUE;
+   private int colorColumna3=Color.RED;
+   // private int n=0;
+
+
+   /**
+    * Cosntructor de TablaSimple
+    * @param context
+    */
+   public TablaSimple(Context context) {
+       super(context);
+       this.context=context;
+
+       gestionarResolucion();
+
+
+
+       this.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+
+       gui();
+
+   }
+
+
+   private void gestionarResolucion(){
+
+       /*
+       El alto en la actividad principal (PORTRAI)
+       corresponde al ancho aquí (LANSCAPE
+       */
+       dimensionReferencia = (int)(0.4f* AlmacenDatosRAM.alto);
+
+       tamanoLetraResolucionIncluida = (int)(0.6* AlmacenDatosRAM.tamanoLetraResolucionIncluida);
+
+
+   }//fin método gestionarResolucion()
+
+
+   private void gui(){
+
+       panelScroll = new ScrollView(context);
+       table=new TableLayout(context);
+
+       LinearLayout linearLayoutPrincipal = new LinearLayout(context);
+       linearLayoutPrincipal.setOrientation(LinearLayout.VERTICAL);
+       linearLayoutPrincipal.setBackgroundColor(Color.BLACK);
+
+       LinearLayout.LayoutParams parametroPegado = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT);
+
+       panelScroll.addView(table);
+       linearLayoutPrincipal.addView(panelScroll);
+
+       this.addView(linearLayoutPrincipal, parametroPegado);
+
+
+   }
+
+   /**
+    * Modifica las etiquetas de las columnas
+    * @param etiquetaX
+    * @param etiquetaY
+    */
+   public void setEtiquetaColumnas(String etiquetaX, String etiquetaY){
+
+       this.etiquetaX=etiquetaX;
+       this.etiquetaY=etiquetaY;
+
+   }
+
+   /**
+    * Envía los datos a la tabla
+    * @param x
+    * @param y
+    */
+   public void enviarDatos(float x, float y){
+
+       this.x=x;
+       this.y=y;
+       contador=contador+1;
+       incrementarFila();
+
+   }
+
+
+   /**
+    * Borra los datos enviados a la tabla
+    */
+   public void borrar(){
+       removerFilas();
+   }
+
+   /**
+    * Modifica los colores de las columnas
+    * @param colorColumna1
+    * @param colorColumna2
+    * @param colorColumna3
+    */
+   public void setColorColumnas(int colorColumna1, int colorColumna2,int colorColumna3){
+
+       this.colorColumna1=colorColumna1;
+       this.colorColumna2=colorColumna2;
+       this.colorColumna3=colorColumna3;
+
+   }
+
+
+   private void incrementarFila() {
+
+       //crear nueva TableRow
+       TableRow fila = new TableRow(context);
+
+       TableRow.LayoutParams layoutTexto = new TableRow.LayoutParams((int)(0.33*dimensionReferencia), TableRow.LayoutParams.WRAP_CONTENT);
+
+
+       //columna uno
+       TextView textNumeroDato = new TextView(context);
+       textNumeroDato.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       textNumeroDato.setLayoutParams(layoutTexto);
+
+       if(contador==0){
+
+           textNumeroDato.setText("# de DATO");
+
+       } else {
+
+           textNumeroDato.setText("DATO " + contador);
+       }
+
+       //columna 2
+       textNumeroDato.setTextSize(tamanoLetraResolucionIncluida);
+       textNumeroDato.setTextColor(colorColumna1);
+       textNumeroDato.setGravity(Gravity.CENTER_HORIZONTAL);
+
+       TextView textValorX = new TextView(context);
+       textValorX.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       textValorX.setLayoutParams(layoutTexto);
+
+       if(contador==0)
+       {
+           textValorX.setText(etiquetaX);
+
+       }  else {
+
+           textValorX.setText("" + x);
+
+       }
+
+       //columna 3
+       textValorX.setTextSize(tamanoLetraResolucionIncluida);
+       textValorX.setTextColor(colorColumna2);
+       textValorX.setGravity(Gravity.CENTER_HORIZONTAL);
+
+
+       TextView textValorY = new TextView(context);
+       textValorY.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       textValorY.setLayoutParams(layoutTexto);
+
+       if(contador==0)
+       {
+           textValorY.setText(etiquetaY);
+
+       } else {
+
+           textValorY.setText("" + y);
+
+       }
+
+       textValorY.setTextSize(tamanoLetraResolucionIncluida);
+       textValorY.setTextColor(colorColumna3);
+       textValorY.setGravity(Gravity.CENTER_HORIZONTAL);
+
+
+       fila.setGravity(Gravity.CENTER_HORIZONTAL);
+       //adicionar las tres columnas a la fila
+       fila.addView(textNumeroDato);
+       fila.addView(textValorX);
+       fila.addView(textValorY);
+
+       //Adicionar TabRow a la Tabla
+       table.addView( fila, new TableLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+
+
+   }
+
+
+   private void removerFilas() {
+
+
+       if (contador > 1) {
+
+           table.removeAllViews();
+           contador=-1;
+
+       }
+
+   }
+}
+
+
+
+
+
+
+
+
+Clase Boton.
+
+
+
+
+public class Boton extends ImageView {
+
+   private Bitmap imagen;
+   Bitmap imagen_escalada = null;
+   private float tamamano_letra;
+   private String cadena = "";
+
+
+   public Boton(Context context) {
+
+       super(context);
+
+
+   }
+
+
+   public void setText(String cadena) {
+
+       this.cadena = cadena;
+
+
+   }
+
+
+   public String getText() {
+
+       this.cadena = cadena;
+
+       return cadena;
+
+
+   }
+
+
+   public void setImagen(int imagen_importada) {
+
+
+       imagen = BitmapFactory.decodeResource(getResources(), imagen_importada);
+
+
+   }
+
+
+   protected void onDraw(Canvas canvas) {
+
+
+       Paint pincel = new Paint();
+       pincel.setAntiAlias(true);
+       pincel.setLinearText(true);
+
+       float ancho=getWidth();
+       float alto=getHeight();
+       float escala=1;
+       if(ancho>alto){
+           escala=alto;
+       } else {escala=ancho;}
+
+       if (imagen != null) {
+
+           imagen_escalada = escalarImagen(imagen, (int) (0.9f * escala), (int) (0.9f * escala));
+
+       }
+
+       int ex = (getWidth() - imagen_escalada.getWidth()) / 2;
+       int ey = (getHeight() - imagen_escalada.getHeight()) / 2;
+
+       tamamano_letra = 0.08f * getWidth();
+
+       if (imagen != null) {
+           canvas.drawBitmap(imagen_escalada, ex, ey, null);//dimension,dimension, null);
+       }
+
+
+       pincel.setTextSize(tamamano_letra);
+       float anchoCadenaUnidades = pincel.measureText(cadena);
+       float posicion_x_letra = (getWidth() - anchoCadenaUnidades) / 2;
+       float posicion_y_letra = ey + imagen_escalada.getHeight() + tamamano_letra;
+
+       pincel.setColor(Color.BLACK);
+       canvas.drawText(cadena, posicion_x_letra, posicion_y_letra, pincel);
+
+
+       invalidate();
+
+   }
+
+   /*
+      Se escala con Matrix para no dañar la resolución
+    */
+
+
+   public Bitmap escalarImagen(Bitmap bitmap, int newWidth, int newHeight) {
+       Bitmap scaledBitmap = Bitmap.createBitmap(newWidth, newHeight, bitmap.getConfig());
+
+       float scaleX = newWidth / (float) bitmap.getWidth();
+       float scaleY = newHeight / (float) bitmap.getHeight();
+
+       Matrix scaleMatrix = new Matrix();
+       scaleMatrix.setScale(scaleX, scaleY, 0, 0);
+
+       Canvas canvas = new Canvas(scaledBitmap);
+       canvas.setMatrix(scaleMatrix);
+       Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
+       paint.setAntiAlias(true);
+       paint.setDither(true);
+       paint.setFilterBitmap(true);
+       canvas.drawBitmap(bitmap, 0, 0, paint);
+
+       return scaledBitmap;
+
+   }
+
+}
+
+
+
+
+
+
+Clase DialogoSalir. Esta GUI se usará para preguntarle al usuario si desea salir cuando hace clic en el botón hacia atrás del dispositivo móvil,
+
+
+public class DialogoSalir {
+
+   private Activity actividad;
+   private PopupWindow popup_salir;
+   private Button si,no;
+   private TextView salir;
+   private int tamano_letra_25;
+   private int tamano_letra_20;
+   private LinearLayout linear_layout_principal;
+
+
+   public DialogoSalir(Activity actividad){
+
+       this.actividad=actividad;
+
+       gestionandoResolucion();
+
+       crearGUI();
+
+   }
+
+   private void gestionandoResolucion(){
+
+       float tamanoLetraResolucionIncluida = AlmacenDatosRAM.tamanoLetraResolucionIncluida;
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       tamano_letra_25 = (int)tamanoLetraResolucionIncluida;
+       tamano_letra_20 = (int)(0.8f*tamanoLetraResolucionIncluida);
+
+   }//fin método gestionandoResolucion()
+
+
+   private void crearGUI(){
+
+       linear_layout_principal = new LinearLayout(actividad);
+       linear_layout_principal.setBackgroundColor(Color.YELLOW);
+       linear_layout_principal.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_principal.setWeightSum(3);
+
+       //LinearLayoutArriba
+       LinearLayout linear_layout_arriba = new LinearLayout(actividad);
+       linear_layout_arriba.setOrientation(LinearLayout.HORIZONTAL);
+
+       //LinearLayoutMedio
+       LinearLayout linear_layout_medio = new LinearLayout(actividad);
+       linear_layout_medio.setOrientation(LinearLayout.HORIZONTAL);
+
+       //LinearLayoutAbajo
+       LinearLayout linear_layout_abajo = new LinearLayout(actividad);
+       linear_layout_abajo.setOrientation(LinearLayout.HORIZONTAL);
+
+
+       //parametro para pegar elementos a cada linearyout
+       LinearLayout.LayoutParams parametros = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros.weight = 1.0f;
+
+       //elementos
+       salir=new TextView(actividad);
+       salir.setTextSize(tamano_letra_20);
+       salir.setText("__________ ¿SALIR?__________");
+       salir.setTextColor(Color.BLACK);
+
+       si=new Button(actividad);
+       si.setTextSize(tamano_letra_25);
+       si.setText("SI");
+       si.getBackground().setColorFilter(Color.rgb(255, 255, 100), PorterDuff.Mode.MULTIPLY);
+
+       no=new Button(actividad);
+       no.setTextSize(tamano_letra_25);
+       no.setText("NO");
+       no.getBackground().setColorFilter(Color.rgb(255, 255, 100), PorterDuff.Mode.MULTIPLY);
+
+
+       linear_layout_arriba.addView(salir, parametros);
+       linear_layout_medio.addView(si,parametros);
+       linear_layout_abajo.addView(no,parametros);
+
+
+       linear_layout_principal.addView(linear_layout_arriba);
+       linear_layout_principal.addView(linear_layout_medio);
+       linear_layout_principal.addView(linear_layout_abajo);
+
+
+       eventosPopMenu();
+
+
+   }
+
+
+   public void mostrarPopMenu() {
+
+       popup_salir = new PopupWindow(actividad);
+
+       popup_salir.setWidth(WindowManager.LayoutParams.WRAP_CONTENT);
+       popup_salir.setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
+
+       popup_salir.setContentView(linear_layout_principal);
+       popup_salir.setFocusable(true);
+       popup_salir.showAtLocation(linear_layout_principal, Gravity.CENTER, 0, 0);
+
+
+   }
+
+   private void eventosPopMenu() {
+
+       si.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               actividad.finish();
+               popup_salir.dismiss();
+
+
+           }
+       });
+
+       no.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               popup_salir.dismiss();
+
+           }
+       });
+
+   }
+
+
+}
+
+
+
+
+Clase ActividadConfiguracion. Esta clase le da la opción al usuario de cambiar el número de datos que desea recolectar y el tiempo que hay entre uno y otro (periodo de muestreo).
+
+
+public class ActividadConfiguracion extends Activity {
+
+   private EditText periodo_muestreo, numero_datos;
+   private TextView text_periodo_muestreo, text_numero_datos, espacio_1, espacio_2;
+   //variable tamaño de las letras basado en resolución de pantalla
+   private int tamanoLetraResolucionIncluida;
+
+   public void onCreate(Bundle savedInstanceState){
+       super.onCreate(savedInstanceState);
+
+
+       gestionarResolucion();
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       //para informar cómo se debe pegar el adminitrador de
+       //diseño obtenido con el método GUI
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+   } //fin del método onCreate
+
+
+
+
+
+   private void gestionarResolucion(){
+
+       tamanoLetraResolucionIncluida = (int)(0.6f*AlmacenDatosRAM.tamanoLetraResolucionIncluida);
+
+   }//fin método gestionandoResolucion()
+
+
+
+   /*método responsable de la creación de los elementos de la GUI*/
+   private void crearElementosGUI(){
+
+       espacio_1 = new TextView(this);
+       espacio_1.setTextSize(tamanoLetraResolucionIncluida );
+       espacio_1.setText("    ");
+
+       espacio_2 = new TextView(this);
+       espacio_2.setTextSize(tamanoLetraResolucionIncluida );
+       espacio_2.setText("    ");
+
+       text_periodo_muestreo = new TextView(this);
+       text_periodo_muestreo.setGravity(Gravity.FILL_VERTICAL);
+       text_periodo_muestreo.setBackgroundColor(Color.YELLOW);
+       text_periodo_muestreo.setTextSize(tamanoLetraResolucionIncluida );
+       text_periodo_muestreo.setText("  PERIODO MUESTREO EN ms (Mínimo 50)");
+       text_periodo_muestreo.setTextColor(Color.BLACK);
+
+       text_numero_datos = new TextView(this);
+       text_numero_datos.setGravity(Gravity.FILL_VERTICAL);
+       text_numero_datos.setBackgroundColor(Color.argb(100,220,156,80));
+       text_numero_datos.setTextSize(tamanoLetraResolucionIncluida );
+       text_numero_datos.setText("  NÚMERO DE DATOS (Maximo 2 000)");
+       text_numero_datos.setTextColor(Color.BLACK);
+
+
+       numero_datos = new EditText(this);
+       //Despliega teclado solo con números enteros positivos.
+       numero_datos.setKeyListener(DigitsKeyListener.getInstance(false, false));
+       numero_datos.setTextSize(tamanoLetraResolucionIncluida );
+       numero_datos.setText("" + AlmacenDatosRAM.nDatos);
+
+
+       periodo_muestreo = new EditText(this);
+       //Despliega teclado solo con números enteros positivos.
+       periodo_muestreo.setKeyListener(DigitsKeyListener.getInstance(false, false));
+       periodo_muestreo.setTextSize(tamanoLetraResolucionIncluida );
+       periodo_muestreo.setText("" + AlmacenDatosRAM.periodoMuestreo);
+
+   }
+
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+       //LinearLayoutPrincipal
+       LinearLayout linear_principal = new LinearLayout(this);
+       linear_principal.setOrientation(LinearLayout.VERTICAL);
+       linear_principal.setBackgroundColor(Color.WHITE);
+
+
+       //fila uno
+       LinearLayout linear_fila_uno = new LinearLayout(this);
+       linear_fila_uno.setOrientation(LinearLayout.HORIZONTAL);
+       //para definir el peso de los elementos que se agregaran esta fila
+       linear_fila_uno.setWeightSum(1.0f);
+
+       //fila dos
+       LinearLayout linear_fila_dos = new LinearLayout(this);
+       linear_fila_dos.setOrientation(LinearLayout.HORIZONTAL);
+       //para definir el peso de los elementos que se agregaran esta fila
+       linear_fila_dos.setWeightSum(1.0f);
+
+       //fila tres
+       LinearLayout linear_fila_tres = new LinearLayout(this);
+       linear_fila_tres.setOrientation(LinearLayout.HORIZONTAL);
+       //para definir el peso de los elementos que se agregaran esta fila
+       linear_fila_tres.setWeightSum(3.0f);
+
+       //fila cuatro
+       LinearLayout linear_fila_cuatro = new LinearLayout(this);
+       linear_fila_cuatro.setOrientation(LinearLayout.HORIZONTAL);
+       //para definir el peso de los elementos que se agregaran esta fila
+       linear_fila_cuatro.setWeightSum(3.0f);
+
+       linear_principal.addView(linear_fila_uno);
+       linear_principal.addView(linear_fila_dos);
+       linear_principal.addView(linear_fila_tres);
+       linear_principal.addView(linear_fila_cuatro);
+
+       //pegado de elementos a fila uno
+       LinearLayout.LayoutParams parametros_pegado_elementos_fila_uno = new LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_elementos_fila_uno.weight = 1.0f;
+       linear_fila_uno.addView(espacio_1, parametros_pegado_elementos_fila_uno);
+
+       //pegado de elementos a fila dos
+       LinearLayout.LayoutParams parametros_pegado_elementos_fila_dos = new LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_elementos_fila_dos.weight = 1.0f;
+       linear_fila_dos.addView(espacio_2, parametros_pegado_elementos_fila_dos);
+
+       //pegado de elementos a fila tres
+       LinearLayout.LayoutParams parametros_pegado_elementos_fila_tres_izquierda = new LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_elementos_fila_tres_izquierda.weight = 2.0f;
+       linear_fila_tres.addView( text_periodo_muestreo,parametros_pegado_elementos_fila_tres_izquierda);
+
+       LinearLayout.LayoutParams parametros_pegado_elementos_fila_tres_derecha = new LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_elementos_fila_tres_derecha.weight = 1.0f;
+       linear_fila_tres.addView(periodo_muestreo,parametros_pegado_elementos_fila_tres_derecha);
+
+       //pegado de elementos a fila cuatro
+       LinearLayout.LayoutParams parametros_pegado_elementos_fila_cuatro_izquierda = new LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_elementos_fila_cuatro_izquierda.weight = 2.0f;
+       linear_fila_cuatro.addView(text_numero_datos,parametros_pegado_elementos_fila_cuatro_izquierda);
+
+       LinearLayout.LayoutParams parametros_pegado_elementos_fila_cuatro_derecha = new LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_elementos_fila_cuatro_derecha.weight = 1.0f;
+       linear_fila_cuatro.addView(numero_datos,parametros_pegado_elementos_fila_cuatro_derecha);
+
+       return linear_principal;
+   }
+
+
+   /*
+     Guardar el estado automáticamente cuando se salga
+     de esta pantalla
+   */
+
+   protected void onPause() {
+       super.onPause();
+
+       AlmacenDatosRAM.configurar=true;
+       String valor_muestreo = periodo_muestreo.getText().toString();
+       String valor_n = numero_datos.getText().toString();
+       AlmacenDatosRAM.periodoMuestreo = Integer.parseInt(valor_muestreo);
+       AlmacenDatosRAM.nDatos = Integer.parseInt(valor_n);
+
+   }
+
+}
+
+
+
+
+
+
+Clase GuardarDatosPersistentesTXT. 
+
+
+
+
+public class GuardarDatosPersistentesTXT {
+
+    /*
+     El vector es similar a un arreglo []
+     con la diferencia que el mismo se redimensiona
+     al doble de su tamaño cuando se llena (se duplica).
+     Además, proporciona métodos adicionales
+     para añadir, eliminar elementos, e insertar
+     elementos entre otros dos existentes.
+     Se pueden guardar objetos de diferentes tipo.
+    */
+
+   private Vector almacen_tiempo = new Vector();
+   private Vector almacen_datos = new Vector();
+
+
+   /**
+    * Constructor del Manejador de  Archivos
+    */
+   public GuardarDatosPersistentesTXT(){
+
+
+   }
+
+   /**
+    * Para recibir los datos que se grabarán
+    * en archivo .txt en una carpeta definida
+    * por el usuario en un documento.
+    * Serán dos columnas una para X y otra para Y.
+    * @param tiempo
+    * @param dato
+    */
+
+   public void llenarDatos(double tiempo, double dato) {
+
+       almacen_tiempo.addElement(tiempo);
+       almacen_datos.addElement(dato);
+
+   }
+
+
+   /**
+    * Para borrar los datos. Estos no serán
+    * guardados en el arcivo .txt.
+    */
+   public void borrarDatos() {
+
+       almacen_tiempo.removeAllElements();
+       almacen_datos.removeAllElements();
+
+   }
+
+
+   /**
+    * Para guradar los datos en formato .txt
+    * @param actividad
+    * @param carpeta
+    */
+
+   public void guardar(Activity actividad, String carpeta) {
+
+       Date date = new Date();
+       DateFormat hora_fecha = new SimpleDateFormat("yy-MM-dd hh:mm:ss");
+
+
+       try {
+
+           /*
+             Paso 1 y Paso 2: Crear y abrir flujo de salida
+             Esto es, crear y abrir el canal de salida
+           */
+
+           String marca= hora_fecha.format(date).toString();
+           String nombre_archivo ="datos_"+marca+ ".txt";
+
+           File file=null;
+           File path = null;
+
+           if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q){
+               //versiones inferiores a Android 10
+               path = new File(Environment.getExternalStorageDirectory(), carpeta);
+
+           } else {
+
+               //versiones desde Android 10 en adelante
+              path = new File(actividad.getExternalFilesDir(null), carpeta);
+
+           }
+
+           file = new File(path, nombre_archivo);
+           FileOutputStream flujoSalida= new FileOutputStream(file);
+
+           /*
+            Agregar filtro. En este caso se le pasa a
+            OutputStreamWriter para que escriba
+          */
+           OutputStreamWriter escritor = new OutputStreamWriter(flujoSalida);//fos);
+
+
+           /*
+             Paso 3: Escribir información mientras haya
+           */
+
+           // Escribimos el String en el archivo
+           for (int i = 0; i < almacen_tiempo.size(); i = i + 1) {
+               //importar los datos
+               double tiempo = ((Double)(almacen_tiempo.get(i))).doubleValue();
+               double dato = ((Double)(almacen_datos.get(i))).doubleValue();
+
+               //desplegar con dos decimales
+               float tiempo_dos_decimales = (float)(Math.round(tiempo * 100) / 100f);
+               escritor.write(""+tiempo_dos_decimales);
+
+               escritor.write("\t");
+               escritor.write("\t");
+               escritor.write("\t");
+
+               //desplegar con dos decimales
+               float dato_dos_decimales= (float)(Math.round(dato * 100) / 100f);
+               escritor.write(""+dato_dos_decimales + "\r\n");
+
+           }
+
+          /*
+           Paso 4: cerrar canal
+          */
+           escritor.flush();
+           escritor.close();
+
+           // Mostramos que se ha guardado
+           String aviso= "Los datos fueron guardados en la carpeta:" + "\n" +
+                   "Mis archivos/"+carpeta;
+           Toast.makeText(actividad, aviso, 2000).show();
+
+       } catch (IOException ex) {
+           ex.printStackTrace();
+       }
+
+   }
+
+
+}
+
+
+
+
+
+
+La clase ActividadDesplegadoraDatos. 
+
+
+Esta clase despliega la información en un gauge y en una tabla. También da la opción de grabar los datos en un archivo TXT el cual se ubicará en la carpeta que creará la actividad principal (almacen_mis_datos/luxometro/).
+
+
+NOTA MUY IMPORANTE:
+
+
+La tabla hay que estarla actualizando. Esto es muy costoso computacionalmente para el dispositivo móvil por lo que su actualización es preferible hacerla en un hilo independiente para evitar que se reviente la aplicación cuando se está ejecutando. Para esto se maneja la actualización a través de la clase Handler:
+
+
+
+
+Handler myHandler = new Handler();
+
+
+
+
+Esta permite hacer ese trabajo duro a través de los siguientes métodos:
+
+
+
+
+/*
+ Para el asunto de la table es mejor usar un
+ hilo manejador para que no se reviente la aplicación
+*/
+public void hacerTrabajoDuro() {
+   //.... realizar el trabajo duro
+
+   //Actualiza la UI usando el handler y el runnable
+   myHandler.post(updateRunnable);
+
+}
+
+final Runnable updateRunnable = new Runnable() {
+   public void run() {
+
+
+//aquí el código de actualizar la tabla
+
+};
+
+
+
+
+
+
+El siguiente es el código de la clase ActividadDesplegadoraDatos.
+
+
+public class ActividadDesplegadoraDatos extends Activity {
+
+
+   private Luxometro luxometro;
+   private TablaSimple tabla;
+
+   private Button botonGuardar, botonEmpezar;
+
+   //hilo
+   private HiloAnimacion hilo;
+
+   //hilo para actualizar tabla
+   //esto evita que se reviente la app
+   private final Handler myHandler = new Handler();
+   public boolean activarBotones = false;
+
+   /*
+   Para que tiempo empiece en cero.
+   Esto por la forma como se diseñó
+   la tabla de datos en donde la primera
+   fila es un título
+   */
+   private int nDatos = -1;
+
+   //para guardar los datos en un documento txt
+   private GuardarDatosPersistentesTXT archivoTxt;
+
+   private int tamanoLetraResolucionIncluida;
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       gestionandoResolucion();
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       /*
+       Para informar cómo se debe pegar el administrador de
+       diseño LinearLayout obtenido con el método crearGui()
+       */
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+       //para guardar datos
+       archivoTxt = new GuardarDatosPersistentesTXT( );
+
+       eventos();
+
+
+   }//fin del método onCreate
+
+
+   private void gestionandoResolucion() {
+
+       tamanoLetraResolucionIncluida = AlmacenDatosRAM.tamanoLetraResolucionIncluida;
+
+
+   }//fin método gestionandoResolucion()
+
+
+   private void crearElementosGUI() {
+
+
+       //gauge
+       luxometro = new Luxometro(this);
+       luxometro.setUnidades("lx");
+       luxometro.setAngulosSectores(20,190,40);
+       luxometro.setColorSectores(Color.GREEN,Color.argb(100,200,200,0), Color.YELLOW);
+       luxometro.setColorFranjaDinámica(Color.RED);
+
+       //graficador
+       tabla = new TablaSimple(this);
+       tabla.setEtiquetaColumnas("Tiempo (s)", "Iluminancia (lx)");
+
+
+       botonGuardar = new Button(this);
+       botonGuardar.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonGuardar.getBackground().setColorFilter(Color.rgb(255, 255, 100), PorterDuff.Mode.MULTIPLY);
+       botonGuardar.setText("GUARDAR");
+       botonGuardar.setEnabled(false);
+
+       botonEmpezar = new Button(this);
+       botonEmpezar.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonEmpezar.getBackground().setColorFilter(Color.rgb(255, 255, 100), PorterDuff.Mode.MULTIPLY);
+       botonEmpezar.setText("EMPEZAR");
+
+   }
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+       LinearLayout linear_layout_principal = new LinearLayout(this);
+       linear_layout_principal.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.CENTER_HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.FILL);
+       linear_layout_principal.setBackgroundColor(Color.WHITE);
+       linear_layout_principal.setWeightSum(10.0f);
+
+
+       //LinearLayout primera columna
+       LinearLayout linear_layout_primera_columna = new LinearLayout(this);
+       linear_layout_primera_columna.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_primera_columna.setGravity(Gravity.FILL);
+       linear_layout_primera_columna.setBackgroundColor(Color.rgb(245, 245, 245));
+
+
+       //LinearLayout segunda columna
+       LinearLayout linear_layout_segunda_columna = new LinearLayout(this);
+       linear_layout_segunda_columna.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_segunda_columna.setGravity(Gravity.FILL);
+       linear_layout_segunda_columna.setBackgroundColor(Color.rgb(245, 245, 245));
+       linear_layout_segunda_columna.setWeightSum(10.0f);
+
+       //LinearLayout primera fila segunda columna
+       LinearLayout linear_layout_primera_fila_segunda_columna = new LinearLayout(this);
+       linear_layout_primera_fila_segunda_columna.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_primera_fila_segunda_columna.setGravity(Gravity.FILL);
+
+
+       //LinearLayout segunda fila segunda columna
+       LinearLayout linear_layout_segunda_fila_segunda_columna = new LinearLayout(this);
+       linear_layout_segunda_fila_segunda_columna.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_segunda_fila_segunda_columna.setGravity(Gravity.FILL);
+       linear_layout_segunda_fila_segunda_columna.setWeightSum(2.0f);
+
+
+       //pegar columna primera al principal
+       LinearLayout.LayoutParams parametros_primera_columna = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_primera_columna.weight = 5.0f;
+       parametros_primera_columna.setMargins(20, 20, 20, 20);
+       linear_layout_primera_columna.setLayoutParams(parametros_primera_columna);
+       linear_layout_principal.addView(linear_layout_primera_columna);
+
+
+       //pegar columna segunda al principal
+       LinearLayout.LayoutParams parametros_segunda_columna = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_segunda_columna.weight = 5.0f;
+       parametros_segunda_columna.setMargins(20, 20, 20, 20);
+       linear_layout_segunda_columna.setLayoutParams(parametros_segunda_columna);
+       linear_layout_principal.addView(linear_layout_segunda_columna);
+
+
+       //pegar luxometro en primera columna
+       linear_layout_primera_columna.addView(luxometro);
+
+
+       //pegar primera fila en segunda columna
+       LinearLayout.LayoutParams parametros_primera_fila_segunda_columna = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_primera_fila_segunda_columna.weight = 8.0f;
+       parametros_primera_fila_segunda_columna.setMargins(20, 20, 20, 20);
+       linear_layout_primera_fila_segunda_columna.setLayoutParams(parametros_primera_fila_segunda_columna);
+       linear_layout_segunda_columna.addView(linear_layout_primera_fila_segunda_columna);
+
+       //pegar segunda fila en segunda columna en segunda columna
+       LinearLayout.LayoutParams parametros_segunda_fila_segunda_columna = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_segunda_fila_segunda_columna.weight = 2.0f;
+       parametros_segunda_fila_segunda_columna.setMargins(20, 20, 20, 20);
+       linear_layout_segunda_fila_segunda_columna.setLayoutParams(parametros_segunda_fila_segunda_columna);
+       linear_layout_segunda_columna.addView(linear_layout_segunda_fila_segunda_columna);
+
+       //pegar tabla en la primera fila de la segunda columna
+       linear_layout_primera_fila_segunda_columna.addView(tabla);
+
+       //pegar los botones en la segunda fila de la segunda columna
+       LinearLayout.LayoutParams parametros_botones_segunda_fila_segunda_columna = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_botones_segunda_fila_segunda_columna.weight = 1.0f;
+       botonEmpezar.setLayoutParams(parametros_botones_segunda_fila_segunda_columna);
+       botonGuardar.setLayoutParams(parametros_botones_segunda_fila_segunda_columna);
+       linear_layout_segunda_fila_segunda_columna.addView(botonEmpezar);
+       linear_layout_segunda_fila_segunda_columna.addView(botonGuardar);
+
+
+       return linear_layout_principal;
+
+
+   }
+
+   /*Administra los eventos de la GUI*/
+   private void eventos() {
+
+       botonGuardar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               guardar();
+
+
+           }
+       });
+
+
+       botonEmpezar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               empezar();
+
+           }
+       });
+
+
+   }
+
+
+
+   private void empezar() {
+
+       //destruir hilo si ya existía
+       if(hilo!=null)
+           hilo=null;
+
+       activarBotones = false;
+       borrarDatos();
+
+       ///crear nuevo hilo
+       hilo = new HiloAnimacion(this);
+       hilo.corriendo = true;
+       hilo.start();
+
+   }
+
+
+   private void guardar() {
+
+       String carpeta = AlmacenDatosRAM.path;
+       archivoTxt.guardar(this, carpeta);
+
+   }
+
+   private void borrarDatos() {
+
+       tabla.borrar();
+       nDatos = -1;
+   }
+
+
+   /*
+    Para el asunto de la table es mejor usar un
+    hilo manejador para que no se reviente la aplicación
+  */
+   public void hacerTrabajoDuro() {
+       //.... realizar el trabajo duro
+
+       //Actualiza la UI usando el handler y el runnable
+       myHandler.post(updateRunnable);
+
+   }
+
+   final Runnable updateRunnable = new Runnable() {
+       public void run() {
+
+           //tiempo en segundos
+           float tiempo = 0.001f*AlmacenDatosRAM.tiempo;
+           //tiempo en segundos y medida con hasta dos decimales
+           tiempo = (float) (Math.floor(100 * tiempo) / 100);
+           float medida = AlmacenDatosRAM.datoActual;//medida;
+           medida = (float) (Math.floor(100 * medida) / 100f);
+
+           tabla.enviarDatos(tiempo, medida);
+
+           //guardar los datos de a vs t en documento .txt
+           archivoTxt.llenarDatos(tiempo, medida);
+
+           if (activarBotones == true) {
+
+               botonGuardar.setEnabled(true);
+               botonEmpezar.setEnabled(true);
+
+           } else {
+
+               botonGuardar.setEnabled(false);
+               botonEmpezar.setEnabled(false);
+           }
+
+
+       }
+   };
+
+
+   /*
+     Se deben borrar los datos cuando se sale de la aplicación
+    */
+   protected void onPause() {
+       super.onPause();
+       archivoTxt.borrarDatos();
+
+   }
+
+
+   /*
+     Desplegar diálogo de advertencia para decidir si se
+     sale de la actividad o no. Esto cuando se presiona
+     el botón hacia atrás del dispositivo móvil
+    */
+
+   public void onClick(DialogInterface arg0, int arg1) {
+       throw new UnsupportedOperationException("Not supported yet.");
+   }
+
+   public boolean onKeyDown(int keyCode, KeyEvent event) {
+       if (keyCode == KeyEvent.KEYCODE_BACK) {
+
+           // Esto es lo que hace mi botón al pulsar ir a atrás
+           DialogoSalir dialogo_salir = new DialogoSalir(this);
+           dialogo_salir.mostrarPopMenu();
+           return true;
+       }
+       return super.onKeyDown(keyCode, event);
+   }
+
+}
+
+
+
+
+Clase HiloAnimacion:
+
+
+
+
+public class HiloAnimacion extends Thread {
+
+
+   public boolean corriendo;
+   private long periodo_muestreo = 500;
+   public float tiempo = 0;
+   private int contador = -1;
+
+
+   private ActividadDesplegadoraDatos actividad;
+
+
+   public HiloAnimacion(ActividadDesplegadoraDatos actividad) {
+
+       this.actividad = actividad;
+
+       periodo_muestreo =AlmacenDatosRAM.periodoMuestreo;
+
+   }
+
+
+   @Override
+   public void run() {
+       corriendo = true;
+       while (corriendo) {
+
+
+           try {
+               Thread.sleep(periodo_muestreo);
+
+           } catch (InterruptedException e) {
+               e.printStackTrace();
+
+           }
+
+           tiempo = tiempo + periodo_muestreo;//en segundos
+           AlmacenDatosRAM.tiempo =tiempo;
+
+
+           contador = contador + 1;
+
+           if (contador == AlmacenDatosRAM.nDatos) {
+
+               actividad.activarBotones = true;
+               detener();
+
+           }
+
+           actividad.hacerTrabajoDuro();
+
+       }
+
+   }
+
+
+   //parar la animación
+   private void detener() {
+
+       corriendo = false;
+
+   }
+}
+
+
+
+
+
+
+La clase ActividadPrincipalMiTrigesimaSegundaApp.
+
+
+
+
+public class ActividadPrincipalMiTrigesimaSegundaApp extends Activity {
+
+
+   private int tamanoLetraResolucionIncluida;
+
+   private Boton consultar,ajustes, salir;
+
+   private String ruta=null;
+
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       gestionarResolucion();
+
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       /*
+       Para informar cómo se debe pegar el administrador de
+       diseño LinearLayout obtenido con el método crearGui()
+       */
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+       existenciaSensor();
+
+       eventos();
+
+       //esto es necesario hacerlo a partir de la API 23 de android
+       verificacionPermisos();
+
+       //crear los directorio para almecenar datos
+       crearDirectorioAlmacenamientoDatos();
+
+
+   }//fin del método onCreate
+
+   /*Método auxiliar para asuntos de resolución*/
+   private void gestionarResolucion() {
+
+       //independencia de la resolución de la pantalla
+       DisplayMetrics displayMetrics = this.getApplicationContext().getResources().getDisplayMetrics();
+       int alto = displayMetrics.heightPixels;
+       int ancho = displayMetrics.widthPixels;
+       AlmacenDatosRAM.ancho=ancho;
+       AlmacenDatosRAM.alto=alto;
+       int dimensionReferencia;
+
+       //tomar el menor valor entre alto y ancho de pantalla
+       if (alto > ancho) {
+
+           dimensionReferencia = ancho;
+       } else {
+
+           dimensionReferencia = alto;
+       }
+
+       AlmacenDatosRAM.dimensioReferencia =dimensionReferencia;
+
+       //una estimación de un buen tamaño
+       int tamanoLetra = dimensionReferencia / 20;
+
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       tamanoLetraResolucionIncluida = (int) (tamanoLetra / displayMetrics.scaledDensity);
+
+       //guardar en el almacen de datos para que otras clases la accedan fácilmente
+       AlmacenDatosRAM.tamanoLetraResolucionIncluida = tamanoLetraResolucionIncluida;
+
+          }
+
+
+   private void crearElementosGUI() {
+
+       consultar = new Boton(this);
+       consultar.setImagen(R.drawable.consultar);
+
+       ajustes = new Boton(this);
+       ajustes.setImagen(R.drawable.configuracion);
+
+       salir = new Boton(this);
+       salir.setImagen(R.drawable.salir);
+
+   }
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+
+       LinearLayout linear_layout_principal = new LinearLayout(this);
+       linear_layout_principal.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_principal.setGravity(Gravity.CENTER_HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.FILL);
+       linear_layout_principal.setBackgroundColor(Color.WHITE);
+       linear_layout_principal.setWeightSum(10);
+
+
+       //LinearLayout primera fila
+       LinearLayout linear_layout_primera_fila = new LinearLayout(this);
+       linear_layout_primera_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_primera_fila.setGravity(Gravity.FILL);
+       linear_layout_primera_fila.setBackgroundColor(Color.WHITE);
+       LinearLayout.LayoutParams parametros_primera_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);//ViewGroup.LayoutParams.WRAP_CONTENT);
+       parametros_primera_fila.weight = 8.0f;
+       linear_layout_primera_fila.setLayoutParams(parametros_primera_fila);
+
+
+       //fondo primera fila
+       Drawable fondo = getResources().getDrawable(R.drawable.imagen_entrada_app_32);
+       linear_layout_primera_fila.setBackgroundDrawable(fondo);
+
+       //LinearLayout segunda fila
+       LinearLayout linear_layout_segunda_fila = new LinearLayout(this);
+       linear_layout_segunda_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_segunda_fila.setGravity(Gravity.FILL);
+       LinearLayout.LayoutParams parametros_segunda_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_segunda_fila.weight = 2.0f;
+       linear_layout_segunda_fila.setWeightSum(3.0f);
+       linear_layout_segunda_fila.setLayoutParams(parametros_segunda_fila);
+
+
+       LinearLayout.LayoutParams parametros_pegado_boton = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_boton.weight = 1.0f;
+       consultar.setLayoutParams(parametros_pegado_boton);
+       ajustes.setLayoutParams(parametros_pegado_boton);
+       salir.setLayoutParams(parametros_pegado_boton);
+       linear_layout_segunda_fila.addView(consultar);
+       linear_layout_segunda_fila.addView(ajustes);
+       linear_layout_segunda_fila.addView(salir);
+
+
+       linear_layout_principal.addView(linear_layout_primera_fila);
+       linear_layout_principal.addView(linear_layout_segunda_fila);
+
+
+       return linear_layout_principal;
+
+
+   }
+
+
+   private void eventos() {
+
+       consultar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+
+               lanzarDatos();
+
+
+           }
+       });
+
+       ajustes.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+
+               lanzarAjustes();
+
+
+           }
+       });
+
+
+       salir.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               finish();
+           }
+       });
+
+
+   }
+
+
+   private void lanzarDatos() {
+
+       Intent intent = new Intent(this, ActividadDesplegadoraDatos.class);
+       startActivity(intent);
+
+   }
+
+
+   private void lanzarAjustes() {
+
+       Intent intent = new Intent(this, ActividadConfiguracion.class);
+       startActivity(intent);
+
+   }
+
+
+
+   private void  crearDirectorioAlmacenamientoDatos(){
+
+
+       File path = null;
+
+       ruta="almacen_mis_datos/luxometro/";
+       AlmacenDatosRAM.path=ruta;
+
+       if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q){
+           //versiones con android menores a 10
+           path = new File(Environment.getExternalStorageDirectory(), ruta);
+           if (!path.exists()) {
+               path.mkdirs();
+           }
+
+       } else{
+           //para versiones de 10 en adelante
+           path = new File(getExternalFilesDir(null), ruta);
+           if (!path.exists()) {
+               path.mkdirs();
+           }
+
+       }
+
+
+   }
+
+   //preguntar si el sensor existe
+   private boolean existenciaSensor(){
+
+       boolean existe=false;
+       SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+       if (sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)!=null){
+
+           existe =true;
+
+
+       } else {
+
+           desplegarAviso();
+
+       }
+
+       return existe;
+   }
+
+   private void desplegarAviso(){
+
+       Toast toast = Toast.makeText(getApplicationContext(), "SU DISPOSITIVO NO POSEE SENSOR DE LUZ", Toast.LENGTH_SHORT);
+       toast.show();
+
+   }
+
+
+
+   @Override
+   public void onDestroy() {
+       super.onDestroy();
+       finish();
+   }
+
+
+     /*
+     Los siguientes dos métodos son para confirmar los permisos.
+     Esto se exige en las versiones Android 6.0 hacia adelante.
+    */
+
+
+   private void verificacionPermisos() {
+
+       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+           Toast.makeText(this, "This version is not Android 6 or later " + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show();
+       } else {
+
+           int hasReadWritePermission = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+           if (hasReadWritePermission != PackageManager.PERMISSION_GRANTED) {
+
+
+               /* Request user permissions in runtime */
+               ActivityCompat.requestPermissions(ActividadPrincipalMiTrigesimaSegundaApp.this,
+                       new String[]{
+                               Manifest.permission.READ_EXTERNAL_STORAGE,
+                               Manifest.permission.WRITE_EXTERNAL_STORAGE
+                       },
+                       100);
+
+           } else {
+
+           }
+
+       }
+
+   }
+
+   @TargetApi(23)
+   @Override
+   public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+       switch (requestCode) {
+           case 100:
+               if (grantResults.length > 0
+                       || grantResults[0] == PackageManager.PERMISSION_GRANTED
+                       || grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+
+               } else {
+
+                   Toast.makeText(ActividadPrincipalMiTrigesimaSegundaApp.this, "Permiso denegado.", Toast.LENGTH_SHORT).show();
+                   finish();
+               }
+               return;
+       }
+   }
+
+
+}
+
+
+
+
+
+
+El archivo manifiesto.
+
+
+A partir de Android 12 para muestrear sensores del dispositivo a altas tasas (SensorManager.SENSOR_DELAY_FASTEST) exige solicitar permiso en el archivo manifiesto. Esto evita posibles fallas como las que se presentron a algunos compañeros en la versión 2022-02 de este curso. Para prevenir esta falla, agregar en el archivo manifiesto este permiso (está remarcado en amarillo):
+
+
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools"
+   package="com.curso_simulaciones.mitrigesimasegundaapp">
+
+   <application
+       android:allowBackup="true"
+       android:dataExtractionRules="@xml/data_extraction_rules"
+       android:fullBackupContent="@xml/backup_rules"
+       android:icon="@mipmap/ic_launcher"
+       android:label="@string/app_name"
+       android:roundIcon="@mipmap/ic_launcher_round"
+       android:supportsRtl="true"
+       android:theme="@style/Theme.MiTrigesimaSegundaApp"
+       tools:targetApi="31" >
+
+       <activity android:name=".ActividadPrincipalMiTrigesimaSegundaApp"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="portrait"
+           android:exported="true">
+
+
+           <intent-filter>
+               <action android:name="android.intent.action.MAIN" />
+
+               <category android:name="android.intent.category.LAUNCHER" />
+           </intent-filter>
+       </activity>
+
+
+       <activity android:name=".actividades_secundarias.ActividadConfiguracion"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="portrait">
+
+       </activity>
+
+       <activity android:name=".actividades_secundarias.ActividadDesplegadoraDatos"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="landscape">
+
+       </activity>
+
+
+   </application>
+
+   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+       tools:remove="android:maxSdkVersion" />
+   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+   <uses-permission android:name="android.permission.STORAGE" />
+
+
+    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"/>
+
+
+
+</manifest>
+
+
+
+
+
+
+Compilar y ejecutar. Se despliga la GUI de la Figura 7.
+
+
+
+
+ Icono
+
+Descripción generada automáticamente 
+
+
+
+Figura 7
+
+
+
+
+Al hacer clic en el botón DATOS se despliega la GUI de la Figura 8. Hacer clic en el botón EMPEZAR.
+
+
+ Interfaz de usuario gráfica
+
+Descripción generada automáticamente 
+
+
+
+Figura 8
+
+
+
+
+Si se hace clic en el botón AJUSTES de la GUI de la Figura 7 se despliega la GUI de la Figura 9. Aquí se puede elegir el número de datos a tomar y el periodo de muestreo.
+
+
+
+
+  
+
+
+
+Figura 9
+
+
+Al hacer clic en el botón GUARDAR en la GUI de la Figura 8 se guardan los  datos en un archivo .TXT, Figura 10 (para Android 9 o menor). Para Android mayores a 9 queda en la carpeta 
+
+
+ANDROID/data/com.curso_smulacionesmitriegesimasegunadaapp/files/almacen_mis:datos/luxometro
+
+
+
+
+  
+
+
+
+	
+
+  
+
+	
+
+ Forma, Cuadrado
+
+Descripción generada automáticamente 
+
+	
+
+
+
+Figura 10
+
+
+
+
+
+
+Generar el apk para distribución e instalar en varios dispositivos móviles android para probar la app.
+
+
+UNA APP PARA LEER LOS DATOS GUARDADOS DEL LUXOMETRO
+En este ejemplo se leeran los datos que tuvieron almacenamiento externo en directorio público del ejemplo anterior.
+Crear un proyecto denominado MiTrigesimaTerceraApp con la jerarquía de clases de la Figura 11. En este proyecto se leerán datos que se guardaron en archivos .TXT  en la app anterior.
+
+
+  
+
+Figura 11
+
+
+En esta app se usarán las siguientes imágenes. Guardarlas en la carpeta drawables. 
+
+
+
+
+  
+
+
+
+Figura 12
+Adicionalmente se debe crear la carpeta layoout dentro de app>src>main>res>, Figura 13. Dentro de esta carpeta depositar el archivo row.xml (este archivo se proporcionó dentro de los recursos de este módulo[4].
+
+
+ Interfaz de usuario gráfica, Texto, Aplicación
+
+Descripción generada automáticamente 
+
+
+
+Figura 13
+
+
+
+
+
+
+Adicionalmente se usará la librería MPAndroidChart.jar. Seguir los pasos dados en ejemplos anteriores del módulo # 11 para incoroprar la librería de gráficos MPAndroidChart.jar.  
+
+
+A continuación, se presenta el código fuente de las clases de esta app. Las clases DialogoSalir, TablaSimple, Boton tienen el mismo código de la app anterior.
+La clase AlmacenDatosRAM.
+
+
+public class AlmacenDatosRAM {
+
+
+   public static int dimensioReferencia, alto, ancho;
+   public static int tamanoLetraResolucionIncluida;
+   public static String path;
+   public static int n;
+   public static double[] x = new double[100];
+   public static double[] y = new double[100];
+
+
+}
+
+
+La interface IfolderItemListener,
+
+
+
+
+public interface IFolderItemListener {
+
+   void OnCannotFileRead(File file);
+   void OnFileClicked(File file);
+
+}
+
+
+
+
+La clase FolderLayout,
+
+
+
+
+public class FolderLayout extends LinearLayout implements AdapterView.OnItemClickListener {
+
+   Context context;
+   private IFolderItemListener folderListener;
+   private List<String> item = null;
+   private List<String> path = null;
+   private String root = "/";
+   private TextView miRuta;
+   private ListView listaView;
+   private LinearLayout linear_layout_principal;
+   private int tamano_letras;
+   private TextView text;
+
+   private File[] files;
+
+
+
+   public FolderLayout(Context context) {
+       super(context);
+       this.context = context;
+
+
+       tamanoLetras();
+
+
+       this.setGravity(Gravity.LEFT);
+       this.setGravity(Gravity.FILL);
+
+       crearElementosGUI();
+
+       this.addView(crearGUI(context));
+
+       getDir(root, listaView);
+
+   }
+
+
+
+
+
+
+   private void crearElementosGUI(){
+
+       miRuta = new TextView(context);
+       listaView = new ListView(context);
+       miRuta.setTextColor(Color.BLACK);
+       miRuta.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamano_letras);
+
+
+   }
+
+   private LinearLayout crearGUI(Context context){
+
+       //LinearLayoutPrincipal
+       linear_layout_principal = new LinearLayout(context);
+       linear_layout_principal.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_principal.setGravity(Gravity.CENTER_HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.FILL);
+       linear_layout_principal.setBackgroundColor(Color.CYAN);
+       linear_layout_principal.setWeightSum(10);
+
+       //LinearLayout primera fila
+       LinearLayout linear_layout_primera_fila = new LinearLayout(context);
+       LayoutParams parametros_primera_fila = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+       parametros_primera_fila.weight = 1.0f;
+       linear_layout_primera_fila.setBackgroundColor(Color.RED);
+       linear_layout_primera_fila.setLayoutParams(parametros_primera_fila);
+
+       //LinearLayout segunda fila
+       LinearLayout linear_layout_segunda_fila = new LinearLayout(context);
+       LayoutParams parametros_segunda_fila = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+       parametros_segunda_fila.weight = 9f;
+       linear_layout_segunda_fila.setBackgroundColor(Color.BLACK);
+       linear_layout_segunda_fila.setLayoutParams(parametros_segunda_fila);
+
+       linear_layout_primera_fila.addView(miRuta);
+       linear_layout_segunda_fila.addView(listaView);
+
+
+
+       linear_layout_principal.addView(linear_layout_primera_fila);
+       linear_layout_principal.addView(linear_layout_segunda_fila);
+
+       return linear_layout_principal;
+
+   }
+
+   public void setIFolderItemListener(IFolderItemListener folderItemListener) {
+       this.folderListener = folderItemListener;
+   }
+
+   //Set Directory for view at anytime
+   public void setDir(String dirPath) {
+
+   }
+
+   private void getDir(String dirPath, ListView v) {
+       String localizacion="";
+
+       localizacion="Ejemplo ap_33";
+
+
+       miRuta.setText(localizacion +dirPath);
+       item = new ArrayList<String>();
+       path = new ArrayList<String>();
+
+       if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q){
+           //versiones inferiores a Android 10
+           files =  new File(Environment.getExternalStorageDirectory(),  "almacen_mis_datos/luxometro/").listFiles();
+
+       } else {
+
+           //versiones desde Android 10 en adelante
+           files = context.getExternalFilesDir( "almacen_mis_datos/luxometro/").listFiles();
+       }
+       for (int i = 0; i < files.length; i++) {
+           File file = files[i];
+           path.add(file.getPath());
+           if (file.isDirectory()) {
+               item.add(file.getName() + "/");
+           } else {
+               item.add(file.getName());
+           }
+
+       }
+
+       setItemList(item);
+
+   }
+
+
+   public void setItemList(List<String> item) {
+
+
+       ArrayAdapter<String> fileList = new ArrayAdapter<String>(context, R.layout.row,R.id.rowtext, item){
+
+
+           @Override
+           public View getView(int position, View convertView, ViewGroup parent){
+               // Obtener el item del ListView
+               View view = super.getView(position, convertView, parent);
+
+               //Inicializar un TextView para ListView cada item
+               TextView tv = (TextView) view.findViewById(R.id.rowtext);
+
+               // Set the text color of TextView (ListView Item)
+               tv.setTextColor(Color.YELLOW);
+               tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamano_letras);
+
+               // Generar el ListView item usando TextView
+               return view;
+           }
+       };
+
+
+
+
+       listaView.setAdapter(fileList);
+
+       listaView.setOnItemClickListener(this);
+   }
+
+   public void onListItemClick(ListView l, View v, int position, long id) {
+       File file = new File(path.get(position));
+       if (file.isDirectory()) {
+           if (file.canRead()) {
+               getDir(path.get(position), l);
+           } else {
+
+               if (folderListener != null) {
+                   folderListener.OnCannotFileRead(file);
+
+               }
+
+           }
+       } else {
+
+
+           if (folderListener != null) {
+               folderListener.OnFileClicked(file);
+           }
+
+       }
+   }
+
+   public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+       // TODO Auto-generated method stub
+       onListItemClick((ListView) arg0, arg0, arg2, arg3);
+   }
+
+
+   private void tamanoLetras( ){
+
+       tamano_letras=(int)(0.8f*AlmacenDatosRAM.tamanoLetraResolucionIncluida);
+
+   }
+
+}
+
+
+
+
+La clase LeerDatosTXT.
+
+
+public class LeerDatosTXT {
+
+   public LeerDatosTXT() {
+
+   }
+
+
+   public void leer(String path) {
+
+       int i = 0;
+
+       try {
+
+           //Paso 1 y 2: Crear y abrir el canal apar leer texto
+           FileReader fr = new FileReader(path);
+
+           //Buffer mejora la eficiencia
+           BufferedReader text = new BufferedReader(fr);
+           String ultima_linea = "";
+
+           //Paso 3: leer
+           //aqui debe ir código de leer y cargar datos en el almacen
+           StreamTokenizer streamtokenizer = new StreamTokenizer(text);
+           //leemos la primera línea
+           //ultima_linea = text.readLine();
+
+           while (ultima_linea != null) {
+
+               streamtokenizer.nextToken();
+               //Guardar los datos en la clase
+               double x = streamtokenizer.nval;
+
+               AlmacenDatosRAM.x[i] = x;
+               streamtokenizer.nextToken();
+               double y = streamtokenizer.nval;
+               AlmacenDatosRAM.y[i] = y;
+
+
+               //hasta aqui
+               ultima_linea = text.readLine();
+               i = i + 1;
+           }
+
+           AlmacenDatosRAM.n = i - 1;
+
+           //Paso 4: cerrar
+           text.close();
+
+       } catch (Exception ex) {
+
+       }
+
+   }
+
+}
+
+
+
+
+
+
+La clase Graficador.
+
+
+public class Graficador extends LineChart {
+
+
+   private LineDataSet lineDataSet;
+   private String tituloEjeY="";
+   private int colorLinea;
+   private float grosorLinea=1f;
+   private int colorValores;
+   private int colorMarcadores;
+
+
+
+   public Graficador(Context context) {
+
+       super(context);
+
+       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+           this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
+       }
+
+
+   }
+
+
+   public void setDatos(ArrayList datos) {
+
+       LineDataSet lineDataSet = new LineDataSet(datos, tituloEjeY);
+       lineDataSet.setLineWidth(grosorLinea);
+       lineDataSet.setColor(colorLinea);
+       lineDataSet.setValueTextColor(colorValores);
+       lineDataSet.setCircleColor(colorMarcadores);
+       LineData lineData = new LineData(lineDataSet);
+       this.setData(lineData);
+
+       /*
+        Esta instrucción es de la librería y es necesaria para
+        que el eje se vaya desplazando a medida que entran datos
+        */
+
+       this.moveViewTo(lineData.getEntryCount() - 7, 50f, YAxis.AxisDependency.LEFT);
+
+
+   }
+
+
+   /*
+    Modifica el grosr del trazo de la gráfica
+    */
+   public void setGrosorLinea(float grosorLinea){
+
+       this.grosorLinea=grosorLinea;
+   }
+
+   public void setColorLinea(int colorLinea){
+
+       this.colorLinea=colorLinea;
+
+   }
+
+
+   public  void setColorFondo(int colorFondo){
+
+       this.setBackgroundColor(colorFondo);
+
+   }
+
+
+   public void setColorTextoEjes(int colorTextoEjes){
+
+       //texto eje y izquierda
+       this.getAxisLeft().setTextColor(colorTextoEjes);
+       //texto eje y derecha
+       this.getAxisRight().setTextColor(colorTextoEjes);
+       //texto eje x
+       this.getXAxis().setTextColor(colorTextoEjes);
+       //texto título eje y
+       this.getLegend().setTextColor(colorTextoEjes);
+       //texto título eje x
+       this.getDescription().setTextColor(colorTextoEjes);
+
+   }
+
+   public void setColorValores(int colorValores){
+
+       this.colorValores=colorValores;
+
+
+   }
+
+
+   public void setTituloEjeX(String tituloEjeX){
+
+
+       this.getDescription().setText(tituloEjeX);
+
+   }
+
+
+   public void setTituloEjeY(String tituloEjeY){
+
+       this.tituloEjeY=tituloEjeY;
+
+   }
+
+
+   public void setColorMarcadores(int colorMarcadores){
+
+       this.colorMarcadores=colorMarcadores;
+   }
+
+
+}
+
+
+
+
+La clase ActividadExploradoraArchivos.
+
+
+public class ActividadExploradoraArchivos extends Activity implements IFolderItemListener {
+
+
+   private int tamanoLetraResolucionIncluida;
+
+   //  @Override
+   public void onCreate(Bundle savedInstanceState) {
+
+       super.onCreate(savedInstanceState);
+
+       gestionarResolucion();
+
+       /*
+         vamos a leer datos de archivos txt ubicados en
+         el directorio almacen_mis_datos/luxometro/
+        */
+
+       FolderLayout folder = new FolderLayout(this);
+
+       folder.setGravity(Gravity.CENTER);
+       folder.setGravity(Gravity.FILL);
+       folder.setIFolderItemListener(this);
+       setContentView(folder);
+
+   }
+
+
+   private void gestionarResolucion() {
+
+      tamanoLetraResolucionIncluida = (int) (0.8*AlmacenDatosRAM.tamanoLetraResolucionIncluida);
+
+   }//fin método gestionarResolucion()
+
+
+   /*
+     Los dos métodos siguientes
+     son implementados debido a que
+     se está usando la interface
+     IFolderItemListener que pertenece
+     a la librería explorador
+
+    */
+
+   /*
+     Desplegar aviso en caso de no poder
+     leer carpeta
+    */
+   public void OnCannotFileRead(File file) {
+       // TODO Auto-generated method stub
+
+       new AlertDialog.Builder(this)
+               .setIcon(R.drawable.ic_launcher_background)
+               .setTitle(
+                       "[" + file.getName()
+                               + "] folder can't be read!")
+               .setPositiveButton("OK",
+                       new DialogInterface.OnClickListener() {
+
+                           public void onClick(DialogInterface dialog,
+                                               int which) {
+
+                           }
+                       }).show();
+
+   }
+
+   /*
+   Cuando se escoge el archivo se guarda
+   su path en AlmacenDatosRAM
+   */
+   public void OnFileClicked(File file) {
+
+       AlmacenDatosRAM.path = file.getPath();
+
+       finish();
+   }
+
+
+}
+
+
+La clase ActividadDesplegadora.
+
+
+
+
+public class ActividadDesplegadoraDatos extends Activity {
+
+   private TablaSimple tabla;
+   private Button botonPathArchivoTXT, botonLeer;
+   private LeerDatosTXT datosTXT;
+   private Graficador graficador;
+   private ArrayList datos;
+   private int tamanoLetraResolucionIncluida;
+
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       gestionarResolucion();
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       /*
+       Para informar cómo se debe pegar el administrador de
+       diseño LinearLayout obtenido con el método crearGui()
+       */
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+       datosTXT = new LeerDatosTXT();
+
+       eventos();
+
+   }//fin del método onCreate
+
+
+   private void gestionarResolucion() {
+
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       tamanoLetraResolucionIncluida = (int) (0.6*AlmacenDatosRAM.tamanoLetraResolucionIncluida);
+
+   }//fin método gestionandoResolucion()
+
+
+   private void crearElementosGUI() {
+
+
+       //graficador
+       graficador = new Graficador(this);
+       graficador.setTituloEjeX("Tiempo (s)");
+       graficador.setTituloEjeY("Iluminancia (lux)");
+       graficador.setGrosorLinea(2f);
+       graficador.setColorLinea(Color.RED);
+       graficador.setColorValores(Color.YELLOW);
+       graficador.setColorMarcadores(Color.GREEN);
+       graficador.setColorFondo(Color.BLACK);
+       graficador.setColorTextoEjes(Color.WHITE);
+
+
+       //graficador: los datos son Iluminacia (lx) vs Tiempo (s)
+       tabla = new TablaSimple(this);
+       tabla.setEtiquetaColumnas("Tiempo (s)", "Iluminancia (lx)");
+
+
+       botonPathArchivoTXT = new Button(this);
+       botonPathArchivoTXT.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonPathArchivoTXT.getBackground().setColorFilter(Color.rgb(255, 255, 100), PorterDuff.Mode.MULTIPLY);
+       botonPathArchivoTXT.setText("PATH ARCHIVO");
+
+       botonLeer = new Button(this);
+       botonLeer.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonLeer.getBackground().setColorFilter(Color.rgb(255, 255, 100), PorterDuff.Mode.MULTIPLY);
+       botonLeer.setText("LEER DATOS");
+       botonLeer.setEnabled(false);
+
+   }
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+       LinearLayout linear_layout_principal = new LinearLayout(this);
+       linear_layout_principal.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.CENTER_HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.FILL);
+       linear_layout_principal.setBackgroundColor(Color.WHITE);
+       //linear_layout_principal.setPadding(20, 20, 20, 20);
+       linear_layout_principal.setWeightSum(10.0f);
+
+
+       //LinearLayout primera columna
+       LinearLayout linear_layout_primera_columna = new LinearLayout(this);
+       linear_layout_primera_columna.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_primera_columna.setGravity(Gravity.FILL);
+       linear_layout_primera_columna.setBackgroundColor(Color.rgb(245, 245, 245));
+
+
+       //LinearLayout segunda columna
+       LinearLayout linear_layout_segunda_columna = new LinearLayout(this);
+       linear_layout_segunda_columna.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_segunda_columna.setGravity(Gravity.FILL);
+       linear_layout_segunda_columna.setBackgroundColor(Color.rgb(245, 245, 245));
+       linear_layout_segunda_columna.setWeightSum(10.0f);
+
+       //LinearLayout primera fila segunda columna
+       LinearLayout linear_layout_primera_fila_segunda_columna = new LinearLayout(this);
+       linear_layout_primera_fila_segunda_columna.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_primera_fila_segunda_columna.setGravity(Gravity.FILL);
+       //linear_layout_primera_fila_segunda_columna.setBackgroundColor(Color.RED);
+
+       //LinearLayout segunda fila segunda columna
+       LinearLayout linear_layout_segunda_fila_segunda_columna = new LinearLayout(this);
+       linear_layout_segunda_fila_segunda_columna.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_segunda_fila_segunda_columna.setGravity(Gravity.FILL);
+       //linear_layout_segunda_fila_segunda_columna.setBackgroundColor(Color.BLUE);
+       linear_layout_segunda_fila_segunda_columna.setWeightSum(2.0f);
+
+
+       //pegar columna primera al principal
+       LinearLayout.LayoutParams parametros_primera_columna = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_primera_columna.weight = 5.0f;
+       parametros_primera_columna.setMargins(20, 20, 20, 20);
+       linear_layout_primera_columna.setLayoutParams(parametros_primera_columna);
+       linear_layout_principal.addView(linear_layout_primera_columna);
+
+
+       //pegar columna segunda al principal
+       LinearLayout.LayoutParams parametros_segunda_columna = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_segunda_columna.weight = 5.0f;
+       parametros_segunda_columna.setMargins(20, 20, 20, 20);
+       linear_layout_segunda_columna.setLayoutParams(parametros_segunda_columna);
+       linear_layout_principal.addView(linear_layout_segunda_columna);
+
+       //pegra garficador a la primera columna
+       LinearLayout.LayoutParams parametros_grafica = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_grafica.weight = 1.0f;
+       linear_layout_primera_columna.addView(graficador, parametros_grafica);
+
+       //pegar primera fila en segunda columna
+       LinearLayout.LayoutParams parametros_primera_fila_segunda_columna = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_primera_fila_segunda_columna.weight = 8.0f;
+       parametros_primera_fila_segunda_columna.setMargins(20, 20, 20, 20);
+       linear_layout_primera_fila_segunda_columna.setLayoutParams(parametros_primera_fila_segunda_columna);
+       linear_layout_segunda_columna.addView(linear_layout_primera_fila_segunda_columna);
+
+       //pegar segunda fila en segunda columna en segunda columna
+       LinearLayout.LayoutParams parametros_segunda_fila_segunda_columna = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_segunda_fila_segunda_columna.weight = 2.0f;
+       parametros_segunda_fila_segunda_columna.setMargins(20, 20, 20, 20);
+       linear_layout_segunda_fila_segunda_columna.setLayoutParams(parametros_segunda_fila_segunda_columna);
+       linear_layout_segunda_columna.addView(linear_layout_segunda_fila_segunda_columna);
+
+       //pegar tabla en la primera fila de la segunda columna
+       linear_layout_primera_fila_segunda_columna.addView(tabla);
+
+       //pegar los botones en la segunda fila de la segunda columna
+       LinearLayout.LayoutParams parametros_botones_segunda_fila_segunda_columna = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_botones_segunda_fila_segunda_columna.weight = 1.0f;
+       botonLeer.setLayoutParams(parametros_botones_segunda_fila_segunda_columna);
+       botonPathArchivoTXT.setLayoutParams(parametros_botones_segunda_fila_segunda_columna);
+       linear_layout_segunda_fila_segunda_columna.addView(botonLeer);
+       linear_layout_segunda_fila_segunda_columna.addView(botonPathArchivoTXT);
+
+
+       return linear_layout_principal;
+
+
+   }
+
+   /*Administra los eventos de la GUI*/
+   private void eventos() {
+
+       botonPathArchivoTXT.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               abrirFolder();
+               botonLeer.setEnabled(true);
+
+           }
+       });
+
+
+       botonLeer.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               desplegarDatos();
+
+           }
+       });
+
+
+   }
+
+
+   public void abrirFolder() {
+
+       //esta actividad localiza el path del archivo TXT que tiene los datos
+       Intent intent = new Intent(this, ActividadExploradoraArchivos.class);
+       startActivity(intent);
+
+   }
+
+
+   public void desplegarDatos() {
+
+       //limpiar datos antes de nueva consulta
+       borrarDatos();
+
+       //arreglo para los datos de la gráfica
+       datos = new ArrayList<>();
+
+       /*
+         leer el archivo de texto  que se encuentra
+          en este path
+       */
+       datosTXT.leer(AlmacenDatosRAM.path);
+
+       //número de datos
+       int longitud = AlmacenDatosRAM.n;
+
+       for (int i = 0; i < longitud; i = i + 1) {
+           float x = (float) AlmacenDatosRAM.x[i];
+           float y = (float) AlmacenDatosRAM.y[i];
+
+           //datos para la tabla
+           tabla.enviarDatos(x, y);
+
+           //datos para la gráfica
+           datos.add((new Entry(x, y)));
+           graficador.setDatos(datos);
+
+       }
+
+   }
+
+
+   private void borrarDatos() {
+
+       //borrar arreglos en AlmacenDatosRAM
+       for (int i = 0; i < AlmacenDatosRAM.x.length; i = i + 1) {
+
+           AlmacenDatosRAM.x[i] = 0;
+           AlmacenDatosRAM.y[i] = 0;
+
+
+       }
+
+       //borrar tabla
+       tabla.borrar();
+
+   }
+
+
+   /*
+     Se deben borrar los datos cuando se sale de la aplicación
+    */
+   protected void onPause() {
+       super.onPause();
+
+   }
+
+
+   /*
+     Desplegar diálogo de avertencia para decidir sei se sale de la actividad o no.
+     Esto cuando se presiona el botón hacia atrás del dispositivo móvil
+    */
+
+   public void onClick(DialogInterface arg0, int arg1) {
+       throw new UnsupportedOperationException("Not supported yet.");
+   }
+
+   public boolean onKeyDown(int keyCode, KeyEvent event) {
+       if (keyCode == KeyEvent.KEYCODE_BACK) {
+
+           // Esto es lo que hace mi botón al pulsar ir a atrás
+           DialogoSalir dialogo_salir=new DialogoSalir(this);
+           dialogo_salir.mostrarPopMenu();
+           return true;
+       }
+       return super.onKeyDown(keyCode, event);
+   }
+
+
+}
+
+
+La clase ActividaPrincipalMiTrigesimaTerceraApp.
+
+
+public class ActividadPrincipalMiTrigesimaTerceraApp extends Activity {
+
+
+   private Boton consultar, salir;
+
+   private String ruta=null;
+
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       gestionarResolucion();
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       /*
+       Para informar cómo se debe pegar el administrador de
+       diseño LinearLayout obtenido con el método crearGui()
+       */
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+
+       eventos();
+
+       //esto es necesario hacerlo a partir de la API 23 de android
+       verificacionPermisos();
+
+       //crear los directorio para almecenar datos
+       crearDirectorioAlmacenamientoDatos();
+
+
+
+   }//fin del método onCreate
+
+   /*Método auxiliar para asuntos de resolución*/
+   private void gestionarResolucion() {
+
+       //independencia de la resolución de la pantalla
+       DisplayMetrics displayMetrics = this.getApplicationContext().getResources().getDisplayMetrics();
+       int alto = displayMetrics.heightPixels;
+       int ancho = displayMetrics.widthPixels;
+       AlmacenDatosRAM.ancho=ancho;
+       AlmacenDatosRAM.alto=alto;
+       int dimensionReferencia;
+
+       //tomar el menor valor entre alto y ancho de pantalla
+       if (alto > ancho) {
+
+           dimensionReferencia = ancho;
+       } else {
+
+           dimensionReferencia = alto;
+       }
+
+       AlmacenDatosRAM.dimensioReferencia =dimensionReferencia;
+
+       //una estimación de un buen tamaño
+       int tamanoLetra = dimensionReferencia / 20;
+
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       int tamanoLetraResolucionIncluida = (int) (tamanoLetra / displayMetrics.scaledDensity);
+
+       //guardar en el almacen de datos para que otras clases la accedan fácilmente
+       AlmacenDatosRAM.tamanoLetraResolucionIncluida = tamanoLetraResolucionIncluida;
+
+   }
+
+
+   private void crearElementosGUI() {
+
+       consultar = new Boton(this);
+       consultar.setImagen(R.drawable.consultar);
+
+       salir = new Boton(this);
+       salir.setImagen(R.drawable.salir);
+
+   }
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+
+       LinearLayout linear_layout_principal = new LinearLayout(this);
+       linear_layout_principal.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_principal.setGravity(Gravity.CENTER_HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.FILL);
+       linear_layout_principal.setBackgroundColor(Color.WHITE);
+       linear_layout_principal.setWeightSum(10);
+
+
+       //LinearLayout primera fila
+       LinearLayout linear_layout_primera_fila = new LinearLayout(this);
+       linear_layout_primera_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_primera_fila.setGravity(Gravity.FILL);
+       linear_layout_primera_fila.setBackgroundColor(Color.WHITE);
+       LinearLayout.LayoutParams parametros_primera_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);//ViewGroup.LayoutParams.WRAP_CONTENT);
+       parametros_primera_fila.weight = 8.0f;
+       linear_layout_primera_fila.setLayoutParams(parametros_primera_fila);
+
+
+       //fondo primera fila
+       Drawable fondo = getResources().getDrawable(R.drawable.imagen_entrada_app_33);
+       linear_layout_primera_fila.setBackgroundDrawable(fondo);
+
+       //LinearLayout segunda fila
+       LinearLayout linear_layout_segunda_fila = new LinearLayout(this);
+       linear_layout_segunda_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_segunda_fila.setGravity(Gravity.FILL);
+       LinearLayout.LayoutParams parametros_segunda_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_segunda_fila.weight = 2.0f;
+       linear_layout_segunda_fila.setWeightSum(2.0f);
+       linear_layout_segunda_fila.setLayoutParams(parametros_segunda_fila);
+
+
+       LinearLayout.LayoutParams parametros_pegado_boton = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_boton.weight = 1.0f;
+       consultar.setLayoutParams(parametros_pegado_boton);
+       salir.setLayoutParams(parametros_pegado_boton);
+       linear_layout_segunda_fila.addView(consultar);
+       linear_layout_segunda_fila.addView(salir);
+
+
+       linear_layout_principal.addView(linear_layout_primera_fila);
+       linear_layout_principal.addView(linear_layout_segunda_fila);
+
+
+       return linear_layout_principal;
+
+
+   }
+
+
+   private void eventos() {
+
+       consultar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+
+               lanzarDatos();
+
+
+           }
+       });
+
+       salir.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               finish();
+           }
+       });
+
+
+   }
+
+
+   private void  crearDirectorioAlmacenamientoDatos(){
+
+
+       File path = null;
+
+       ruta="almacen_mis_datos/luxometro/";
+       AlmacenDatosRAM.path=ruta;
+
+       if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q){
+           //versiones con android menores a 10
+           path = new File(Environment.getExternalStorageDirectory(), ruta);
+           if (!path.exists()) {
+               path.mkdirs();
+           }
+
+       } else{
+           //para versiones de 10 en adelante
+           path = new File(getExternalFilesDir(null), ruta);
+           if (!path.exists()) {
+               path.mkdirs();
+           }
+
+       }
+
+
+   }
+
+
+
+   private void lanzarDatos() {
+
+       Intent intent = new Intent(this, ActividadDesplegadoraDatos.class);
+       startActivity(intent);
+
+   }
+
+     /*
+     Los siguientes dos métodos son para confirmar los permisos.
+     Esto se exige en las versiones Android 6.0 hacia adelante.
+    */
+
+
+   private void verificacionPermisos() {
+
+       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+           Toast.makeText(this, "This version is not Android 6 or later " + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show();
+       } else {
+
+           int hasReadWritePermission = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+           if (hasReadWritePermission != PackageManager.PERMISSION_GRANTED) {
+
+
+               /* Request user permissions in runtime */
+               ActivityCompat.requestPermissions(ActividadPrincipalMiTrigesimaTerceraApp.this,
+                       new String[]{
+                               Manifest.permission.READ_EXTERNAL_STORAGE,
+                               Manifest.permission.WRITE_EXTERNAL_STORAGE
+                       },
+                       100);
+
+           } else {
+
+           }
+
+       }
+
+   }
+
+   @TargetApi(23)
+   @Override
+   public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+       switch (requestCode) {
+           case 100:
+               if (grantResults.length > 0
+                       || grantResults[0] == PackageManager.PERMISSION_GRANTED
+                       || grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+
+               } else {
+
+                   Toast.makeText(ActividadPrincipalMiTrigesimaTerceraApp.this, "Permiso denegado.", Toast.LENGTH_SHORT).show();
+                   finish();
+               }
+               return;
+       }
+   }
+
+
+
+
+
+
+   @Override
+   public void onDestroy() {
+       super.onDestroy();
+       finish();
+   }
+}
+
+
+
+
+El archivo manifiesto.
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools"
+   package="com.curso_simulaciones.mitrigesimaterceraapp">
+
+   <application
+       android:allowBackup="true"
+       android:dataExtractionRules="@xml/data_extraction_rules"
+       android:fullBackupContent="@xml/backup_rules"
+       android:icon="@mipmap/ic_launcher"
+       android:label="@string/app_name"
+       android:roundIcon="@mipmap/ic_launcher_round"
+       android:supportsRtl="true"
+       android:theme="@style/Theme.MiTrigesimaTerceraApp"
+       tools:targetApi="31" >
+       
+        <activity android:name=".ActividadPrincipalMiTrigesimaTerceraApp"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="portrait"
+           android:exported="true">
+
+
+           <intent-filter>
+               <action android:name="android.intent.action.MAIN" />
+
+               <category android:name="android.intent.category.LAUNCHER" />
+           </intent-filter>
+       </activity>
+
+
+       <activity android:name=".actividades_secundarias.ActividadExploradoraArchivos"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="portrait">
+
+       </activity>
+
+       <activity android:name=".actividades_secundarias.ActividadDesplegadoraDatos"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="landscape">
+
+       </activity>
+
+   </application>
+
+   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+       tools:remove="android:maxSdkVersion" />
+   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+   <uses-permission android:name="android.permission.STORAGE" />
+
+
+
+</manifest>
+
+
+Compilar y ejecutar. Se despliega la GUI de la Figura 14.
+
+
+ Texto, Icono
+
+Descripción generada automáticamente 
+
+Figura 14
+Al hacer clic sobre el botón DATO se despliega la GUI de la Figura 15.
+  
+
+Figura 15
+Al hacer clic sobre el botón PATH ARCHIVO se despliega[5] la GUI de la Figura 16.
+  
+
+Figura 16
+Al seleccionar el archivo regresa a la GUI de la Figura 15. Hacer clic en el botón LEER DATOS y se despliega la GUI de la Figura 17.
+  
+
+Figura 17
+Generar el .apk para distribucuión e instalar en otros dispositivos móviles android para probar la app.
+NOTA FINAL: 
+Ela almacenamiento persistente de datos se realizó en este módulo en archivos .TXT. Es posible hacerlo en archivos de EXCEL usando librerías libres de terceros. El autor de las notas no incluyó este tema por considerar que sería demasiado largo el módulo. En los módulos siguientes se hará el manejo de datos usando almacenamiento estructurado con JSON y en la base de datos SQLite.
+TAREA
+Crear un proyecto denominado MiTrigesimaCuartaApp similar a MiTrigesimaSegundaApp pero donde se recolectarán datos del acelerómetro del dispositivo móvil. La Tabla que usarán debe tener seis columnas de datos  (# del dato, tiempo, ax, ay, az, a). El archivo .txt donde se guardarán los datos debe tener estas seis columnas de datos y debe quedar depositado en el directorio almacen_mis_datos/acelerometro para dispositivos Android 9 o inferiores o su equivalente en dispositivos móviles Android 10 o superiores. 
+FIN
+________________
+[1] En los próximos módulos se enseñará a realizar la tarea de enviar objetos serializados por la red y en general todos los datos usando la maravillosa tecnología JSON (JavaScript Object Notation)
+[2] En este caso se usa getExternalFilesDir(null), con las cosecuencias de amlacenamiento externo de este método.
+
+
+[3] El archivo debe ubicarse para sistemas Android 9 o inferiores en la carpeta almacen_mis_datos/ejemplo_mi_app_31/ para sistemas Android 9 y para sistemas Android 10 o superiores en la carpeta: Android/data/com.curso_simulaciones.mitrigesimasextaapp /files/almacen_mis_datos/ ejemplo_mi_app_31/. En este último caso, para que el usaurio pueda ver el archivo con un explorador a veces no es posible directamente, en cuyo caso, si desea acceder a éste por alguna situación, deberá hacerlo a través de la conexión usb con un computador.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[4] Desde advisrtió desde el principio del curso se advirtió que losprogramas se implementarían todos con código sólo java, incluyendo las interfaces gráficas. Estas iltimas también se pueden implementar combinado con código XML. El autor para la construcción de la GUI exploradora de arhivos optó por esto último. 
+[5] Para dispositivos móviles Android 10 o superiores no se observarán los archivos grabados por la app anterior. Esto debido a los cambios por seguridad introducidos por GOOGLE mencionados atrás los cuales fueron realizados en plena pandemia de la COVID-19. En estos casos sólo se podrá tener acceso a la carpeta de archivos de los documentos generados (en este caso los .txt) por la misma app. Si son generados por otra habrá que pasarlo primero a la carpeta de la app. Para completar el ejercicio pasar, para dispositivos móviles Android 10 o superiores, los archivos generados por la app anterior a la carpeta de archivos de esta app (hacerlo a través de la conexión USB con el computador).

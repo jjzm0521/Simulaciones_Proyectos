@@ -1,0 +1,3036 @@
+﻿SIMULACIONES
+IV + IoT + DL 
+Industria 5.0
+Copyright 2026 para:
+Diego L. Aristizábal Ramírez
+Profesor, Facultad de Ciencias, Departamento de Física
+Universidad Nacional de Colombia
+Medellín
+
+
+	IV + BLUETOOTH
+EN ANDROID
+
+
+	13
+	
+
+
+
+Temas
+	* INTRODUCCIÓN
+* PATRÓN DE DISEÑO DE COMUNICACIÓN CLIENTE/SEVIDOR
+* BLUETOOHT – WIFI – ZIGBEE
+* PATRÓN DE DISEÑO CLIENTE/SERVIDOR BLUETOOTH
+* JSON
+* EJEMPLO DE APP CLIENTE SERVIDOR VÍA BLUETOOT
+* TAREA
+* REFERENCIAS
+* ANEXO I: PROCEDIMIENTO PARA GENERAR LIBRERÍAS .AAR
+	
+
+INTRODUCCIÓN
+En este módulo se desarrolla una app que usa el patrón de diseño CLIENTE-SERVIDOR para comunicar dos dispositivos móviles vía el protocolo Bluetooth. En ésta el intercambio de información entre los dos dispositivos(el CLIENTE y el SERVIDOR) se hace mediante datos bien estructurados, lo cual se logra mediante el uso de objetos JSON (pos sus siglas en inglés, JavaScript Object Notation) serializados[1].  
+PATRÓN DE DISEÑO DE COMUNICACIÓN CLIENTE/SEVIDOR
+El modelo cliente-servidor consiste básicamente en un programa cliente que realiza peticiones a otro programa servidor que le da respuesta. A veces es difícil distinguir qué parte de la aplicación es el cliente y cuál el servidor. Normalmente el cliente es el que inicia la comunicación pidiendo un servicio y el servidor es el que provee ese servicio.
+Esquema del Cliente:
+1. Abrir un socket (Socket) para conectarse y comunicarse con el Servidor.
+2. Establecer conexión con el Servidor.
+3. Asociar uno o más flujos intermedios a los flujos de entrada (InputStream) y de salida (OutputStream) asignados al socket.
+4. Leer/Escribir a los flujos de acuerdo con el protocolo establecido.
+5. Eventualmente termina la comunicación.
+6. Cerrar flujos y sockets.
+
+
+ Esquema de un Servidor
+1. Abrir un socket (ServerSocket) para esperar por peticiones de conexión.
+2. Al llegar una petición, crear otro socket (Socket) por medio del cual se comunicará con el cliente.
+3. Asociar uno o más flujos intermedios a los flujos de entrada (InputStream) y de salida (OutputStream) asignados al socket.
+4. Leer/Escribir a los flujos de acuerdo con el protocolo establecido.
+5. Eventualmente termina la comunicación.
+6. Cerrar flujos y sockets.
+
+
+Ventajas y desventajas del modelo cliente/servidor
+
+
+Ventajas:
+
+* Centralización del control de los recursos, datos y accesos.
+* Facilidad de mantenimiento y actualización del lado del servidor.
+* Toda la información es almacenada en el lado del servidor, que suele tener mayor seguridad que los clientes. 
+Desventajas:
+
+* Si el número de clientes simultáneos es elevado, el servidor puede saturarse. Esto sucede con menor frecuencia en las redes P2P.
+* Frente a fallas del lado del servidor, el servicio queda paralizado para los clientes. Algo que no sucede en una red P2P.
+Notas:
+* El cliente abre la comunicación. Un servidor nunca se pone en contacto con otras computadoras. Si ningún cliente se pone en contacto con el servidor, sólo escucha y espera las peticiones entrantes. El primer contacto de cliente a servidor se llama una solicitud, mientras que la contestación del servidor se llama respuesta.
+
+
+* El cliente es el elemento de la comunicación que pide o solicita un servicio de red, por ejemplo, el acceso a una página web, o la descarga de un archivo, o el envío de un mail. El servidor es el elemento de la comunicación que responde a las peticiones de los clientes, proporcionando el servicio requerido, es decir, enviando la página web o el archivo solicitado o el mail.
+
+
+* Es importante destacar que el rol de cliente o de servidor no lo tiene el equipo (nodo) donde esté funcionando la aplicación sino la propia aplicación. Lo que ocurre es que, en muchas ocasiones, cuando las principales aplicaciones que están funcionando en un equipo son aplicaciones de tipo servidor, el propio equipo es llamado servidor. Sin embargo, de forma general, en un equipo, puede haber tanto aplicaciones cliente como aplicaciones servidor funcionando al mismo tiempo.
+BLUETOOHT – WIFI - ZIGBEE
+Son de especial interés para este curso las comunicaciones inalámbricas. A continuación, se hará una pequeña reseña de tres protocolos básicos para este tipo de comunicaciones.
+La banda ISM
+ISM (Industrial, Scientific and Medical) son bandas reservadas internacionalmente para uso no comercial de radiofrecuencia electromagnética en áreas industrial, científica y médica. Estas bandas están definidas en las siguientes rangos de frecuencia en el espectro electromagnético (microondas): 902-928 MHz, 2.4-2.4835 GHz, 5.725-5.85 GHz.
+El uso de estas bandas de frecuencia está abierto a todo el mundo sin necesidad de licencia, respetando las regulaciones que limitan los niveles de potencia transmitida. 
+En el espectro de los 2.4GHz (12,5 cm en longitud de onda) se transmite mucha información de equipos usando los protocolos de comunicación inalámbrica WiFi, ZigBee y Bluetooth. La interferencia en esta banda tan saturada se disminuye usando diferentes protocolos de modulación de señal y en la repartición del ancho de banda en esta franja que es de 83.5 MHz.  De todas formas, es complicado el exceso de uso de esta banda de radiofrecuencia por lo que hoy se investiga alternativas como por ejemplo el uso de luz modulada, LiFi, cuya ventaja estaría en que el ancho de banda se multiplica por 10 000 (frecuencias del orden de THz).
+En la siguiente tabla se ilustran algunas diferencias entre estos tres protocolos de comunicación.
+Tabla 1 Algunas diferencias entre Bluetooth, ZigBee y WiFi
+
+
+	Bluetooth
+	ZigBee
+	WiFi
+	Rata de transmisión
+	1 Mb/s
+	250 kb/s
+	54 Mb/s
+	Distancia nominal
+	10 m
+	10-100 m
+	100 m
+	Modulación
+	GFSK
+	BPSK, QPSK
+	BPSK, QPSK, COFDM, M-QAM,...
+	Ingreso a la red
+	segundos
+	milisegundos
+	segundos
+	
+
+WiFi DIRECT
+Cuando se habla de WiFi se suele pensar en la capacidad de conectarse a internet de forma inalámbrica a través de un router por medio de un portátil o laptop, móvil, tablet o smart tv. Sin embargo, en los último años se está hablando cada vez más de un nuevo tipo de conexión llamada WiFi Direct y que ya se encuentran en la mayoría de estos mismos dispositivos. 
+Este es un nuevo protocolo de trasferencia de archivos entre dispositivos compatibles, es decir, una forma de poder compartir entre dos dispositivos archivos a una mayor tasa de velocidad que la que permite las conexiones bluetooth.
+Este protocolo establece una conexión WiFi directa entre dos dispositivos sin el uso de router lo que permite la posibilidad de contar con una mayor velocidad de transferencia.
+En este módulo se empleará sólo el protocolo bluetooth.
+PATRÓN DE DISEÑO CLIENTE/SERVIDOR BLUETOOTH
+Este apartado es tomado textualmente de: https://danielggarcia.wordpress.com/2013/10/23/bluetooth-iii-el-esquema-cliente-servidor/
+El funcionamiento es básicamente el siguiente:
+* El servidor crea un socket de tipo BluetoothServerSocket y lo pone a la escucha de peticiones de conexión.
+* El servidor se mantiene en espera ocupada atendiendo solicitudes de conexión mediante el método accept(). Este método bloqueará el hilo hasta que una conexión entrante sea recibida.
+* El cliente instancia un dispositivo Bluetooth (BluetoothDevice) a partir de la dirección del dispositivo.
+* El cliente abre un nuevo socket de tipo BluetoothSocket a partir del dispositivo que obtuvo previamente.
+* El cliente realiza, a través del socket, una solicitud de conexión. Esta llamada es bloqueante, por lo que el resultado sólo podrá ser éxito o fracaso.
+* El servidor acepta la conexión, notificándoselo al cliente. A continuación, abre un socket de tipo BluetoothSocket como resultado de aceptar la conexión.
+* El cliente recibe la notificación del servidor, dando como resultado una conexión correcta y saliendo de espera ocupada.
+* Tanto cliente como servidor obtienen los flujos de entrada y salida de su respectivo socket.
+* El hilo de la conexión comienza a sondear el flujo de entrada esperando obtener datos. Si la lectura se realiza, se envían los datos a la interfaz a través de un Handler.
+* El envío de datos se realiza mediante la escritura en el flujo de salida.
+Observar que:
+* El servidor hace uso de dos sockets: un socket para aceptar las conexiones entrantes (BluetoothServerSocket) y otro para establecer la conexión (BluetoothSocket).
+* El cliente hace uso de un sólo socket (BluetoothSocket). Se obtiene a partir del BluetoothDevice al cual se pretende conectar.
+
+
+
+
+JSON
+JSON es un formato de datos basado en texto[2] que sigue la sintaxis de un objeto de JavaScript, popularizado por Douglas Crockford. JSON nació como una alternativa a XML y, una de las mayores ventajas que tiene su uso es que se puede leer con cualquier lenguaje de programación.
+La estructura básica de un JSON puede resumirse en una colección de pares de clave y valor. Siendo la clave la parte de la izquierda y el valor la parte de la derecha. Se debe tener en cuenta que los valores pueden ser de diferentes tipos, como cadenas de caracteres, números, valores booleanos, arreglos, objetos, etc...
+Un ejemplo muy simplificado de un JSON sería el que se muestra a continuación, en el que se tienen cuatro pares clave/valor.
+ 
+{
+    "Nombre" : "Juan",
+    "Edad": 30,
+    "Aficiones": ["Música", "Cine", "Fútbol"],
+    "Residencia": "Medellín"
+}
+	
+
+Otro ejemplo más complejo:
+
+
+{
+   "frutas": [
+       { "nombre_fruta":"Manzana", "cantidad":10 }, 
+       { "nombre_fruta":"Pera", "cantidad":20 }, 
+       { "nombre_fruta":"Naranja", "cantidad":30 }
+    ]
+}
+
+
+	 
+
+
+Otro ejemplo un poco más elaborado es el siguiente,
+
+
+
+
+
+
+{
+"responsable":
+    {
+    "Nombre" : "Juan",
+    "Edad": 30,
+    "Aficiones": ["Música", "Cine", "Fútbol"],
+    "Residencia": "Medellín"
+    },
+
+
+
+
+"empleados":
+    [
+        {
+        "Nombre" : "Elena",
+        "Edad": 20,
+        "Aficiones": ["Música", "Cine"],
+        "Residencia": "Santuario"
+        },
+        {
+        "Nombre" : "Luis",
+        "Edad": 31,
+        "Aficiones": ["Teatro", "Cine", "Fútbol"],
+        "Residencia": "Barranquilla"
+        }
+    ]
+} 
+	
+
+Un ejemplo más complejo de archivo JSON es el reporte del estado meteorológico de la ciudad de Londres dado por OpenWeather[3] (plataforma de DATOS ABIERTOS sobre estado meteorológico a nivel del planeta y de libre uso con previa suscripción).
+
+
+{"coord":{"lon":-0.13,"lat":51.51},"weather":[{"id":500,"main": "Rain",  "description":"light rain","icon":"10d"}],"base":"stations", "main": {"temp":284.32,"pressure":1012,"humidity":71, "temp_min":283.15,"temp_max":285.37},"visibility":10000,"wind":{"speed":3.1,"deg":360},"clouds":{"all":90},"dt":1571585704,"sys":{"type":1,"id":1414,"message":0.0098,"country":"GB","sunrise":1571553129,"sunset":1571590696},"timezone":3600,"id":2643743,"name":"London","cod":200}
+	
+
+EJEMPLO DE APP CLIENTE SERVIDOR VÍA BLUETOOTH
+Crear un proyecto denominado MiTrigesimaQuintaApp con la jerarquía de paquetes y clases de la Figura 1.
+  
+
+Figura 1
+Esta app se instala en dos dispositivos móviles Android. Uno de ellos hace las veces de SERVIDOR y el oto de CLIENTE. El servidor envía los datos de lo que mide de su acelerómetro y de su luxometro al cliente, quie los solicita. Ambos dispositivos despliegan la información en tacometros. 
+En este proyecto se usa la librería comunicaciones.aar de propiedad del autor de estas notas. Esto facilita el escaneo de busqueda de dispositivos para ser emparejados vía el protocolo bluetooth. Hasta este momento del curso soólo se han usado librerías .jar: la diferencia entre liberías .jar y .aar radica en que las primeras sólo tienen código java mientras que las segundas pueden tener adicionalmente imágenes, código xml, etc… 
+La librería comunicaciones.aar se incorpora a la app depositándola en el directorio app > libs[4] (en el apéndice de éste módulo se explica un poco más este tipo de librerías .aar). Adicionalmente se agrega el siguiente código en el archivo build.gradle (Module: app). Su función es dar métodos para bucara los archivos.
+
+
+dependencies {
+
+   
+    implementation (files("libs/comunicaciones.aar"))
+
+
+
+
+
+   }
+
+
+No olvidar SINCRONIZAR.
+Las siguientes imágenes se deben incorporar al proyecto, Figura 2.
+
+
+  
+
+Figura 2
+Agregar ahora los códigos de las clases. 
+
+
+La clase AlmacenDatosRAM.
+
+
+public class AlmacenDatosRAM {
+
+   public static int ancho,alto, dimensionReferencia,tamanoLetraResolucionIncluida;
+   public static String conexion_bluetooth;
+   public static String rol;
+
+   public static String direccion = "NO CONECTADO";
+
+ 
+}
+
+
+
+
+La clase Boton.
+
+
+
+
+public class Boton extends ImageView {
+
+   private Bitmap imagen;
+   Bitmap imagen_escalada = null;
+   private float tamamano_letra;
+   private String cadena = "";
+
+
+   public Boton(Context context) {
+
+       super(context);
+
+
+   }
+
+
+   public void setText(String cadena) {
+
+       this.cadena = cadena;
+
+
+   }
+
+
+   public String getText() {
+
+       this.cadena = cadena;
+
+       return cadena;
+
+
+   }
+
+
+   public void setImagen(int imagen_importada) {
+
+
+       imagen = BitmapFactory.decodeResource(getResources(), imagen_importada);
+
+
+   }
+
+
+   protected void onDraw(Canvas canvas) {
+
+
+       Paint pincel = new Paint();
+       pincel.setAntiAlias(true);
+       pincel.setLinearText(true);
+
+       float ancho=getWidth();
+       float alto=getHeight();
+       float escala=1;
+       if(ancho>alto){
+           escala=alto;
+       } else {escala=ancho;}
+
+       if (imagen != null) {
+
+           imagen_escalada = escalarImagen(imagen, (int) (0.9f * escala), (int) (0.9f * escala));
+
+       }
+
+       int ex = (getWidth() - imagen_escalada.getWidth()) / 2;
+       int ey = (getHeight() - imagen_escalada.getHeight()) / 2;
+
+       tamamano_letra = 0.08f * getWidth();
+
+       if (imagen != null) {
+           canvas.drawBitmap(imagen_escalada, ex, ey, null);//dimension,dimension, null);
+       }
+
+
+       pincel.setTextSize(tamamano_letra);
+       float anchoCadenaUnidades = pincel.measureText(cadena);
+       float posicion_x_letra = (getWidth() - anchoCadenaUnidades) / 2;
+       float posicion_y_letra = ey + imagen_escalada.getHeight() + tamamano_letra;
+
+       pincel.setColor(Color.BLACK);
+       canvas.drawText(cadena, posicion_x_letra, posicion_y_letra, pincel);
+
+
+       invalidate();
+
+   }
+
+   /*
+      Se escala con Matrix para no dañar la resolución
+    */
+
+
+   public Bitmap escalarImagen(Bitmap bitmap, int newWidth, int newHeight) {
+       Bitmap scaledBitmap = Bitmap.createBitmap(newWidth, newHeight, bitmap.getConfig());
+
+       float scaleX = newWidth / (float) bitmap.getWidth();
+       float scaleY = newHeight / (float) bitmap.getHeight();
+
+       Matrix scaleMatrix = new Matrix();
+       scaleMatrix.setScale(scaleX, scaleY, 0, 0);
+
+       Canvas canvas = new Canvas(scaledBitmap);
+       canvas.setMatrix(scaleMatrix);
+       Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
+       paint.setAntiAlias(true);
+       paint.setDither(true);
+       paint.setFilterBitmap(true);
+       canvas.drawBitmap(bitmap, 0, 0, paint);
+
+       return scaledBitmap;
+
+   }
+
+
+}
+
+
+
+
+La clase GaugeSimple.
+
+
+public class GaugeSimple extends View {
+
+   private float largo;
+   private float minimo = 0;
+   private float maximo = 100f;
+   private float medida = 40.0f;//tomar como medida inicial
+   private String unidades = "UNIDADES";
+   private int colorPrimerTercio = Color.rgb(200, 200, 0);
+   private int colorSegundoTercio = Color.rgb(0, 180, 0);
+   private int colorTercerTercio = Color.RED;
+   private int colorLineas = Color.BLACK;
+   private int colorFondo = Color.WHITE;
+   private int colorNumerosDesplieggue = Color.BLACK;
+   private int colorFranjaDinamica = Color.rgb(0, 0, 255);
+   private int angPrimertercio = 100;
+   private int angSegundoTercio = 100;
+   private int angTercerTercio = 50;
+
+
+   /**
+    * Constructor de GaugeSimple
+    */
+   public GaugeSimple(Context context) {
+
+       super(context);
+
+       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+           this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
+       }
+   }
+
+   /**
+    * Modifica el rango de medicion
+    * desde minimo hasta maximo
+    *
+    * @param minimo
+    * @param maximo
+    */
+   public void setRango(float minimo, float maximo) {
+
+       this.minimo = minimo;
+       this.maximo = maximo;
+
+   }
+
+
+   /**
+    * Modifica el valor medido
+    *
+    * @param medida
+    */
+   public void setMedida(float medida) {
+
+       this.medida = medida;
+
+   }
+
+
+   /**
+    * Regresa el valor medido
+    *
+    * @return medida
+    */
+   public float getMedida() {
+
+       return medida;
+   }
+
+
+   /**
+    * Modifica las unidades del instrumento virtual
+    *
+    * @param unidades
+    */
+   public void setUnidades(String unidades) {
+
+       this.unidades = unidades;
+
+   }
+
+
+   /**
+    * Modifica los colores de los sectores circulares
+    *
+    * @param colorPrimerTercio
+    * @param colorSegundoTercio
+    * @param colorTercerTercio
+    */
+   public void setColorSectores(int colorPrimerTercio, int colorSegundoTercio, int colorTercerTercio) {
+
+       this.colorPrimerTercio = colorPrimerTercio;
+       this.colorSegundoTercio = colorSegundoTercio;
+       this.colorTercerTercio = colorTercerTercio;
+
+   }
+
+   /**
+    * Modifica los angulos de los sectores circulares
+    * Deben sumar 250 grados
+    *
+    * @param angPrimerTercio
+    * @param angSegundoTercio
+    * @param angTercerTercio
+    */
+   public void setAngulosSectores(int angPrimerTercio, int angSegundoTercio, int angTercerTercio) {
+       this.angPrimertercio = angPrimerTercio;
+       this.angSegundoTercio = angSegundoTercio;
+       this.angTercerTercio = angTercerTercio;
+
+   }
+
+   public void setColorFranjaDinámica(int colorFranjaDinamica) {
+
+       this.colorFranjaDinamica = colorFranjaDinamica;
+
+
+   }
+
+   /**
+    * Modifica el color de fondo del tacometro
+    *
+    * @param colorFondo
+    */
+   public void setColorFondoTacometro(int colorFondo) {
+
+       this.colorFondo = colorFondo;
+
+
+   }
+
+
+   /**
+    * Modifica el color de las lineas del tacometro
+    *
+    * @param color_lineas
+    */
+   public void setColorLineasTacometro(int color_lineas) {
+
+       this.colorLineas = color_lineas;
+
+
+   }
+
+
+   /**
+    * Modifica el color del numero que se despliega
+    *
+    * @param colorNumerosDesplieggue
+    */
+
+   public void setColorNumeroDespliegue(int colorNumerosDesplieggue) {
+
+       this.colorNumerosDesplieggue = colorNumerosDesplieggue;
+
+   }
+
+
+   /**
+    * @param canvas
+    */
+
+   //método para dibujar
+   protected void onDraw(Canvas canvas) {
+       super.onDraw(canvas);
+
+       /*
+       se graba el estado actual del canvas
+       para al final restaurarlo
+       */
+       canvas.save();
+
+
+        /*
+        La vista tendra las mismas dimensiones de su
+        contenedor
+        */
+       float ancho = this.getWidth();//ancho de la vista
+       float alto = this.getHeight();//alto de la vista
+
+       /*
+        Se define la variable largo como el 80%
+        del menor valor entre alto y largo del
+        contenedor
+        */
+
+       if (ancho > alto) {
+
+           largo = 0.8f * alto;
+
+       } else {
+
+           largo = 0.8f * ancho;
+
+
+       }
+
+       /*
+         se hace tralación del (0,0) al centro
+         del contenedor
+       */
+       canvas.translate(0.5f * ancho, 0.5f * alto);
+
+       //configurando el pincel
+       Paint pincel = new Paint();
+       //evita efecto sierra
+       pincel.setAntiAlias(true);
+       //tamaño texto
+       pincel.setTextSize(0.05f * largo);
+       //para mejor manejo de la métrica de texto
+       pincel.setLinearText(true);
+       //para efectos de buen escalado de bitmaps
+       pincel.setFilterBitmap(true);
+       //para buen manejo de gradientes de color
+       pincel.setDither(true);
+
+
+       float esquinaSuperiorIzquierdaX = -0.5f * largo;
+       float esquinaSuperiorIzquierdaY = -0.5f * largo;
+       float esquinaInferiorDerechaX = 0.5f * largo;
+       float esquinaInferiorDerechaY = 0.5f * largo;
+
+       //dibujar los tres segementos circulares
+       RectF rect = new RectF(esquinaSuperiorIzquierdaX, esquinaSuperiorIzquierdaY,
+               esquinaInferiorDerechaX, esquinaInferiorDerechaY);
+
+       pincel.setColor(colorPrimerTercio);
+       canvas.drawArc(rect, 145, angPrimertercio, true, pincel);
+       pincel.setColor(colorSegundoTercio);
+       canvas.drawArc(rect, 145 + angPrimertercio, angSegundoTercio, true, pincel);
+       pincel.setColor(colorTercerTercio);
+       canvas.drawArc(rect, 145 + angPrimertercio + angSegundoTercio, angTercerTercio, true, pincel);
+
+
+       float indent = (float) (0.05 * largo);
+       float posicionY = (float) (0.5 * largo);
+
+       //franja dinámica
+       //calcular angulo para ubicar la aguja de acuerdo al valor medido
+       float angulo_rotacion_medida = 235 + (250f / (maximo - minimo)) * (medida - minimo);
+       float a = (float) 0.01 * largo;
+       rect = new RectF(esquinaSuperiorIzquierdaX + a, esquinaSuperiorIzquierdaY + a,
+               esquinaInferiorDerechaX - a, esquinaInferiorDerechaY - a);
+       pincel.setColor(colorFranjaDinamica);
+       canvas.drawArc(rect, 145, angulo_rotacion_medida - 235, true, pincel);
+
+       /*
+        dibujar el tacometro sin la aguja
+       */
+       //aqui empieza el dibujo
+       float radio = (float) (0.48 * largo);
+       pincel.setColor(colorFondo);
+       canvas.drawCircle(0, 0, radio, pincel);
+       pincel.setColor(colorLineas);
+       pincel.setStyle(Paint.Style.STROKE);
+       canvas.drawCircle(0, 0, radio, pincel);
+       pincel.setStrokeWidth(1f);
+       canvas.drawCircle(0, 0, 0.5f * largo, pincel);
+
+       //grosor de las líneas
+       pincel.setStrokeWidth(0.01f * largo);
+
+
+
+        /*
+        Divisiones grandes
+        Se dibuja primero la división vertical.
+        Luego se repite rotando de a 50 grados comenzando
+        en 235 grados.
+         */
+       pincel.setStyle(Paint.Style.FILL);
+       for (int i = 0; i < 6; i = i + 1) {
+           float anguloRotacion = 235 + 50 * i;
+           canvas.rotate(anguloRotacion, 0, 0);
+           canvas.drawLine(0, -posicionY, 0, -posicionY + indent, pincel);
+           canvas.rotate(-anguloRotacion, 0, 0);
+
+           /*
+            Dibujar los números
+           */
+           int valorIncrementoMarcas = (int) ((maximo - minimo) / 5f);
+           int valorMarca = (int) (minimo + valorIncrementoMarcas * i);
+           String numero = "" + valorMarca;
+
+           //ancho de la cadena del número
+           float anchoCadenaNumero = pincel.measureText(numero);
+
+           canvas.save();
+           //dibuja números rotados
+           canvas.rotate(anguloRotacion, 0, 0);
+           //endereza los números a orientación horizontal
+           canvas.rotate(-anguloRotacion, 0, -posicionY + 2.5f*indent);
+           canvas.drawText(numero, -0.5f * anchoCadenaNumero, -posicionY + 2.5f * indent, pincel);
+           canvas.restore();
+
+       }
+
+       /*
+        Divisiones pequeñas
+        Se dibuja primero la división vertical.
+        Luego se repite rotando de a 10 grados comenzando
+        en 235 grados.
+        */
+       pincel.setStyle(Paint.Style.STROKE);
+       //grosor de las líneas
+       pincel.setStrokeWidth(0.005f * largo);
+       for (int i = 0; i < 26; i = i + 1) {
+
+           float anguloRotacion = 235 + 10 * i;
+           canvas.rotate(anguloRotacion, 0, 0);
+           canvas.drawLine(0, -posicionY, 0, -posicionY + (float) (0.6 * indent), pincel);
+           canvas.rotate(-anguloRotacion, 0, 0);
+
+       }
+       //aqui termina dibujo del tacometro sin aguja
+
+
+
+       /*
+       dibujar la aguja
+       */
+       //aqui empieza dibujo de la aguja
+       pincel.setStrokeWidth(0.005f * largo);
+       pincel.setColor(Color.RED);
+       canvas.rotate(angulo_rotacion_medida, 0, 0);
+       float b = (float) (1.5f* indent);
+       canvas.drawLine(0, -posicionY, 0, b, pincel);
+       canvas.rotate(-angulo_rotacion_medida, 0, 0);
+       pincel.setStyle(Paint.Style.FILL);
+       pincel.setColor(colorFondo);
+       canvas.drawCircle(0, 0, (float) (0.4 * indent), pincel);
+       pincel.setColor(Color.RED);
+       pincel.setStyle(Paint.Style.STROKE);
+       canvas.drawCircle(0, 0, (float) (0.4 * indent), pincel);
+
+       //dibujar circulo apoyo aguja
+
+       //aquí termina dibujo de la aguja
+
+       //Dibujar las unidades
+       pincel.setStyle(Paint.Style.FILL);
+       pincel.setColor(colorLineas);
+       pincel.setTextSize(0.08f * largo);
+       float anchoCadenaUnidades = pincel.measureText(unidades);
+       canvas.drawText(unidades, -0.5f * anchoCadenaUnidades,- 0.15f * largo, pincel);
+       //aqui termina dibujo de las unidades
+
+       //aqui despliegue de la medida
+       pincel.setTextSize(0.1f * largo);
+       float anchoCadenaNumero = pincel.measureText("" + medida);
+       pincel.setColor(colorNumerosDesplieggue);
+       canvas.drawText("" + medida, -0.5f * anchoCadenaNumero, 0.2f * largo, pincel);
+
+       //marcar empresa
+       String empresa = "IoT.PhysicsSensor";
+       pincel.setTextSize(0.05f * largo);
+       float anchoCadenaNombreEmpresa = pincel.measureText(empresa);
+       canvas.drawText(empresa, -0.5f * anchoCadenaNombreEmpresa, 0.35f * largo, pincel);
+
+
+
+       //se restaura el canvas al estado incial
+       //el que se garbó al principio de este método
+       canvas.restore();
+
+       //para efectos de animación
+       invalidate();
+
+   }//fin onDraw
+
+}
+
+
+La clase Acelerometro.
+
+
+public class Acelerometro extends GaugeSimple implements SensorEventListener {
+
+   private SensorManager sensorManager;
+   private int componenteAceleracion = 4;
+
+   public Acelerometro(Context context) {
+       super(context);
+       //estado inicial
+       setComponenteAcelerometro(componenteAceleracion);
+
+   }
+
+
+   public void setComponenteAcelerometro(int componenteAceleracion) {
+
+       this.componenteAceleracion = componenteAceleracion;
+
+       if (componenteAceleracion ==1) {
+          this.setUnidades("ax (m/s^2");
+          this.setRango(-20,20);}
+
+       if (componenteAceleracion ==2) {
+           this.setUnidades("ay (m/s^2");
+           this.setRango(-20,20);}
+
+       if (componenteAceleracion ==3) {
+           this.setUnidades("az (m/s^2");
+           this.setRango(-20,20);}
+
+       if (componenteAceleracion ==4) {
+           this.setUnidades("a (m/s^2");
+           this.setRango(0,20);}
+
+
+
+   }
+
+   public void captarSensor(Context context) {
+
+       //captamos el servicio del sensor
+       sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+       sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_FASTEST);
+
+   }
+
+   //se activa sólo cuando hay cambios
+   public void onSensorChanged(SensorEvent event) {
+
+       //en x
+       float a = 0;
+       float medida_x = 0;
+       float medida_y = 0;
+       float medida_z = 0;
+       float medida = 0;
+
+       medida_x = event.values[SensorManager.DATA_X];
+       medida_y = event.values[SensorManager.DATA_Y];
+       medida_z = event.values[SensorManager.DATA_Z];
+       float resultado = medida_x * medida_x + medida_y * medida_y + medida_z * medida_z;
+       a = (float) (Math.sqrt(resultado));
+
+
+       if (componenteAceleracion == 1) {
+           medida = medida_x;
+           this.setUnidades(" ax (m/S2)");
+           this.setRango(-20,20);
+                   }
+       if (componenteAceleracion == 2){
+           medida = medida_y;
+           this.setUnidades(" ay (m/S2)");
+           this.setRango(-20,20);
+       }
+       if (componenteAceleracion == 3){
+           medida = medida_z;
+           this.setUnidades(" az (m/S2)");
+           this.setRango(-20,20);
+       }
+       if (componenteAceleracion == 4){
+           medida = a;
+           this.setUnidades(" a (m/S2)");
+           this.setRango(0,20);
+       }
+
+       //un decimal
+       medida = (float) (Math.round(medida * 10) / 10.0f);
+       this.setMedida(medida);
+       //almacenar dato actual
+       //AlmacenDatosRAM.datoActualAceleracion = medida;
+
+   }
+
+   @Override
+   public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+   }
+
+}
+
+
+La clase Luxometro.
+public class Luxometro extends GaugeSimple implements SensorEventListener {
+
+   private SensorManager sensorManager;
+
+   public Luxometro(Context context){
+       super(context);
+
+
+   }
+
+
+   public void captarSensor(Context context) {
+
+       //captamos el servicio del sensor
+       sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+       sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT), SensorManager.SENSOR_DELAY_FASTEST);
+
+   }
+
+   //se activa sólo cuando hay cambios
+   public void onSensorChanged(SensorEvent event) {
+
+       float medida = event.values[SensorManager.DATA_X];
+       //medida con dos decimales
+       float medida_dos_decimales = (float)Math.floor(100*medida)/100f;
+       this.setMedida(medida_dos_decimales);
+       cambiarEscala(medida);
+       //almacenar dato actual
+       //AlmacenDatosRAM.datoActuaIluminancia=medida;
+
+   }
+
+   @Override
+   public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+   }
+
+
+   public void cambiarEscala(float medida){
+
+       float maximo=100f;
+       float minimo=0f;
+
+       if(medida>0 && ((medida < 100)^(medida==100f ))){
+
+           maximo=100f;
+           minimo=0f;
+
+       }
+
+       if(medida>100 && ((medida < 1000)^(medida==500f ))){
+
+           maximo=500f;
+           minimo=0f;
+
+       }
+
+       if(medida>500 && ((medida < 1000)^(medida==1000f ))){
+
+           maximo=1000f;
+           minimo=0f;
+
+       }
+
+
+       if(medida>1000 && ((medida < 5000)^(medida==5000f ))){
+
+           maximo=5000f;
+           minimo=0f;
+
+       }
+
+       if(medida>5000 && ((medida < 10000)^(medida==10000f ))){
+
+           maximo=10000f;
+           minimo=0f;
+
+       }
+
+       if(medida>10000 && ((medida < 50000)^(medida==50000f ))){
+
+           maximo=50000f;
+           minimo=0f;
+
+       }
+
+
+       this.setRango(minimo,maximo);
+
+   }
+
+
+}
+
+
+Las dos clases responsables de las comunicaciones: ClienteBluetooth y ServidorBluetooth. Observar que éstas contienen los métodos exigidos por el protocolo cliente-servidor.
+La clase ClienteBluetooth.
+
+
+public class ClienteBluetooth {
+
+   //socket del cliente
+   public BluetoothAdapter adaptadorBluetooth;
+   public BluetoothDevice dispositivo;
+   public BluetoothSocket clienteSocket;
+
+   private BufferedInputStream flujoEntrada;
+   private BufferedOutputStream flujoSalida;
+
+   //private JSONObject obj;
+   //private String dato;
+   private String datoString;
+
+
+   /*
+    Como estamos creando una conexión SPP (como si fuese un puerto serie virtual)
+    a través del protocolo RFCOMM, debemos obtener el socket que conecta con el
+    servicio 00001101-0000-1000-8000-00805F9B34FB, que es el identificador único
+    de servicio para SPP en el estandar Bluetooth.
+    */
+
+   public static final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+   /**
+    * Constructor
+    * direccion es el MAC del dispositivo
+    */
+
+   public ClienteBluetooth() {
+
+   }
+
+
+   // 1. Abrir un socket (Socket) para conectarse y comunicarse con el Servidor
+
+   public void abrirSocketCliente(String direccion) {
+
+       adaptadorBluetooth = BluetoothAdapter.getDefaultAdapter();
+       dispositivo = adaptadorBluetooth.getRemoteDevice(direccion);
+
+
+       // Obtenemos un socket cliente para el dispositivo con el que se quiere conectar
+       try {
+
+           clienteSocket = dispositivo.createRfcommSocketToServiceRecord(uuid);
+
+       } catch (IOException e) {
+
+       }
+
+
+   }
+
+   //2. Establecer conexión con el Servidor
+
+   public void conectarSocketCliente() {
+
+       try {
+
+           clienteSocket.connect();
+
+           AlmacenDatosRAM.conexion_bluetooth= "  Conectado con " + clienteSocket.getRemoteDevice().getName().toString();
+
+
+       } catch (IOException e) {
+           AlmacenDatosRAM.conexion_bluetooth="  No se pudo conectar...";
+           e.printStackTrace();
+
+       }
+
+
+   }
+
+
+   //3. Asociar uno o más flujos intermedios a el flujo de entrada (InputStream) asignado al socket
+
+   public void abrirFlujoEntrada() {
+
+       if (clienteSocket != null) {
+
+           try {
+
+               flujoEntrada = new BufferedInputStream(clienteSocket.getInputStream());
+
+           } catch (IOException e) {
+               e.printStackTrace();
+
+           }
+
+
+       }
+
+   }
+
+
+   //3. Asociar uno o más flujos intermedios al flujo de salida (OutpuStream) asignado al socket
+   public void abrirFlujoSalida() {
+
+       if (clienteSocket != null) {
+           try {
+
+               flujoSalida = new BufferedOutputStream(clienteSocket.getOutputStream());
+
+           } catch (IOException e) {
+               e.printStackTrace();
+
+           }
+
+       }
+
+   }
+
+
+   // 4. Leer/Escribir a los flujos de acuerdo al protocolo establecido
+
+   /**
+    * Lee los datos que le fueron enviados  como flujo de bytes.
+    *
+    * @return
+    */
+
+   public String leerString(){
+
+       int dato;
+
+       byte[] buffer = new byte[8*1024];//1024*8];
+
+       try {
+
+           if (flujoEntrada!=null){
+
+               dato = flujoEntrada.read(buffer);
+
+
+              datoString= new String(buffer, 0, dato);
+
+           }
+       } catch (IOException e) {
+           Log.d(TAG, "falla");//bien aqui
+           e.printStackTrace();
+       }
+
+
+       return  datoString;
+
+   }
+
+
+   /**
+    * Envía los datos en flujo de bytes
+    */
+   public void escribirBytes(byte[] datoByteParaEnviar) {
+
+       byte[] buffer = new byte[1024];
+
+       if (datoByteParaEnviar != null)
+           buffer = datoByteParaEnviar;
+
+
+       if (flujoSalida != null) {
+           try {
+
+               flujoSalida.write(buffer);
+               flujoSalida.flush();
+
+           } catch (IOException e) {
+           }
+
+       }
+
+   }
+
+
+   //  6. Cerrar flujos y sockets
+
+   /**
+    * Cierra el socket cliente
+    */
+   public void cerrarSocketCliente() {
+
+       if (clienteSocket != null) {
+           try {
+
+               clienteSocket.close();
+
+           } catch (IOException e) {
+               e.printStackTrace();
+           }
+       }
+
+   }
+
+
+   public void cerrarFlujoEntrada() {
+
+       if (flujoEntrada != null) {
+
+           try {
+
+               flujoEntrada.close();
+
+           } catch (IOException e) {
+               e.printStackTrace();
+           }
+
+       }
+
+   }
+
+
+   public void cerrarFlujoSalida() {
+
+       if (flujoSalida != null) {
+           try {
+
+               flujoSalida.flush();
+               flujoSalida.close();
+
+           } catch (IOException e) {
+               e.printStackTrace();
+           }
+
+       }
+
+   }
+
+}
+
+
+La clase ServidorBluetooth.
+
+
+public class ServidorBluetooth {
+
+
+   public static final String NOMBRE_SEGURO = "BluetoothServiceSecure";
+   public BluetoothAdapter adaptadorBluetooth;
+   public BluetoothServerSocket serverSocket;
+   public BluetoothSocket clienteSocket;
+
+   private BufferedInputStream flujoEntrada;
+   private BufferedOutputStream flujoSalida;
+
+
+     /*
+    Como estamos creando una conexión SPP (como si fuese un puerto serie virtual)
+    a través del protocolo RFCOMM, debemos obtener el socket que conecta con el
+    servicio 00001101-0000-1000-8000-00805F9B34FB, que es el identificador único
+    de servicio para SPP en el estandar Bluetooth.
+    */
+
+   public static final UUID UUID_SEGURO = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+
+   public ServidorBluetooth() {
+
+       adaptadorBluetooth = BluetoothAdapter.getDefaultAdapter();
+
+   }
+
+
+   // 1. Abrir un socket (ServerSocket) para esperar por peticiones de conexión
+
+   /**
+    * Crear un ServerSocket
+    */
+
+
+   public void abrirSocketServidor() {
+
+       if (serverSocket != null)
+           serverSocket = null;
+
+       try {
+           serverSocket = adaptadorBluetooth.listenUsingRfcommWithServiceRecord(NOMBRE_SEGURO, UUID_SEGURO);
+
+       } catch (IOException e) {
+           e.printStackTrace();
+
+       }
+
+   }
+
+
+   // 2. Al llegar una petición, crear otro socket (Socket) por medio del cual se comunicará con el cliente
+
+   /**
+    * Socket para comunicarse con el cliente
+    */
+
+   public void abrirSocketCliente() {
+
+       try {
+
+           clienteSocket = serverSocket.accept();
+           AlmacenDatosRAM.conexion_bluetooth=" Conectado con  "+ clienteSocket.getRemoteDevice().getName().toString();
+
+       } catch (IOException e) {
+           AlmacenDatosRAM.conexion_bluetooth="Falló la conexión";
+           e.printStackTrace();
+
+       }
+
+   }
+
+   //3. Asociar uno o más flujos intermedios a el flujo de entrada (InputStream) asignado al socket
+   public void abrirFlujoEntrada() {
+
+
+       try {
+
+
+           flujoEntrada = new BufferedInputStream(clienteSocket.getInputStream());
+
+
+       } catch (IOException e) {
+
+       }
+
+   }
+
+
+   //3. Asociar uno o más flujos intermedios al flujo de salida (OutpuStream) asignado al socket
+   public void abrirFlujoSalida() {
+
+       try {
+
+           flujoSalida = new BufferedOutputStream(clienteSocket.getOutputStream());
+
+       } catch (IOException e) {
+
+       }
+
+
+   }
+
+
+   //  4. Leer/Escribir a los flujos de acuerdo al protocolo establecido
+
+   /**
+    * Lee los datos que le fueron enviados  como flujo de bytes.
+    *
+    * @return
+    */
+
+
+   //public void leerBytes() {
+   public byte[] leerBytes() {
+
+
+       int nuevoDato = 0;
+       byte[] buffer = new byte[1024];
+
+       byte[] datoBytesRecibido = null;
+
+
+       if (flujoEntrada != null) {
+
+           try {
+
+               nuevoDato = flujoEntrada.read(buffer);
+               datoBytesRecibido = (new String(buffer, 0, nuevoDato)).getBytes();//en byte[]
+
+
+           } catch (IOException e) {
+
+               e.printStackTrace();
+
+
+           }
+
+
+       }
+
+       return datoBytesRecibido;
+
+   }
+
+
+   /**
+    * Envía los datos en flujo de bytes
+    */
+   public void escribirBytes(byte[] datoByteParaEnviar) {
+
+
+       int size= datoByteParaEnviar.length;
+
+       byte[] buffer = new byte[1024];
+
+       if (datoByteParaEnviar != null)
+           buffer = datoByteParaEnviar;
+
+
+       if (flujoSalida != null) {
+           try {
+
+               flujoSalida.write(buffer);
+               flujoSalida.flush();
+               //Log.d(TAG, "Holis");
+
+           } catch (IOException e) {
+           }
+
+
+       }
+   }
+
+
+   //  6. Cerrar flujos y sockets
+
+   /**
+    * Cierra el socket cliente
+    */
+
+   public void cerrarFlujoEntrada() {
+
+
+       if (flujoEntrada != null) {
+
+           try {
+
+               flujoEntrada.close();
+           } catch (IOException e) {
+               e.printStackTrace();
+           }
+
+       }
+
+   }
+
+
+   public void cerrarFlujoSalida() {
+
+
+       if (flujoSalida != null) {
+           try {
+
+               flujoSalida.flush();
+               flujoSalida.close();
+
+           } catch (IOException e) {
+               e.printStackTrace();
+           }
+
+       }
+
+   }
+
+   public void cerrarSocketCliente() {
+
+
+       if (clienteSocket != null) {
+           try {
+
+               clienteSocket.close();
+
+
+           } catch (IOException e) {
+               e.printStackTrace();
+           }
+       }
+
+   }
+
+
+}
+
+
+Código de las otras clases.
+La clase ActividadComoClienteBluetooth.
+
+
+public class ActividadComoClienteBluetooth extends Activity implements Runnable {
+
+
+   private Acelerometro acelerometro;
+   private Luxometro luxometro;
+
+   private Button botonConectar, botonBuscar;
+   private TextView textviewRol;
+   private TextView textviewAviso;
+
+   private int tamanoLetraResolucionIncluida;
+   private int COLOR_1 = Color.rgb(220, 156, 80);
+
+   //hilo para actualizar tabla
+   //esto evita que se reviente la app
+   private final Handler myHandler = new Handler();
+
+   private ClienteBluetooth cliente;
+
+   private JSONObject obj;
+
+   private long periodo_muestreo = 50;//pausas de 50 ms
+
+   private boolean corriendo;
+
+
+   /*
+  hilo resposable de estar pendiente
+  del intercambio de datos con el servidor
+  */
+   private Thread hilo;
+
+
+   public void onCreate(Bundle icicle) {
+       super.onCreate(icicle);
+
+       gestionarResolucion();
+
+       creacionElementosGUI();
+
+       setContentView(crearGUI());
+
+       eventos();
+
+
+   }
+
+   private void gestionarResolucion() {
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       tamanoLetraResolucionIncluida = (int)(0.8* AlmacenDatosRAM.tamanoLetraResolucionIncluida);
+
+   }//fin método gestionanrResolucion()solucion()
+
+
+   private void creacionElementosGUI() {
+
+       acelerometro = new Acelerometro(this);
+       acelerometro.setUnidades(" a m/s^2");
+       acelerometro.setAngulosSectores(50, 100, 100);
+       acelerometro.setColorFranjaDinámica(Color.rgb(0,255,0));
+
+       luxometro = new Luxometro(this);
+       luxometro.setUnidades("lx");
+
+       textviewRol = new TextView(this);
+       textviewRol.setTextSize(TypedValue.COMPLEX_UNIT_SP, (int)(0.8*tamanoLetraResolucionIncluida));
+       textviewRol.setBackgroundColor(Color.YELLOW);
+       textviewRol.setText("CLIENTE");
+       textviewRol.setTextColor(Color.RED);
+       textviewRol.setGravity(Gravity.CENTER);
+       textviewRol.setEnabled(false);
+
+       textviewAviso = new TextView(this);
+       textviewAviso.setTextSize(TypedValue.COMPLEX_UNIT_SP, (int)(0.8*tamanoLetraResolucionIncluida));
+       textviewAviso.setBackgroundColor(Color.YELLOW);
+       textviewAviso.setTextColor(Color.RED);
+       textviewAviso.setGravity(Gravity.CENTER);
+       textviewAviso.setText(AlmacenDatosRAM.conexion_bluetooth);
+
+
+       botonBuscar = new Button(this);
+       botonBuscar.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonBuscar.setText("BUSCAR");
+       botonBuscar.getBackground().setColorFilter(COLOR_1, PorterDuff.Mode.MULTIPLY);
+       botonBuscar.setEnabled(true);
+       botonBuscar.setTextSize(tamanoLetraResolucionIncluida);
+
+
+       botonConectar = new Button(this);
+       botonConectar.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonConectar.setText("CONECTAR");
+       botonConectar.getBackground().setColorFilter(COLOR_1, PorterDuff.Mode.MULTIPLY);
+       botonConectar.setEnabled(false);
+       botonConectar.setTextSize(tamanoLetraResolucionIncluida);
+
+   }
+
+   private LinearLayout crearGUI() {
+
+       //LinearLayoutPrincipal
+       LinearLayout linearLayoutPrincipal = new LinearLayout(this);
+       linearLayoutPrincipal.setOrientation(LinearLayout.VERTICAL);
+       linearLayoutPrincipal.setBackgroundColor(Color.WHITE);
+       linearLayoutPrincipal.setWeightSum(10f);
+
+       //LinearLayout fila 1
+       LinearLayout linearLayoutFilaUno = new LinearLayout(this);
+       linearLayoutFilaUno.setBackgroundColor(Color.WHITE);
+
+       //LinearLayout fila 2
+       LinearLayout linearLayoutFilaDos = new LinearLayout(this);
+       linearLayoutFilaDos.setBackgroundColor(Color.WHITE);
+
+       //LinearLayout fila 3
+       LinearLayout linearLayoutFilaTres = new LinearLayout(this);
+       linearLayoutFilaTres.setBackgroundColor(Color.WHITE);
+
+       //LinearLayout fila 4
+       LinearLayout linearLayoutFilaCuatro = new LinearLayout(this);
+       linearLayoutFilaCuatro.setOrientation(LinearLayout.HORIZONTAL);
+       linearLayoutFilaCuatro.setBackgroundColor(Color.WHITE);
+
+
+       //LinearLayout fila 5
+       LinearLayout linearLayoutFilaCinco = new LinearLayout(this);
+       linearLayoutFilaCinco.setOrientation(LinearLayout.HORIZONTAL);
+       linearLayoutFilaCinco.setBackgroundColor(Color.WHITE);
+       linearLayoutFilaCinco.setWeightSum(2f);
+
+       //pegar las filas en el princpal
+       LinearLayout.LayoutParams parametrosFilaUno = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaUno.weight = 1.0f;
+       linearLayoutFilaUno.setLayoutParams(parametrosFilaUno);
+
+       LinearLayout.LayoutParams parametrosFilaDos = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaDos.weight = 3.75f;
+       linearLayoutFilaDos.setLayoutParams(parametrosFilaDos);
+
+       LinearLayout.LayoutParams parametrosFilaTres = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaTres.weight = 3.75f;
+       linearLayoutFilaTres.setLayoutParams(parametrosFilaTres);
+
+       LinearLayout.LayoutParams parametrosFilaCuatro = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaCuatro.weight = 0.5f;
+       linearLayoutFilaCuatro.setLayoutParams(parametrosFilaCuatro);
+
+       LinearLayout.LayoutParams parametrosFilaCinco = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaCinco.weight = 1.0f;
+       linearLayoutFilaCinco.setLayoutParams(parametrosFilaCinco);
+
+       linearLayoutPrincipal.addView(linearLayoutFilaUno);
+       linearLayoutPrincipal.addView(linearLayoutFilaDos);
+       linearLayoutPrincipal.addView(linearLayoutFilaTres);
+       linearLayoutPrincipal.addView(linearLayoutFilaCuatro);
+       linearLayoutPrincipal.addView(linearLayoutFilaCinco);
+
+       //Adicionar a la fila 1 EditText rol
+       LinearLayout.LayoutParams parametrosPegadoEditTextRol = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+       linearLayoutFilaUno.setGravity(Gravity.CENTER);
+       textviewRol.setPadding(20, 20, 20, 20);
+       parametrosPegadoEditTextRol.setMargins(20, 20, 20, 20);
+       textviewRol.setLayoutParams(parametrosPegadoEditTextRol);
+       linearLayoutFilaUno.addView(textviewRol);
+
+       //Adicionar a la fila 2 el acelerometro
+       LinearLayout.LayoutParams parametrosPegadoAcelerometro = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+       linearLayoutFilaDos.setGravity(Gravity.CENTER);
+       linearLayoutFilaDos.addView(acelerometro, parametrosPegadoAcelerometro);
+
+       //Adicionar a la fila 3 el luxometro
+       LinearLayout.LayoutParams parametrosPegadoLuxometro = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+       linearLayoutFilaTres.setGravity(Gravity.CENTER);
+       linearLayoutFilaTres.addView(luxometro, parametrosPegadoLuxometro);
+
+       //Adicionar a la fila 4 el aviso
+       LinearLayout.LayoutParams parametrosPegadoAviso = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+       linearLayoutFilaCuatro.addView(textviewAviso, parametrosPegadoAviso);
+
+
+       //Adicionar a la fila 5 los botones
+       LinearLayout.LayoutParams parametrosPegadoBotones = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametrosPegadoBotones.weight = 1.0f;
+       linearLayoutFilaCinco.addView(botonBuscar, parametrosPegadoBotones);
+       linearLayoutFilaCinco.addView(botonConectar, parametrosPegadoBotones);
+
+
+       return linearLayoutPrincipal;
+   }
+
+   private void eventos() {
+
+       //evento cliente
+       botonBuscar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               lanzarBuscandoDispositivos();
+               botonConectar.setEnabled(true);
+               botonBuscar.setEnabled(false);
+
+           }
+       });
+
+
+       //evento cliente
+       botonConectar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               if (botonConectar.getText() == "CONECTAR") {
+                   botonConectar.setText("EMPEZAR");
+                   botonBuscar.setEnabled(false);
+                   crearCliente();
+                   cliente.conectarSocketCliente();
+
+               } else {
+
+
+
+                   botonConectar.setEnabled(false);
+                   //hilo de comunicación con servidor
+                   empezarHilo();
+
+               }
+
+           }
+       });
+
+
+   }//fin eventos()
+
+   private void lanzarBuscandoDispositivos() {
+
+       Intent intent = new Intent(this, ActividadEscaneoDispositivos.class);
+       startActivity(intent);
+
+   }
+
+
+   public void empezarHilo() {
+
+       hilo = new Thread(this);
+       hilo.start();
+
+   }
+
+
+   private void crearCliente() {
+
+       //dirección del dispositivo elegido para emparejar
+       String direccion = AlmacenDatosRAM.direccion;
+       cliente = new ClienteBluetooth();
+
+       /*
+        el cliente instancia un dispositivo Bluetooth
+        (BluetoohDevice) a partir de la dirección
+        de este.Luego abre un socket de tipo  BuletoothSocket
+        a partir del dispositivo enlazado.
+        */
+       cliente.abrirSocketCliente(direccion);
+       empezarComunicacionConServidor();
+
+   }
+
+   private void empezarComunicacionConServidor() {
+
+      /*
+      Aceptada la conexión abre los flujos de entrada
+      y salida de este socket por donde fluirán (tubería)
+        los datos desde y hacia el servidor
+      */
+
+       cliente.abrirFlujoEntrada();
+       cliente.abrirFlujoSalida();
+
+   }
+
+   private void terminarComunicacionConServidor() {
+
+       cliente.cerrarFlujoEntrada();
+       cliente.cerrarFlujoSalida();
+       cliente.cerrarSocketCliente();
+
+   }
+
+
+   @Override
+   public void run() {
+       corriendo = true;
+
+
+       while (corriendo) {
+
+           try {
+               Thread.sleep(periodo_muestreo);
+
+           } catch (InterruptedException e) {
+               e.printStackTrace();
+           }
+
+           leer();
+           AlmacenDatosRAM.conexion_bluetooth= "  Recibiendo datos del servidor ...";
+           hacerTrabajoDuro();
+
+       }
+
+       AlmacenDatosRAM.conexion_bluetooth= " ";
+
+   }
+
+
+
+   private void leer(){
+
+       String nuevo_dato_string = cliente.leerString();//String JSON
+
+       if (nuevo_dato_string!= null) {
+           convertirStrigJson(nuevo_dato_string);
+
+               }
+
+   }
+
+   //obtener la información del JSON
+   public void convertirStrigJson(String datoString) {
+
+       //convertir String a JSON
+       try {
+           obj = new JSONObject(datoString);
+       } catch (JSONException e) {
+           e.printStackTrace();
+       }
+
+       //obtener la información
+       //la medida
+       try {
+           int componente_aceleracion = obj.getInt("componente");
+           acelerometro.setComponenteAcelerometro(componente_aceleracion);
+           //acelerometro.setUnidades(componente_aceleracion+" (m/s^2)");
+
+       } catch (JSONException e) {
+           e.printStackTrace();
+       }
+
+       try {
+
+           float medida_aclerometro = (float)(obj.getDouble("valor_acelerometro"));
+           acelerometro.setMedida(medida_aclerometro);
+           float medida_luxometro = (float)(obj.getDouble("valor_luxometro"));
+           luxometro.cambiarEscala(medida_luxometro);
+           luxometro.setMedida(medida_luxometro);
+
+       } catch (JSONException e) {
+           e.printStackTrace();
+       }
+
+   }
+
+   protected void onPause() {
+       super.onPause();
+       //detener hilo
+       corriendo = false;
+
+        }
+
+
+
+   protected void onDestroy() {
+       super.onDestroy();
+       terminarComunicacionConServidor();
+
+           }
+
+
+ /*
+ Para el asunto de la table es mejor usar un
+ hilo manejador para que no se reviente la aplicación
+*/
+   public void hacerTrabajoDuro() {
+       //.... realizar el trabajo duro
+
+       //Actualiza la UI usando el handler y el runnable
+       myHandler.post(updateRunnable);
+
+   }
+
+   final Runnable updateRunnable = new Runnable() {
+       public void run() {
+
+           avisoEstadoComunicacion();
+
+
+       }
+   };
+
+   private void  avisoEstadoComunicacion(){
+
+       textviewAviso.setText(AlmacenDatosRAM.conexion_bluetooth);
+
+   }
+
+
+
+}
+
+
+
+
+La clase ActividadComoServidorBluetooth.
+
+
+
+
+public class ActividadComoServidorBluetooth extends Activity implements Runnable {
+
+
+   private Boton ax, ay, az, a;
+
+   private float medida_acelerometro, medida_luxometro;
+
+   private Acelerometro acelerometro;
+   private Luxometro luxometro;
+   private int componente_aceleracion;
+
+   private EditText editTextRecibir;
+   private TextView textviewAviso;
+
+   private TextView textviewRol;
+   private Button botonEmpezar;
+   private int tamanoLetraResolucionIncluida;
+   private int COLOR_2 = Color.rgb(156, 220, 80);
+
+   //hilo para actualizar tabla
+   //esto evita que se reviente la app
+   private final Handler myHandler = new Handler();
+
+
+   private ServidorBluetooth servidor;
+
+    /*
+    hilo que está pendiente de leer mensaje
+    enviado por el cliente y enviar mensaje
+    a éste
+    */
+   private boolean corriendo;
+   private long periodo_muestreo = 100;//pausas de 100 ms
+   private Thread hilo;
+
+  private float medida_campo_magnetico, medida_aceleracion;
+
+
+
+
+   public void onCreate(Bundle icicle) {
+       super.onCreate(icicle);
+
+       gestionarResolucion();
+
+       creacionElementosGUI();
+
+       setContentView(crearGUI());
+
+       eventos();
+
+       hilo = new Thread(this);
+
+   }
+
+
+   private void gestionarResolucion() {
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       tamanoLetraResolucionIncluida = (int)(0.8* AlmacenDatosRAM.tamanoLetraResolucionIncluida);
+
+   }//fin método gestionarResolucion()solucion()
+
+
+   private void creacionElementosGUI() {
+
+       //botones
+       ax = new Boton(this);
+       ax.setImagen(R.drawable.ax);
+       ay = new Boton(this);
+       ay.setImagen(R.drawable.ay);
+       az = new Boton(this);
+       az.setImagen(R.drawable.az);
+       a = new Boton(this);
+       a.setImagen(R.drawable.a);
+
+       acelerometro = new Acelerometro(this);
+       acelerometro.setUnidades(" m.s-2");
+       acelerometro.setRango(0, 50);//????
+       acelerometro.setAngulosSectores(50, 100, 100);
+       acelerometro.setColorFranjaDinámica(Color.rgb(0,255,0));
+       acelerometro.captarSensor(this);
+
+       luxometro = new Luxometro(this);
+       luxometro.setUnidades("lx");
+       luxometro.captarSensor(this);
+
+       textviewRol = new TextView(this);
+       textviewRol.setTextSize(TypedValue.COMPLEX_UNIT_SP, (int)(0.8*tamanoLetraResolucionIncluida));
+       textviewRol.setBackgroundColor(Color.YELLOW);
+       textviewRol.setText("SERVIDOR");
+       textviewRol.setTextColor(Color.RED);
+       textviewRol.setGravity(Gravity.CENTER);
+       textviewRol.setEnabled(false);
+
+       textviewAviso = new TextView(this);
+       textviewAviso.setTextSize(TypedValue.COMPLEX_UNIT_SP, (int)(0.8*tamanoLetraResolucionIncluida));
+       textviewAviso.setBackgroundColor(Color.YELLOW);
+       textviewAviso.setTextColor(Color.RED);
+       textviewAviso.setGravity(Gravity.CENTER);
+       textviewAviso.setText(AlmacenDatosRAM.conexion_bluetooth);
+
+       editTextRecibir = new EditText(this);
+       editTextRecibir.setBackgroundColor(Color.BLACK);
+       editTextRecibir.setTextColor(Color.YELLOW);
+       editTextRecibir.setTextSize((int)(0.8*tamanoLetraResolucionIncluida));
+       editTextRecibir.setText("Despliega la magnitud de la aceleración sensada por el dispositivo móvil CLIENTE");
+       editTextRecibir.setEnabled(false);
+       editTextRecibir.setKeyListener(null);//para no desplegar trclado
+
+       botonEmpezar = new Button(this);
+       botonEmpezar.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonEmpezar.setText("EMPEZAR");
+       botonEmpezar.getBackground().setColorFilter(COLOR_2, PorterDuff.Mode.MULTIPLY);
+
+       //crear el Servidor
+       crearServidor();
+
+   }
+
+
+   private LinearLayout crearGUI() {
+
+       //LinearLayoutPrincipal
+       LinearLayout linearLayoutPrincipal = new LinearLayout(this);
+       linearLayoutPrincipal.setOrientation(LinearLayout.VERTICAL);
+       linearLayoutPrincipal.setBackgroundColor(Color.BLACK);
+       linearLayoutPrincipal.setWeightSum(10f);
+
+       //LinearLayout primera fila
+       LinearLayout linearLayoutFilaUno = new LinearLayout(this);
+       linearLayoutFilaUno.setBackgroundColor(Color.WHITE);
+
+       //LinearLayout segunda fila
+       LinearLayout linearLayoutFilaDos = new LinearLayout(this);
+       linearLayoutFilaDos.setBackgroundColor(Color.WHITE);
+       linearLayoutFilaDos.setWeightSum(10f);
+
+       //linear segunda columna izquierda
+       LinearLayout linearLayoutColumnaDosIzquierda = new LinearLayout(this);
+
+       //linear segunda columna derecha
+       LinearLayout linearLayoutColumnaDosDerecha = new LinearLayout(this);
+       linearLayoutColumnaDosDerecha.setOrientation(LinearLayout.VERTICAL);
+       linearLayoutColumnaDosDerecha.setWeightSum(4f);
+
+       //LinearLayout tercera fila
+       LinearLayout linearLayoutFilaTres = new LinearLayout(this);
+       linearLayoutFilaTres.setBackgroundColor(Color.WHITE);
+
+
+       //LinearLayout fila 4
+       LinearLayout linearLayoutFilaCuatro = new LinearLayout(this);
+       linearLayoutFilaCuatro.setOrientation(LinearLayout.HORIZONTAL);
+       linearLayoutFilaCuatro.setBackgroundColor(Color.WHITE);
+
+
+       //LinearLayout fila 5
+       LinearLayout linearLayoutFilaCinco = new LinearLayout(this);
+       linearLayoutFilaCinco.setOrientation(LinearLayout.HORIZONTAL);
+       linearLayoutFilaCinco.setBackgroundColor(Color.WHITE);
+
+       //pegar las filas en el principal
+       LinearLayout.LayoutParams parametrosFilaUno = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaUno.weight = 1.0f;
+       linearLayoutFilaUno.setLayoutParams(parametrosFilaUno);
+
+       LinearLayout.LayoutParams parametrosFilaDos = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaDos.weight = 3.75f;
+       linearLayoutFilaDos.setLayoutParams(parametrosFilaDos);
+
+       LinearLayout.LayoutParams parametrosFilaTres = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaTres.weight = 3.75f;
+       linearLayoutFilaTres.setLayoutParams(parametrosFilaTres);
+
+       LinearLayout.LayoutParams parametrosFilaCuatro = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaCuatro.weight = 0.5f;
+       linearLayoutFilaCuatro.setLayoutParams(parametrosFilaCuatro);
+
+       LinearLayout.LayoutParams parametrosFilaCinco = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaCinco.weight = 1.0f;
+       linearLayoutFilaCinco.setLayoutParams(parametrosFilaCinco);
+
+
+       linearLayoutPrincipal.addView(linearLayoutFilaUno);
+       linearLayoutPrincipal.addView(linearLayoutFilaDos);
+       linearLayoutPrincipal.addView(linearLayoutFilaTres);
+       linearLayoutPrincipal.addView(linearLayoutFilaCuatro);
+       linearLayoutPrincipal.addView(linearLayoutFilaCinco);
+
+       //pegar columnas izquierda y derecha a la fila dos
+       LinearLayout.LayoutParams parametrosColumnaDosIzquierda = new LinearLayout.LayoutParams(0,ViewGroup.LayoutParams.MATCH_PARENT);
+       parametrosColumnaDosIzquierda.weight = 8.0f;
+       linearLayoutFilaDos.addView(linearLayoutColumnaDosIzquierda,parametrosColumnaDosIzquierda);
+
+       LinearLayout.LayoutParams parametrosColumnaDosDerecha = new LinearLayout.LayoutParams(0,ViewGroup.LayoutParams.MATCH_PARENT);
+       parametrosColumnaDosDerecha.weight = 2.0f;
+       linearLayoutFilaDos.addView(linearLayoutColumnaDosDerecha,parametrosColumnaDosDerecha);
+
+       //Adicionar acelerometro a la columna dos izquierda
+       linearLayoutColumnaDosIzquierda.addView(acelerometro);
+
+       //pegar botones
+       LinearLayout.LayoutParams parametrosPegadoBotonesAceleracion = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,0);
+       parametrosPegadoBotonesAceleracion.weight = 1.0f;
+       linearLayoutColumnaDosDerecha.addView(ax,parametrosPegadoBotonesAceleracion);
+       linearLayoutColumnaDosDerecha.addView(ay,parametrosPegadoBotonesAceleracion);
+       linearLayoutColumnaDosDerecha.addView(az,parametrosPegadoBotonesAceleracion);
+       linearLayoutColumnaDosDerecha.addView(a,parametrosPegadoBotonesAceleracion);
+
+
+
+       //Adicionar a la fila 1 EditText rol
+       LinearLayout.LayoutParams parametrosPegadoEditTextRol = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+       linearLayoutFilaUno.setGravity(Gravity.CENTER);
+       textviewRol.setPadding(20, 20, 20, 20);
+       parametrosPegadoEditTextRol.setMargins(20, 20, 20, 20);
+       textviewRol.setLayoutParams(parametrosPegadoEditTextRol);
+       linearLayoutFilaUno.addView(textviewRol);
+
+
+       //Adicionar a la fila tres el acelerómetro
+       LinearLayout.LayoutParams parametrosPegadoLuxometro = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+       linearLayoutFilaTres.setGravity(Gravity.CENTER);
+       linearLayoutFilaTres.addView(luxometro,parametrosPegadoLuxometro);
+
+       //Adicionar a la fila 4 el aviso
+       LinearLayout.LayoutParams parametrosPegadoAviso = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+       linearLayoutFilaCuatro.addView(textviewAviso, parametrosPegadoAviso);
+
+       //pegado botones a la fila 4
+       LinearLayout.LayoutParams parametrosPegadoBotones = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametrosPegadoBotones.weight = 1.0f;
+
+       //Adicionar a la fila 4 botón
+       linearLayoutFilaCinco.addView(botonEmpezar, parametrosPegadoBotones);
+
+
+       return linearLayoutPrincipal;
+   }
+
+
+
+   private void eventos() {
+
+
+       //evento cliente
+       botonEmpezar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               //crear el Servidor
+               empezarComunicacionConCliente();
+               //hilo comunicación con el cliente
+               hilo.start();
+               botonEmpezar.setEnabled(false);
+
+           }
+       });
+
+       ax.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+
+               acelerometro.setComponenteAcelerometro(1);
+
+               componente_aceleracion = 1;
+
+
+           }
+       });
+
+       ay.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               acelerometro.setComponenteAcelerometro(2);
+
+               componente_aceleracion = 2;
+
+
+           }
+       });
+
+       az.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               acelerometro.setComponenteAcelerometro(3);
+
+               componente_aceleracion = 3;
+
+
+
+           }
+       });
+
+       a.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               acelerometro.setComponenteAcelerometro(4);
+
+               componente_aceleracion = 4;
+
+
+           }
+       });
+
+
+
+   }//fin eventos()
+
+
+   private void crearServidor() {
+
+       servidor = new ServidorBluetooth();
+       /*
+         el servidor abre socket BluetoothServerSocket
+         y lo pone a escucha de peticiones de conexxión
+         de clientes
+       */
+       servidor.abrirSocketServidor();
+
+
+   }
+
+   private void empezarComunicacionConCliente() {
+
+       /*
+        el servidor se mentiene en espera
+        ocupada  atendiendo solicitudes de conexión
+        mediante el método accept()
+        Este método bloque hilo hasta que una
+        conexión entrante sea recibida.
+
+        Aceptada la conexion el servidor abre un socket
+        de tipo BlutoothSocket. Por aquí se
+        comunicará con el cliente (clienteSocket)
+        */
+       servidor.abrirSocketCliente();
+       /*
+        abre los flujos de entrada y salida
+        de este socket por donde fluirán (tubería)
+        los datos desde y hacia el cliente
+       */
+       servidor.abrirFlujoSalida();
+       servidor.abrirFlujoEntrada();
+
+   }
+
+   private void terminarComunicacionConCliente() {
+
+       servidor.cerrarFlujoSalida();
+       servidor.cerrarFlujoEntrada();
+       servidor.cerrarSocketCliente();
+
+   }
+
+   public void detener() {
+
+       corriendo = false;
+       terminarComunicacionConCliente();
+
+   }
+
+
+  /*
+     En este hilo se maneja la comunicación en lo que respecta
+     a envío de datos al cliente (escribir) y recibo de datos
+     enviados por el cliente(leer).
+     En esta app ser hará medinate bytes
+    */
+
+   public void run() {
+
+       corriendo = true;
+
+       while (corriendo) {//estaba corriendo
+
+
+           try {
+               Thread.sleep(periodo_muestreo);
+           } catch (InterruptedException e) {
+               e.printStackTrace();
+           }
+
+           escribir();
+
+           AlmacenDatosRAM.conexion_bluetooth= "  Enviando datos al cliente ...";
+           hacerTrabajoDuro();
+
+       }
+
+
+       AlmacenDatosRAM.conexion_bluetooth= " ";
+
+
+   }
+
+
+   //lo cambie por este
+   private void escribir(){
+
+       //escribir (enviar) datos al cliente
+       String dato = getStringJSON();
+       byte[] dato_en_byte = dato.getBytes();
+       if (dato_en_byte != null) {
+           servidor.escribirBytes(dato_en_byte);
+
+       }
+   }
+
+
+   private String getStringJSON(){
+
+       JSONObject obj = new JSONObject();
+
+       try {
+
+           medida_acelerometro = acelerometro.getMedida();
+           medida_luxometro = luxometro.getMedida();
+           obj.put("componente", componente_aceleracion);
+           obj.put("valor_acelerometro", medida_acelerometro);
+           obj.put("valor_luxometro", medida_luxometro);
+
+       } catch (JSONException e) {
+           // TODO Auto-generated catch block
+           e.printStackTrace();
+       }
+
+       //convertir a String
+       return obj.toString();
+
+   }
+
+
+
+   protected void onPause() {
+       super.onPause();
+       //detener hilo
+       corriendo = false;
+
+   }
+
+   protected void onDestroy() {
+       super.onDestroy();
+       terminarComunicacionConCliente();
+
+
+   }
+
+
+   /*
+   Para el asunto de la table es mejor usar un
+   hilo manejador para que no se reviente la aplicación
+ */
+   public void hacerTrabajoDuro() {
+       //.... realizar el trabajo duro
+
+       //Actualiza la UI usando el handler y el runnable
+       myHandler.post(updateRunnable);
+
+   }
+
+   final Runnable updateRunnable = new Runnable() {
+       public void run() {
+
+           avisoEstadoComunicacion();
+
+
+       }
+   };
+
+   private void  avisoEstadoComunicacion(){
+
+       textviewAviso.setText(AlmacenDatosRAM.conexion_bluetooth);
+
+   }
+
+
+
+}
+
+
+
+
+La clase ActividadEscaneoDispositivos.
+
+
+public class ActividadEscaneoDispositivos extends Activity {
+
+
+   ScannerBluetooth scanear;
+   //@Override
+   protected void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       scanear=new ScannerBluetooth(this);
+       scanear.descubriendoDispositivos();
+   }
+
+   @Override
+   public void onPause() {
+       super.onPause();
+       AlmacenDatosRAM.direccion= scanear.direccion;
+   }
+
+
+}
+
+
+
+
+La clase ActividadComunicacion.
+
+
+public class ActividadComunicacion extends Activity {
+
+   private Button botonCliente, botonServidor;
+   private int tamanoLetraResolucionIncluida;
+   private int COLOR_1 = Color.rgb(220, 156, 80);
+
+
+
+
+   public void onCreate(Bundle icicle) {
+       super.onCreate(icicle);
+
+       gestionarResolucion();
+
+       creacionElementosGUI();
+
+       setContentView(crearGUI());
+
+       eventos();
+
+
+   }
+
+
+   private void gestionarResolucion(){
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       tamanoLetraResolucionIncluida = (int)(0.8* AlmacenDatosRAM.tamanoLetraResolucionIncluida);
+
+
+   }//fin método gestionarResolucion()solucion()
+
+
+
+   private void creacionElementosGUI() {
+
+       botonCliente = new Button(this);
+       botonCliente.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonCliente.setText("CLIENTE");
+       botonCliente.getBackground().setColorFilter(COLOR_1, PorterDuff.Mode.MULTIPLY);
+       botonCliente.setEnabled(true);
+
+       botonServidor = new Button(this);
+       botonServidor.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonServidor.setText("SERVIDOR");
+       botonServidor.getBackground().setColorFilter(COLOR_1, PorterDuff.Mode.MULTIPLY);
+       botonServidor.setEnabled(true);
+
+   }
+
+
+   private LinearLayout crearGUI() {
+
+       //LinearLayoutPrincipal
+       LinearLayout linearLayoutPrincipal = new LinearLayout(this);
+       linearLayoutPrincipal.setOrientation(LinearLayout.VERTICAL);
+       linearLayoutPrincipal.setBackgroundColor(Color.WHITE);
+       linearLayoutPrincipal.setWeightSum(10f);
+
+
+       //LinearLayout primera fila
+       LinearLayout linearLayoutPrimeraFila = new LinearLayout(this);
+       linearLayoutPrimeraFila.setOrientation(LinearLayout.VERTICAL);
+
+       //fondo primera fila
+       Drawable fondo = getResources().getDrawable(R.drawable.modelo);
+       linearLayoutPrimeraFila.setBackgroundDrawable(fondo);
+
+
+       //LinearLayout segunda fila
+       LinearLayout linearLayoutSegundaFila = new LinearLayout(this);
+       linearLayoutSegundaFila.setOrientation(LinearLayout.HORIZONTAL);
+       linearLayoutSegundaFila.setBackgroundColor(Color.WHITE);
+       linearLayoutSegundaFila.setWeightSum(2f);
+
+
+       //pegar las filas en el princpal
+       LinearLayout.LayoutParams parametrosPrimeraFila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosPrimeraFila.weight = 9.0f;
+       linearLayoutPrimeraFila.setLayoutParams(parametrosPrimeraFila);
+
+
+       LinearLayout.LayoutParams parametrosSegundaFila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosSegundaFila.weight = 1.0f;
+       linearLayoutSegundaFila.setLayoutParams(parametrosSegundaFila);
+
+
+       linearLayoutPrincipal.addView(linearLayoutPrimeraFila);
+       linearLayoutPrincipal.addView(linearLayoutSegundaFila);
+
+
+       //pegado botones tercera fila
+       LinearLayout.LayoutParams parametrosPegadoBotones = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametrosPegadoBotones.weight = 1.0f;
+
+       //Adicionar a la tercera fila los botones
+       linearLayoutSegundaFila.addView(botonCliente, parametrosPegadoBotones);
+       linearLayoutSegundaFila.addView(botonServidor, parametrosPegadoBotones);
+
+       return linearLayoutPrincipal;
+   }
+
+   private void eventos() {
+
+       //evento cliente
+       botonCliente.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               botonServidor.setEnabled(false);
+               lanzarActividadComoCliente();
+               botonCliente.setEnabled(false);
+               AlmacenDatosRAM.rol="SOY EL CLIENTE";
+
+           }
+       });
+
+       //evento cliente
+       botonServidor.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               botonCliente.setEnabled(false);
+               lanzarActividadComoServidor();
+               botonServidor.setEnabled(false);
+               AlmacenDatosRAM.rol="SOY EL SERVIDOR";
+
+           }
+       });
+
+
+   }//fin eventos()
+
+
+   private void lanzarActividadComoCliente() {
+
+       Intent intent = new Intent(this, ActividadComoClienteBluetooth.class);
+       startActivity(intent);
+   }
+
+   private void lanzarActividadComoServidor() {
+
+       Intent intent = new Intent(this, ActividadComoServidorBluetooth.class);
+       startActivity(intent);
+   }
+
+}
+
+
+La clase ActividadPrincipalMiTrigesimaQuintaApp.
+A partir de Android 12 es necesario pedir prmisos adicionales para android 12. Estos permisos deben estar en el archivo manifiesto ya adicionalmente en tiempo de ejecución (en estte caso se hace en entrada en ActividadPrincipalMiTrigesimaQuintaApp: ver código marcado en amarillo).
+
+
+public class ActividadPrincipalMiTrigesimaQuintaApp extends Activity {
+
+
+
+
+    private Boton entrar, salir;
+
+
+    private BluetoothAdapter BA;
+
+
+    LinearLayout linear_layout_segunda_fila;
+
+
+
+
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+
+        gestionarResolucion();
+
+
+        //para crear elementos de la GUI
+        crearElementosGUI();
+
+
+        /*
+        Para informar cómo se debe pegar el administrador de
+        diseño LinearLayout obtenido con el método crearGui()
+        */
+        ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+
+
+        //pegar el contenedor con la GUI
+        this.setContentView(crearGUI(), parametro_layout_principal);
+
+
+
+
+        eventos();
+
+
+        //permisos
+        verificacionPermisos();
+
+
+
+
+    }//fin del método onCreate
+
+
+    /*Método auxiliar para asuntos de resolución*/
+    private void gestionarResolucion() {
+
+
+        //independencia de la resolución de la pantalla
+        DisplayMetrics displayMetrics = this.getApplicationContext().getResources().getDisplayMetrics();
+        int alto = displayMetrics.heightPixels;
+        int ancho = displayMetrics.widthPixels;
+        AlmacenDatosRAM.ancho = ancho;
+        AlmacenDatosRAM.alto = alto;
+        int dimensionReferencia;
+
+
+        //tomar el menor valor entre alto y ancho de pantalla
+        if (alto > ancho) {
+
+
+            dimensionReferencia = ancho;
+        } else {
+
+
+            dimensionReferencia = alto;
+        }
+
+
+        AlmacenDatosRAM.dimensionReferencia = dimensionReferencia;
+
+
+        //una estimación de un buen tamaño
+        int tamanoLetra = dimensionReferencia / 20;
+
+
+
+
+        //tamano de letra para usar acomodado a la resolución de pantalla
+        int tamanoLetraResolucionIncluida = (int) (tamanoLetra / displayMetrics.scaledDensity);
+
+
+        //guardar en el almacen de datos para que otras clases la accedan fácilmente
+        AlmacenDatosRAM.tamanoLetraResolucionIncluida = tamanoLetraResolucionIncluida;
+
+
+    }
+
+
+
+
+    private void crearElementosGUI() {
+
+
+        entrar = new Boton(this);
+        entrar.setImagen(R.drawable.entrar);
+
+
+        salir = new Boton(this);
+        salir.setImagen(R.drawable.salir);
+
+
+    }
+
+
+
+
+    /*método responsable de administrar el diseño de la GUI*/
+    private LinearLayout crearGUI() {
+
+
+
+
+        LinearLayout linear_layout_principal = new LinearLayout(this);
+        linear_layout_principal.setOrientation(LinearLayout.VERTICAL);
+        linear_layout_principal.setGravity(Gravity.CENTER_HORIZONTAL);
+        linear_layout_principal.setGravity(Gravity.FILL);
+        linear_layout_principal.setBackgroundColor(Color.WHITE);
+        linear_layout_principal.setWeightSum(10);
+
+
+
+
+        //LinearLayout primera fila
+        LinearLayout linear_layout_primera_fila = new LinearLayout(this);
+        linear_layout_primera_fila.setOrientation(LinearLayout.HORIZONTAL);
+        linear_layout_primera_fila.setGravity(Gravity.FILL);
+        linear_layout_primera_fila.setBackgroundColor(Color.WHITE);
+        LinearLayout.LayoutParams parametros_primera_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);//ViewGroup.LayoutParams.WRAP_CONTENT);
+        parametros_primera_fila.weight = 8.0f;
+        linear_layout_primera_fila.setLayoutParams(parametros_primera_fila);
+
+
+
+
+        //fondo primera fila
+        Drawable fondo = getResources().getDrawable(R.drawable.comunicacion_cliente_servidor);
+        linear_layout_primera_fila.setBackgroundDrawable(fondo);
+
+
+        //LinearLayout segunda fila
+        linear_layout_segunda_fila = new LinearLayout(this);
+        linear_layout_segunda_fila.setOrientation(LinearLayout.HORIZONTAL);
+        linear_layout_segunda_fila.setGravity(Gravity.FILL);
+        LinearLayout.LayoutParams parametros_segunda_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+        parametros_segunda_fila.weight = 2.0f;
+        linear_layout_segunda_fila.setWeightSum(1.0f);
+        linear_layout_segunda_fila.setLayoutParams(parametros_segunda_fila);
+
+
+
+
+        LinearLayout.LayoutParams parametros_pegado_boton = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+        parametros_pegado_boton.weight = 1.0f;
+        entrar.setLayoutParams(parametros_pegado_boton);
+        salir.setLayoutParams(parametros_pegado_boton);
+        linear_layout_segunda_fila.addView(entrar);
+        //linear_layout_segunda_fila.addView(salir);
+
+
+
+
+        linear_layout_principal.addView(linear_layout_primera_fila);
+        linear_layout_principal.addView(linear_layout_segunda_fila);
+
+
+
+
+        return linear_layout_principal;
+
+
+
+
+    }
+
+
+
+
+    private void eventos() {
+
+
+        entrar.setOnClickListener(new View.OnClickListener() {
+
+
+            public void onClick(View v) {
+
+
+
+
+                activarBluetooth();
+                lanzarActividadComunicacion();
+                linear_layout_segunda_fila.removeAllViews();
+                linear_layout_segunda_fila.addView(salir);
+
+
+
+
+            }
+        });
+
+
+        salir.setOnClickListener(new View.OnClickListener() {
+
+
+            public void onClick(View v) {
+
+
+                finish();
+            }
+        });
+
+
+
+
+    }
+
+
+
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    private void activarBluetooth() {
+
+
+        BA = BluetoothAdapter.getDefaultAdapter();
+        //activar bluetooth si está desactivado
+        if (!BA.isEnabled()) {
+            BA.enable();
+        }
+
+
+    }
+
+
+    private void lanzarActividadComunicacion() {
+
+
+        Intent intent = new Intent(this, ActividadComunicacion.class);
+        startActivity(intent);
+
+
+    }
+
+
+
+
+    protected void onPause() {
+        super.onPause();
+
+
+    }
+
+
+
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    protected void onDestroy() {
+        super.onDestroy();
+        BA.disable();
+
+
+        AlmacenDatosRAM.conexion_bluetooth = "  ";
+        finish();
+
+
+    }
+
+
+    /*
+    A partir de Android 12 es necesario agregar estos permisos para usar el Bluetooth
+     */
+        /*
+    A partir de Android 12 es necesario agregar estos permisos para usar el Bluetooth
+     */
+    private void verificacionPermisos() {
+
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            Toast.makeText(this, "This version is not Android 12 or later " + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show();
+        } else {
+
+
+            int hasReadWritePermission = checkSelfPermission(Manifest.permission.BLUETOOTH);
+            int hasBluetoothScan = checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN);
+
+
+            if (hasReadWritePermission != PackageManager.PERMISSION_GRANTED || hasBluetoothScan != PackageManager.PERMISSION_GRANTED) {
+
+
+
+
+                /* Request user permissions in runtime */
+                ActivityCompat.requestPermissions(ActividadPrincipalMiTrigesimaQuintaApp.this,
+                        new String[]{
+                                Manifest.permission.BLUETOOTH_ADMIN,
+                                Manifest.permission.BLUETOOTH_ADVERTISE,
+                                Manifest.permission.BLUETOOTH_SCAN,
+                                Manifest.permission.BLUETOOTH_CONNECT
+
+
+                        },
+                        100);
+
+
+            } else {
+
+
+            }
+
+
+        }
+
+
+    }
+
+
+    @TargetApi(23)
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case 100:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                        && grantResults[1] == PackageManager.PERMISSION_GRANTED
+                        && grantResults[2] == PackageManager.PERMISSION_GRANTED
+                        && grantResults[3] == PackageManager.PERMISSION_GRANTED) {
+
+
+
+
+                } else {
+
+
+                    Toast.makeText(ActividadPrincipalMiTrigesimaQuintaApp.this, "Permiso denegado.", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+                return;
+        }
+    }
+
+
+}
+
+
+El archivo manifiesto. En este deben estar los permisos para la comunicación bluetooth de la app (marcados en amarillo). Es necesario aclarar que se tuvo que agregar el código marcado en azul para que se dejara de presentar problemas en algunos dispositivos móviles con android 12.
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools">
+
+   <application
+       android:allowBackup="true"
+       android:dataExtractionRules="@xml/data_extraction_rules"
+       android:fullBackupContent="@xml/backup_rules"
+       android:icon="@mipmap/ic_launcher"
+       android:label="@string/app_name"
+       android:supportsRtl="true"
+       android:theme="@style/Theme.MiTrigesimaQuintaApp"
+       tools:targetApi="31" >
+
+       <activity android:name=".ActividadPrincipalMiTrigesimaQuintaApp"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="portrait"
+           android:exported="true">
+
+           <intent-filter>
+               <action android:name="android.intent.action.MAIN" />
+               <category android:name="android.intent.category.LAUNCHER" />
+           </intent-filter>
+
+       </activity>
+
+       <!--declarando otra actividad-->
+
+       <!--declarando otra actividad-->
+       <activity android:name=".actividades_secundarias.ActividadComunicacion"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="portrait">
+       </activity>
+
+       <!--declarando otra actividad-->
+
+       <!--declarando otra actividad-->
+       <activity android:name=".actividades_secundarias.ActividadComoClienteBluetooth"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:windowSoftInputMode="adjustResize"
+           android:screenOrientation="portrait">
+       </activity>
+
+       <!--declarando otra actividad-->
+       <activity android:name=".actividades_secundarias.ActividadComoServidorBluetooth"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:windowSoftInputMode="adjustResize"
+           android:screenOrientation="portrait">
+       </activity>
+
+       <!--declarando otra actividad-->
+       <activity android:name=".actividades_secundarias.ActividadEscaneoDispositivos"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:windowSoftInputMode="adjustResize"
+           android:screenOrientation="portrait">
+       </activity>
+
+
+
+       <!--declarando otra actividad-->
+
+   </application>
+
+   <!-- Permiso para muestreo alto de los sensores a partir de Android 12.-->
+   <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"/>
+
+   <!-- Permisos adicionales para usar bluetooth antes de Android 12 ).-->
+   <uses-permission android:name="android.permission.BLUETOOTH"  tools:remove="android:maxSdkVersion" />
+   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+
+   <!-- Permisos adicionales para usar bluetooth a partir de Android 12.-->
+   <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+   <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+   <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+
+</manifest>
+
+
+Compilar y ejecutar en dos dispositivos móviles Android. Se despliegan las siguientes GUI de las Figura 3 (cliente) y Figura 4 (servidor).
+
+
+
+
+
+
+
+
+ Interfaz de usuario gráfica
+
+Descripción generada automáticamente 
+
+
+
+	 Icono
+
+Descripción generada automáticamente 
+
+	
+
+ Interfaz de usuario gráfica, Aplicación
+
+Descripción generada automáticamente 
+
+
+
+	
+
+ Diagrama, Gráfico radial
+
+Descripción generada automáticamente 
+
+	Figura 3
+	
+
+ Diagrama
+
+Descripción generada automáticamente 
+
+          Figura 4
+TAREA
+1. Estudiar detalladamente el código fuente de MiTrigesimaQuintaApp. 
+
+
+2. Elaborar un proyecto denominado MiTrigesimaSextaApp en donde un dispositivo móvil android SERVIDOR le envía vía bluetooth el valor que mide del campo magnético y sus componentes y el valor que mide de la aceleración y sus componentes a otro dispositivo móvil Android CLIENTE. Ambos dispositivos despliegan la información en tacómetros de forma semejante al ejemplo de este módulo.
+
+
+La app debe tener un icono lanzador personal.
+
+
+
+
+
+
+
+
+
+
+
+
+________________
+
+
+REFERENCIAS
+
+
+* Developers. Introducción general  a Bluetooth. https://developer.android.com/guide/topics/connectivity/bluetooth?hl=es-419. Consultada [Agosto de 2022].
+
+
+________________
+
+
+ANEXO I: PROCEDIMIENTO PARA GENERAR LIBRERÍAS .AAR
+Librería comunicaiones.aar
+La librería comunicaciones es de tipo .aar y no .jar debido a que contiene recursos de carpeta res/. En esta librería se encuentran los recuros y las clases necesarias para asumir la tarea de buscar la dirección de dispositivos bluetooth para emparejarlos. El autor omite entregar el código fuente por considerar que para el aprendizaje que es objeto en esta notas carece de relevancia y sólo “enrredaría” inneseariamente el proceso (precisamente esta es una de las ventajas de la programación orientada a objetos: encapsulamiento).
+Para construir una libería para Android se procede comó se indicó en el módulo #9. Sin embargo si la libreía tiene recursos adicionales en la carpeta res/ (imágenes, recursos layout, código adicional.xml, …) para su distribución no se puede hacer en su forma .jar sino como .aar. Para esto ir a a la barra vertical de la derecha y hacer clic en Gradle (ver Figura). Luego en el paquete de la librería hacer doble clic en assembleRelease. La librería queda grabada en el directorio build > outputs > aar.
+
+
+ Interfaz de usuario gráfica, Aplicación
+
+Descripción generada automáticamente 
+
+
+
+
+
+ 
+________________
+[1]La serialización de un objeto consiste en generar una secuencia de bytes lista para su almacenamiento o transmisión.
+[2]  Se puede crear con cualquier editor de texto plano (no con un procesador de palabras como WORD de Microsoft). Son archivos semejantes a los .txt pero con extensión .json. La información depositada allí tiene una estructura definida.
+[3] https://openweathermap.org/
+[4]Si la carpeta libs  no existe crearla.
