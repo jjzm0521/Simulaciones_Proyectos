@@ -278,7 +278,6 @@ public class ActividadComoClienteBluetooth extends Activity implements Runnable 
             }
 
             leer();
-            AlmacenDatosRAM.conexion_bluetooth = "  Recibiendo datos del servidor ...";
             hacerTrabajoDuro();
 
         }
@@ -292,6 +291,7 @@ public class ActividadComoClienteBluetooth extends Activity implements Runnable 
         if (cliente != null) {
             String nuevo_dato_string = cliente.leerString();
             if (nuevo_dato_string != null) {
+                AlmacenDatosRAM.conexion_bluetooth = "RX: " + nuevo_dato_string;
                 convertirStrigJson(nuevo_dato_string);
             }
         }

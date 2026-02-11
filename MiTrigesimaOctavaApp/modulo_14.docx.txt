@@ -1,0 +1,5363 @@
+﻿SIMULACIONES
+IV + IoT + DL 
+Industria 5.0
+Copyright 2026 para:
+Diego L. Aristizábal Ramírez
+Profesor, Facultad de Ciencias, Departamento de Física
+Universidad Nacional de Colombia
+Medellín
+
+
+	IV + BLUETOOTH + ESP32
+EN ANDROID
+
+
+	14
+	
+
+
+
+Temas
+	* INTRODUCCIÓN
+* ESP32
+* ELEMENTOS NECESARIOS PARA HACER LAS PRÁCTICAS
+* MI PRIMER ENCUENTRO CON EL ESP32
+* CONTROLANDO UN LED USANDO EL ESP32
+* CONTROLANDO UN LED RGB USANDO EL ESP32
+* BLUETOOTH CLÁSICO VS BLE
+* APP CON ESP32 BLUETOOTH: ESP32 RECIBIENDO DATOS
+* APP CON ESP32 BLUETOOTH: ESP32 ENVIANDO DATOS
+* APP CON ESP32 BLUETOOTH: ESP32 ENVIANDO Y RECIBIENDO DATOS
+* REFERENCIAS
+	
+
+INTRODUCCIÓN
+En este módulo se diseñarán e implementarán tres apps que comunican vía BLUETOOTH un dispositivo móvil ANDROID con la tarjeta ESP32 a la cual están conectados sensores o leds. El patrón de comunicación a usar es el CLIENTE-SERVIDOR en donde el dispositivo móvil hace el rol de CLIENTE y la tarjeta ESP32 el rol de SERVIDOR.
+En la primera app, el dispositivo móvil Android controla vía bluetooth el color desplegado por un led RGB el cual está conectado a la ESP32.
+En la segunda app el dispositivo móvil Android recibe datos de la ESP32 obtenidos de la medida de la iluminacia que realiza el sensor de iluminancia GY-30 BH1750 que está conectado a ella. Estos datos se despliegan en gauge, tabla y gráfica.
+En la tercera app el dispositivo móvil Android recibe datos de la ESP32 obtenidos de la medida de las distancias de obstáculos que realiza el sensor ultrasónico HC-SR04 que está conectado a ella. Estos datos se despliegan en gauge, tabla y gráfica. Adicionalmente con base a rangos de esta distancia el dispoitivo móvil controla el color de un led RGB conectado a la ESP32.
+El módulo comienza describiendo la ESP32 y familiarizando su uso y la forma de programarla con el IDE arduino.
+ESP32
+El ESP32 es un microcontrolador de bajo costo y consumo de energía, cuenta con tecnología WiFi y BLUETOOTH de modo dual integrada que permite controlar todo tipo de sensores, módulos y actuadores. Es el sucesor del microcontrolador 
+¿Para que sirve el ESP32?
+El ESP32 permite generar proyectos del Internet de las Cosas (IoT, por sus siglas en ingles) de forma eficiente y económica, ya que integra internamente una gran cantidad de periféricos incluyendo: sensores táctiles capacitivos, amplificadores de bajo ruido, interfaz para tarjeta SD, Ethernet, SPI de alta velocidad, UART, I2S e I2C. Tiene un CPU de dos núcleos de hasta 240Mhz que se pueden controlar independientemente.
+Especificaciones y carácterísticas
+* Chip USB-Serial: CP2102
+* Voltaje de Alimentación (USB): 5V DC
+* Voltaje de Entradas/Salidas: 3.3V DC
+* Consumo de energía de 5 μA en modo de suspensión
+* Pines Digitales GPIO: 24  (Algunos pines solo como entrada)
+* Conversor Analógico Digital: Dos ADC de 12bits tipo SAR, soporta mediciones en hasta 18 canales, algunos pines soporta un amplificador con ganancia programable
+* Antena en PCB
+* Tipo: Módulo Wifi + Bluetooth
+* Wifi: 802.11 b/g/n/e/i (802.11n @ 2.4 GHz hasta 150 Mbit/s)
+* Bluetooth: 4.2 BR/EDR BLE Modo de control dual
+* CPU principal: Tensilica Xtensa 32-bit LX6
+* Memoria: 448 KByte ROM, 520 KByte SRAM, 6 KByte SRAM en RTC y QSPI admite múltiples chips flash /SRAM
+* Procesador secundario: Permite hacer operaciones básica en modo de ultra bajo consumo
+* Desempeño: Hasta 600 DMIPS
+* Frecuencia de Reloj: hasta 240Mhz
+* Seguridad: IEEE 802.11, incluyendo WFA, WPA/WPA2 y WAPI
+* Criptografía acelerada por hardware: AES, SHA-2, RSA, criptografía de curva elíptica (ECC), generador de números aleatorios (RNG)
+Pinout ESP-WROOM-32
+La Figura 1 ilustra la distribución de pines de un módulo ESP-WROOM-32 típico. Consiste en 38 pines (14 pines en cada borde largo y 10 en el borde corto inferior)
+ ESP-WROOM-32-Pinout 
+
+Figura 1: Imagen tomada de URL.
+El otro borde corto superior se deja para la antenna PCB. El microcontrolador y otros componentes no son visibles ya que están colocados debajo del shield para WiFi.
+Pinout ESP32
+Una placa de desarrollo ESP32, muy popular en la actualidad, es la versión de 30 pines que se ilustra en la Figura 2. Consiste en un ESP-WROOM-32 como placa base y, además, algunos pines y componentes para interactuar fácilmente con ESP32.
+ Interfaz de usuario gráfica, Gráfico
+
+Descripción generada automáticamente 
+
+
+
+Figura 2:Imagen tomada de URL
+
+Como puede deducirse de la imagen, cada pin tiene más de una funcionalidad posible y mientras usa un pin para una tarea en particular, verificar sus funciones alternativas.
+Otra versión de la placa ESP32 DevKit viene con 36 pines. Esta versión no es tan popular como la versión de 30 pines. Pero si tiene una placa ESP32 de 36 pines, el siguiente pinout, Figura 3, será muy útil.
+  ESP32-36-Pin-Pinout 
+
+
+Figura 3: Imagen tomada de URL.
+
+
+Tener en cuenta que los pines de las versiones de 30 pines y 36 pines de las placas de desarrollo ESP32 son muy idénticos, excepto por algunos pines en la parte inferior. En la versión de 36 pines, se utilizan 6 pines GPIO (GPIO6 a GPIO11) para SPI Flash IC. Por lo tanto, no deben usarse para otros fines. Finalmente, solo obtienes un pin adicional (GPIO0 - Pin 23).
+¿Cómo utilizar el ESP32 DEVKIT V1?
+El ESP32 DEVKITV1 está diseñado especialmente para trabajar con un protoboard y con ayuda de cables dupont se puede conectar de manera rápida todo tipo de sensores.
+El modulo posee un regulador de voltaje que permite ingresar 5 V por el puerto USB, de igual manera se puede alimentar con 3.3 V en los pines de 3.3 V y GND. Hay que tener cuidado ya que si se ingresa el voltaje de 5 V en el pin de 3.3 V del ESP3, se puede dañar.
+Periféricos ESP32
+El microcontrolador ESP32 tiene:
+* 34 GPIOs programables.
+* 18 Canales de 12-bit ADC
+* 2 Canales de 8-bit DAC
+* 16 Canales PWM
+* 3 Interfaces UART
+* 3 Interfaces SPI
+* 2 Interfaces I2C
+* 2 Interfaces I2S
+* 10 GPIOs Capacitive Touch Sensing
+* 16 GPIOs RTC
+
+
+ELEMENTOS NECESARIOS PARA HACER LAS PRÁCTICAS
+Para desarrollar este módulo y el módulo 16 es necesario tener los siguientes elementos:
+* ESP-WROOM-32 con placa base (30 pines). Podría ser otro. (Ver módulo 2)
+* 3 resistencias de 220 Ω
+* 1 protoboard (ver módulo 2)
+* Fuente de alimentación de protoboard 5V-3.3V
+* 1 LED Rojo (u otro color).
+* 1 LED RGB
+* Cables DUPONT  (Hembra-Hembra, Macho-Hembra y Macho-Macho) . Los necesarios (con 10 de cada uno sería suficiente)
+* 1 sensor de temperatura LM35
+* 1 sensor DHT11 -Humedad y Temperatura-
+* 1 sensor módulo GY-30 BH1750 -Iluminancia-
+* 1 sensor módulo HC-SR04 -ultrasonido-
+
+
+MI PRIMER ENCUENTRO CON EL ESP32
+Estableciendo conexión serial con ESP32
+Conectar la placa ESP32 a la PC con el cable USB. Si el controlador del dispositivo no se instala automáticamente, es porque se necesita un controlador específico instalado. Para que, por ejemplo, el computador con Windows 10 vea el ESP32, el controlador CP210x USB a UART Bridge VCP debe descargarse de SiLabs e instalarse:
+* CP210x: Controladores CP210x USB a UART Bridge VCP
+Si Windows reconoce ya el ESP32 deberá mostrarlo en la administración de dispositivos, Figura 4.
+ Interfaz de usuario gráfica, Aplicación
+
+Descripción generada automáticamente 
+
+Figura 4
+Consultar la guía del usuario de la placa para conocer el chip convertidor USB a serie específico utilizado. En circunstancias normales, los controladores deben incluirse con un sistema operativo e instalarse automáticamente al conectar la placa a la PC.
+
+
+
+
+El IDE Arduino
+Para programar un ESP32 desde Arduino hay que agregar las URLs de las placas ESP32 para poder descargar el núcleo (o core) de ESP32 para Arduino.
+Lo primero es ejecutar Arduino IDE y hacer clic en “Archivo>Preferencias”.
+* En el menú Archivo/Preferencias, se añade en la sección “Gestor de URL’s Adicionales de Tarjetas” la dirección, Figura 5:
+https://dl.espressif.com/dl/package_esp32_index.json
+
+
+ Interfaz de usuario gráfica, Texto, Aplicación, Correo electrónico
+
+Descripción generada automáticamente 
+
+Figura 5
+Una vez agregadas las URLs es necesario hacer clic en el botón “OK” de la ventana. Esto devuelve a la ventana de preferencias, donde también se debe hacer clic en el botón “OK”. 
+* En el menú de Herramientas, Placas, Gestor de tarjetas, se añade ESP32 y se obtiene Espressif Systems, Figura 6.
+ Interfaz de usuario gráfica, Texto, Aplicación, Correo electrónico
+
+Descripción generada automáticamente 
+
+Figura 6
+* Con esto se habilita la opción se seleccionar como placa un ESP32, por ejemplo: “ESP32 Dev Module”
+ Interfaz de usuario gráfica, Tabla
+
+Descripción generada automáticamente 
+
+Figura 7
+¡Listo, a trabajar!.
+Hola Mundo
+* Abrir en el IDE Arduino un proyecto nuevo y agregar el sigiente código. Guardar el archivo con el nombre hola_esp32_arduino.ino por si se quiere ejecutar en otra ocasión.
+
+
+
+
+/*
+ * Este método se encarga de la
+ * configuración. Inicializa
+ * y se ejecuta una sola vez
+ */
+void setup() {
+
+
+  /*
+   * Empezar la comunicación serial.
+   */
+  Serial.begin(115200); 
+
+
+}
+
+
+/*
+ * Este método contiene las instrucciones
+ * que se repetirán continuamente: lecturas
+ * de entrada, activación de salidas,...
+ */
+
+
+void loop() {
+
+
+  /*
+   * Imprime la cadena y hace salto de línea
+   */
+  Serial.println("Hola ESP32 desde IDE Arduino");   
+  //Espera 1 segundo para repetir el ciclo                    
+  delay(1000);
+
+
+}
+	
+
+* Compilar el programa haciendo clic en el botón señalado en la Figura 8. Si todo va bien se despliega el mensaje Compilado, Figura 9.
+* Conectar la ESP32 en la USB del computador. Subir el programa al ESP32 haciendo clic en el botón señalado en la Figura 10 A (si no reconoce la tarjeta observar si se seleccionó bien el puerto, Figura 10 B).
+
+
+ Interfaz de usuario gráfica, Texto, Aplicación, Correo electrónico
+
+Descripción generada automáticamente 
+
+Figura 8
+  
+
+Figura 9
+ Interfaz de usuario gráfica, Texto, Aplicación
+
+Descripción generada automáticamente 
+
+Figura 10 A
+ Interfaz de usuario gráfica, Aplicación
+
+Descripción generada automáticamente 
+
+Figura 10 B
+Haciendo clic en la lupa derecha, Figura 11, se despliega el monitor serial con la información de la Figura 12. Para evitar errores debe estar el monitor serial a la misma rapidez de comunicación, en este caso, 115 200.
+ Imagen que contiene objeto, reloj
+
+Descripción generada automáticamente 
+
+Figura 11
+ Interfaz de usuario gráfica, Texto, Aplicación, Correo electrónico
+
+Descripción generada automáticamente 
+
+Figura 12
+Mi segundo programa en el ESP32 con IDE Arduino
+* Abrir en el IDE Arduino un proyecto nuevo y agregar el sigiente código. Guardar el archivo con el nombre led_blink_esp32_arduino.ino por si se quiere ejecutar en otra ocasión.
+
+
+
+
+//LED BLINK de ESP32 está conectado al GPIO 2
+int LED_BLINK = 2; 
+
+
+void setup() {
+
+
+   pinMode(LED_BLINK, OUTPUT);
+
+
+}
+
+
+void loop() {
+  
+digitalWrite(LED_BLINK, LOW);
+  delay(1000);  
+
+
+  digitalWrite(LED_BLINK, HIGH);
+  delay(2000);  
+}
+
+
+	
+
+* Compilar el programa.
+* Conectar la ESP32 en la USB del computador. Subir el programa a la ESP32. Se observará el LED azul del ESP32 parpadeando (apagándose cada 2 s). 
+¡Estamos listos!
+CONTROLANDO UN LED USANDO EL ESP32
+* Hacer el montaje de la Figura 13. Los elementos usados son:
+* Microcontrolador ESP32
+* 1 Resistencia de 330 Ω (el autor de estas notas usó una de 220 Ω)
+* LED
+* Fuente de alimentación de protoboard 5V-3.3V, Figura 14.
+* Protoboard.
+* Cables dupont (el número necesario). 
+
+
+ ESP32 PWM with MicroPython circuit to fade Dim LED 
+
+Figura 13: Imagen obtenida del URL
+
+
+  
+
+Figura 14
+* Abrir en el IDE Arduino un proyecto nuevo y agregar el sigiente código. Guardar el archivo con el nombre led_esp32_arduino.ino por si se quiere ejecutar en otra ocasión.
+
+
+int LED_aparpadear = 5;                
+                                        
+ 
+void setup() {                  
+
+
+  pinMode(LED_aparpadear, OUTPUT);     
+}
+
+
+void loop() {                           
+  digitalWrite(LED_aparpadear, HIGH);   
+  delay(1000);                          
+  digitalWrite(LED_aparpadear, LOW);    
+  delay(2000);                          
+}
+
+
+	
+
+* Compilar el programa.
+* Conectar la ESP32 en la USB del computador. Subir el programa a la ESP32. Se observará el LED parpadear. 
+Ejecutando el programa sin estar conectado vía USB al PC
+* Desconectar la ESP32 y alimentarla con la fuente externa de protoboard a 5V. El pin VIN de la ESP32 al (+) de la protoboard  y el pin GND de la ESP32 al (-) de la protoboard (tener cuidado de NO conectarla al pin de 3V ya que al almimentarla con 5V dañará la ESP32). Prender la fuente de alimentación y se observará la ejecución de la tarea (del programa) automáticamente, Figura 15.
+ Imagen que contiene tabla, hombre, computadora, sostener
+
+Descripción generada automáticamente 
+
+Figura 15
+CONTROLANDO UN LED RGB USANDO EL ESP32
+* Hacer el montaje sugerido en la Figura 16. Los elementos usados son:
+* Microcontrolador ESP32
+* 3 resistencia de 330 Ω (el autor de estas notas usó tres de 220 Ω)
+* 1 LED RGB  (se usó tipo cátodo común: pata larga GND)
+* Fuente de alimentación de protoboard 5V-3.3V Protoboard.
+* Cables dupont (el número necesario). 
+
+
+ Imagen que contiene electrónica, circuito
+
+Descripción generada automáticamente 
+
+Figura 16
+
+
+* Abrir en el IDE Arduino un proyecto nuevo y agregar el sigiente código. Guardar el archivo con el nombre led_rgb_dinamico_arduino_esp32.ino por si se quiere ejecutar en otra ocasión.
+
+
+
+
+
+
+
+
+
+
+//pines de las componentes del LED
+int red = 23;
+int green = 22;
+int blue = 21;
+ 
+void setup()
+{
+// iniciilaizar los pines de salida.
+pinMode(red, OUTPUT);
+pinMode(green, OUTPUT);
+pinMode(blue, OUTPUT);
+digitalWrite(red, HIGH);
+digitalWrite(green, HIGH);
+digitalWrite(blue, HIGH);
+}
+ 
+void loop() {
+digitalWrite(red, LOW);//apaga componente red 
+delay(1000); // espera 1 s
+digitalWrite(red, HIGH);//prende componente red 
+delay(1000);
+digitalWrite(green, LOW); 
+delay(1000); 
+digitalWrite(green, HIGH); 
+delay(1000); 
+digitalWrite(blue, LOW); 
+delay(1000); 
+digitalWrite(blue, HIGH); 
+delay(1000); 
+}
+	
+
+* Compilar el programa.
+* Conectar la ESP32 en la USB del computador. Subir el programa al ESP32. Se observará el LED RGB cambiando de color. 
+* Desconectar el ESP32 de el PC y alimentarlo con la fuente externa alimentadora de la protoboard funcinando a 5V (tener cuidado de no conectarla al pin de 3V ya que al almimentarla con 5V dañará la ESP32). 
+* Prender la  fuente externa y observar la ejecución automática del programa, Figura 17.
+
+
+ Mano sosteniendo un celular en la mano
+
+Descripción generada automáticamente 
+
+	  
+
+	
+
+Figura 17
+BLUETOOTH CLÁSICO VS BLE
+El Bluetooth clásico se diseñó como un reemplazo de la comunicación por cable con comunicación inalámbrica de corto alcance. Fue diseñado teniendo en cuenta la velocidad de los datos y las aplicaciones incluyen transferencias de archivos grandes, audio inalámbrico, etc.
+El BLE, Bluetooth de baja energía (BLE, por sus siglas en inglés), por otro lado, está optimizado para un bajo consumo de energía en lugar de velocidades de datos más altas y está diseñado teniendo en cuenta el IoT y las aplicaciones que funcionan con baterías. Algunas de las aplicaciones populares de BLE son relojes inteligentes, rastreadores de actividad física, dispositivos de control de la salud, balizas de radio, etc.  BLE es adecuado para conectar dos dispositivos cercanos y para transmitir poco volumen de datos, de manera no continua. Para transmitir de manera continua es más adecuado el bluetooth tradicional. La ventaja del BLE es que tiene un consumo mucho más bajo, por lo que lo hace especialmente útil en dispositivos IoT. Solo como orientación, en pico de gasto un BLE consume un 50%  y en reposo un 1%, respecto al consumo del bluetooth tradicional. 
+A diferencia del Bluetooth clásico, que siempre está conectado, el BLE suele estar en modo de espera (inactivo) y se activa solo si es necesario. De ahí el consumo de energía ultrabajo y explica el porqué la duración de una batería puede extenderse de unos pocos días (tradicional) a años (BLE).
+BLE también funciona en la misma banda de frecuencia ISM de 2,4 GHz. Lo que esto significa es que se puede usar una sola antena para Wi-Fi y ambas versiones de Bluetooth.
+Las apps desarrolladas en este módulo usan el bluetooth clásico. El ESP32 soporta los dos bluetooth.
+APP CON ESP32 BLUETOOTH: ESP32 RECIBIENDO DATOS
+En este primer ejemplo, se tiene un led RGB acoplado a la ESP32, tal como se hizo en el ejemplo de la Figura 16. Mediante un dispositivo móvil Android se controla vía bluetooth el color de la luz emitida por el led RGB. Aquí el dispositivo móvil Android hace de CLIENTE y la ESP32 hace de SERVIDOR.
+
+
+La app
+Crear un proyecto denominado MiTrigesimaSeptimaApp con la jerarquía de paquetes y clases de la Figura 18.
+En este proyecto se usa la librería comunicaciones.aar de propiedad del autor de estas notas. Esto facilita el escaneo de busqueda de dispositivos para ser emparejados vía el protocolo bluetooth. Proceder como se hizo en el módulo anterior a incorporar esta librería al proyecto.
+
+
+ Interfaz de usuario gráfica, Aplicación
+
+Descripción generada automáticamente 
+
+Figura 18
+Las siguientes imágenes se deben incorporar al proyecto, Figura 19.
+
+
+ Imagen que contiene Diagrama
+
+Descripción generada automáticamente 
+
+Figura 19
+Los códigos de las clases son los siguientes.
+La clase ClienteBluetooth.
+public class ClienteBluetooth {
+
+   //socket del cliente
+   public BluetoothAdapter adaptadorBluetooth;
+   public BluetoothDevice dispositivo;
+   public BluetoothSocket clienteSocket;
+
+   private BufferedInputStream flujoEntrada;
+   private BufferedOutputStream flujoSalida;
+
+   private JSONObject obj;
+   private String dato;
+   private String datoString;
+
+
+   /*
+    Como estamos creando una conexión SPP (como si fuese un puerto serie virtual)
+    a través del protocolo RFCOMM, debemos obtener el socket que conecta con el
+    servicio 00001101-0000-1000-8000-00805F9B34FB, que es el identificador único
+    de servicio para SPP en el estandar Bluetooth.
+    */
+
+   public static final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+   /**
+    * Constructor
+    * direccion es el MAC del dispositivo
+    */
+
+   public ClienteBluetooth() {
+
+   }
+
+
+   // 1. Abrir un socket (Socket) para conectarse y comunicarse con el Servidor
+
+   public void abrirSocketCliente(String direccion) {
+
+       adaptadorBluetooth = BluetoothAdapter.getDefaultAdapter();
+       dispositivo = adaptadorBluetooth.getRemoteDevice(direccion);
+
+
+       // Obtenemos un socket cliente para el dispositivo con el que se quiere conectar
+       try {
+
+           clienteSocket = dispositivo.createRfcommSocketToServiceRecord(uuid);
+
+       } catch (IOException e) {
+
+       }
+
+
+   }
+
+   //2. Establecer conexión con el Servidor
+
+   public void conectarSocketCliente() {
+
+       try {
+
+           clienteSocket.connect();
+
+           AlmacenDatosRAM.conexion_bluetooth= "  Conectado con " + clienteSocket.getRemoteDevice().getName().toString();
+
+
+       } catch (IOException e) {
+           AlmacenDatosRAM.conexion_bluetooth="  No se pudo conectar...";
+           e.printStackTrace();
+
+       }
+
+
+   }
+
+
+   //3. Asociar uno o más flujos intermedios a el flujo de entrada (InputStream) asignado al socket
+
+   public void abrirFlujoEntrada() {
+
+       if (clienteSocket != null) {
+
+           try {
+
+               flujoEntrada = new BufferedInputStream(clienteSocket.getInputStream());
+
+           } catch (IOException e) {
+               e.printStackTrace();
+
+           }
+
+
+       }
+
+   }
+
+
+   //3. Asociar uno o más flujos intermedios al flujo de salida (OutpuStream) asignado al socket
+   public void abrirFlujoSalida() {
+
+       if (clienteSocket != null) {
+           try {
+
+               flujoSalida = new BufferedOutputStream(clienteSocket.getOutputStream());
+
+           } catch (IOException e) {
+               e.printStackTrace();
+
+           }
+
+       }
+
+   }
+
+
+   // 4. Leer/Escribir a los flujos de acuerdo al protocolo establecido
+
+   /**
+    * Lee los datos que le fueron enviados  como flujo de bytes.
+    *
+    * @return
+    */
+
+   public String leerString(){
+
+       int dato;
+
+       byte[] buffer = new byte[8*1024];//1024*8];
+
+       try {
+
+           if (flujoEntrada!=null){
+
+               dato = flujoEntrada.read(buffer);
+
+
+               datoString= new String(buffer, 0, dato);
+
+           }
+       } catch (IOException e) {
+           Log.d(TAG, "falla");//bien aqui
+           e.printStackTrace();
+       }
+
+
+       return  datoString;
+
+   }
+
+
+   /**
+    * Envía los datos en flujo de bytes
+    */
+   public void escribirBytes(byte[] datoByteParaEnviar) {
+
+       byte[] buffer = new byte[1024];
+
+       if (datoByteParaEnviar != null)
+           buffer = datoByteParaEnviar;
+
+
+       if (flujoSalida != null) {
+           try {
+
+               flujoSalida.write(buffer);
+               flujoSalida.flush();
+
+           } catch (IOException e) {
+           }
+
+       }
+
+   }
+
+
+   //  6. Cerrar flujos y sockets
+
+   /**
+    * Cierra el socket cliente
+    */
+   public void cerrarSocketCliente() {
+
+       if (clienteSocket != null) {
+           try {
+
+               clienteSocket.close();
+
+           } catch (IOException e) {
+               e.printStackTrace();
+           }
+       }
+
+   }
+
+
+   public void cerrarFlujoEntrada() {
+
+       if (flujoEntrada != null) {
+
+           try {
+
+               flujoEntrada.close();
+
+           } catch (IOException e) {
+               e.printStackTrace();
+           }
+
+       }
+
+   }
+
+
+   public void cerrarFlujoSalida() {
+
+       if (flujoSalida != null) {
+           try {
+
+               flujoSalida.flush();
+               flujoSalida.close();
+
+           } catch (IOException e) {
+               e.printStackTrace();
+           }
+
+       }
+
+   }
+
+}
+
+
+La clase ActividadComoClienteBluetooth.
+public class ActividadComoClienteBluetooth extends Activity implements Runnable {
+
+   //Objetos GUI necesarios
+   private TextView text_rojo, text_verde, text_azul;
+   private TextView text_aviso;
+   private Button botonConectar, botonBuscar;
+   private int COLOR_1 = Color.rgb(220, 156, 80);
+   private SeekBar seek_bar_rojo, seek_bar_verde, seek_bar_azul;
+   private TableroColor tablero;
+   //valores de las variables
+   private int rojo, verde, azul;
+   //variable tamaño de las letras basado en resolución de pantalla
+   private int tamanoLetraResolucionIncluida;
+   //hilo para actualizar tabla
+   private final Handler myHandler = new Handler();
+   private long periodo_muestreo = 100;//pausas de 100 ms
+
+
+   private ClienteBluetooth cliente;
+   /*
+   hilo resposable de estar pendiente
+   del intercambio de datos con el servidor
+   */
+   private Thread hilo;
+   private boolean corriendo;
+
+   //para formato de datos a aneviar en JSON
+   private JSONObject obj;
+
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       gestionarResolucion();
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       //para informar cómo se debe pegar el adminitrador de
+       //diseño obtenido con el método GUI
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+       //para administrar los eventos
+       eventos();
+
+
+   }//fin onCreate
+
+
+   private void gestionarResolucion() {
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       tamanoLetraResolucionIncluida = (int)(0.8* AlmacenDatosRAM.tamanoLetraResolucionIncluida);
+
+   }
+
+
+   /*método responsable de la creación de los elementos de la GUI*/
+   private void crearElementosGUI() {
+
+       botonBuscar = new Button(this);
+       botonBuscar.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonBuscar.setText("BUSCAR");
+       botonBuscar.getBackground().setColorFilter(Color.rgb(183, 216, 199), PorterDuff.Mode.MULTIPLY);
+
+       botonConectar = new Button(this);
+       botonConectar.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonConectar.setText("CONECTAR");
+       botonConectar.getBackground().setColorFilter(Color.rgb(183, 216, 199), PorterDuff.Mode.MULTIPLY);
+
+       text_rojo = new TextView(this);
+       text_rojo.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       text_rojo.setGravity(Gravity.CENTER);
+       text_rojo.setBackgroundColor(Color.BLACK);
+       String marca_frecancia_x = "ROJO\n 0 A 255";//con salto de línea
+       text_rojo.setText(marca_frecancia_x);
+
+       text_verde = new TextView(this);
+       text_verde.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       text_verde.setGravity(Gravity.CENTER);
+       text_verde.setBackgroundColor(Color.BLACK);
+       String marca_frecuencia_y = "VERDE\n 0 A 255";//con salto de línea
+       text_verde.setText(marca_frecuencia_y);
+
+       text_azul = new TextView(this);
+       text_azul.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       text_azul.setGravity(Gravity.CENTER);
+       text_azul.setBackgroundColor(Color.BLACK);
+       String marca_angulo = "AZUL\n 0 A 255";//con salto de línea
+       text_azul.setText(marca_angulo);
+
+       seek_bar_rojo = new SeekBar(this);
+       seek_bar_rojo.setMax(255);
+       seek_bar_rojo.setScaleY(0.2f);
+       seek_bar_rojo.setProgress(100);
+       rojo = seek_bar_rojo.getProgress();
+
+       seek_bar_verde = new SeekBar(this);
+       seek_bar_verde.setMax(255);
+       seek_bar_verde.setScaleY(0.2f);
+       seek_bar_verde.setProgress(200);
+       verde = seek_bar_verde.getProgress();
+
+       seek_bar_azul = new SeekBar(this);
+       seek_bar_azul.setMax(255);
+       seek_bar_azul.setScaleY(0.2f);
+       seek_bar_azul.setProgress(60);
+       azul = seek_bar_azul.getProgress();
+       botonConectar.setEnabled(false);
+
+
+       text_aviso = new TextView(this);
+       text_aviso.setGravity(Gravity.FILL_VERTICAL);
+       text_aviso.setBackgroundColor(Color.rgb(183,216,199));
+       text_aviso.setTextSize(tamanoLetraResolucionIncluida);
+       text_aviso.setText(" Buscar dispositivo fuente de sensores para emparejar...");
+       text_aviso.setTextColor(Color.BLACK);
+
+       tablero = new TableroColor(this);
+
+   }//fin crearElemnetosGUI
+
+
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+       LinearLayout linearPrincipal = new LinearLayout(this);
+       linearPrincipal.setOrientation(LinearLayout.VERTICAL);
+       linearPrincipal.setBackgroundColor(Color.YELLOW);
+       linearPrincipal.setWeightSum(10.0f);
+
+       //el linear principal arriba
+       LinearLayout linearPrincipalArriba = new LinearLayout(this);
+       linearPrincipalArriba.setOrientation(LinearLayout.HORIZONTAL);
+       linearPrincipalArriba.setBackgroundColor(Color.YELLOW);
+
+       //el linear principal abajo
+       LinearLayout linearPrincipalAbajo = new LinearLayout(this);
+       linearPrincipalAbajo.setOrientation(LinearLayout.HORIZONTAL);
+       linearPrincipalAbajo.setBackgroundColor(Color.rgb(183,216,199));
+       linearPrincipalAbajo.setWeightSum(2.0f);
+
+
+       //linear secundario izquierda
+       LinearLayout linear_izquierda = new LinearLayout(this);
+       linear_izquierda.setBackgroundColor(Color.WHITE);
+       linear_izquierda.setWeightSum(1.0f);
+
+       //linear secundario derecha
+       LinearLayout linear_derecha = new LinearLayout(this);
+       linear_derecha.setBackgroundColor(Color.YELLOW);
+       linear_derecha.setOrientation(LinearLayout.VERTICAL);
+       linear_derecha.setWeightSum(6.0f);
+
+       //pegar estos secundarios al princial
+       LinearLayout.LayoutParams parametros_pegado_izquierdo = new LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+       //ocupará el 80% de linear_principal
+       parametros_pegado_izquierdo.weight = 8.0f;
+       parametros_pegado_izquierdo.setMargins(5, 5, 5, 5);
+       linearPrincipalArriba.addView(linear_izquierda, parametros_pegado_izquierdo);
+
+       //pegar estos secundarios al princial
+       LinearLayout.LayoutParams parametros_pegado_derecho = new LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+       //ocupará el 20% de linear_principal
+       parametros_pegado_derecho.weight = 2.0f;
+       parametros_pegado_derecho.setMargins(5, 5, 5, 5);
+       linearPrincipalArriba.addView(linear_derecha, parametros_pegado_derecho);
+
+       //linear secundario derecha
+       LinearLayout linear_1 = new LinearLayout(this);
+       linear_1.setBackgroundColor(Color.BLUE);
+       linear_1.setOrientation(LinearLayout.VERTICAL);
+       linear_1.setWeightSum(1.0f);
+
+       //linear secundario derecha
+       LinearLayout linear_2 = new LinearLayout(this);
+       linear_2.setBackgroundColor(Color.YELLOW);
+       linear_2.setOrientation(LinearLayout.VERTICAL);
+       linear_2.setWeightSum(1.0f);
+
+       //linear secundario derecha
+       LinearLayout linear_3 = new LinearLayout(this);
+       linear_3.setBackgroundColor(Color.YELLOW);
+       linear_3.setOrientation(LinearLayout.VERTICAL);
+       linear_3.setWeightSum(1.0f);
+
+       //linear secundario derecha
+       LinearLayout linear_4 = new LinearLayout(this);
+       linear_4.setBackgroundColor(Color.YELLOW);
+       linear_4.setOrientation(LinearLayout.VERTICAL);
+       linear_4.setWeightSum(1.0f);
+
+       //linear secundario derecha
+       LinearLayout linear_5 = new LinearLayout(this);
+       linear_5.setBackgroundColor(Color.YELLOW);
+       linear_5.setOrientation(LinearLayout.VERTICAL);
+       linear_5.setWeightSum(1.0f);
+
+       //linear secundario derecha
+       LinearLayout linear_6 = new LinearLayout(this);
+       linear_6.setBackgroundColor(Color.YELLOW);
+       linear_6.setOrientation(LinearLayout.VERTICAL);
+       linear_6.setWeightSum(1.0f);
+
+       LinearLayout.LayoutParams parametros_pegado_linears = new LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_pegado_linears.weight = 1.0f;
+       parametros_pegado_linears.setMargins(5, 5, 5, 5);
+
+       linear_derecha.addView(linear_1, parametros_pegado_linears);
+       linear_derecha.addView(linear_2, parametros_pegado_linears);
+       linear_derecha.addView(linear_3, parametros_pegado_linears);
+       linear_derecha.addView(linear_4, parametros_pegado_linears);
+       linear_derecha.addView(linear_5, parametros_pegado_linears);
+       linear_derecha.addView(linear_6, parametros_pegado_linears);
+
+       LinearLayout.LayoutParams parametros_pegado_componentes_text = new LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_pegado_componentes_text.weight = 1.0f;
+       parametros_pegado_componentes_text.setMargins(5, 5, 5, 5);
+
+       int indent_y = (int) (0.4f * linear_1.getHeight());
+       LinearLayout.LayoutParams parametros_pegado_componentes_seek = new LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_pegado_componentes_seek.weight = 1.0f;
+       parametros_pegado_componentes_seek.setMargins(5, (int) indent_y, 5, (int) indent_y);
+
+       linear_1.addView(text_rojo, parametros_pegado_componentes_text);
+       linear_2.addView(seek_bar_rojo, parametros_pegado_componentes_seek);
+
+       linear_3.addView(text_verde, parametros_pegado_componentes_text);
+       linear_4.addView(seek_bar_verde, parametros_pegado_componentes_seek);
+
+       linear_5.addView(text_azul, parametros_pegado_componentes_text);
+       linear_6.addView(seek_bar_azul, parametros_pegado_componentes_seek);
+
+       //pegar la pizarra al linear izquierdo
+       linear_izquierda.setOrientation(LinearLayout.VERTICAL);
+       linear_izquierda.addView(tablero, parametros_pegado_componentes_text);//pegado igual al text
+
+
+       //pegar liear arriba y abajo
+       LinearLayout.LayoutParams parametrosPegadoBotonesAbajo = new LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+       parametrosPegadoBotonesAbajo.weight = 1.0f;
+       linearPrincipalAbajo.addView(botonBuscar, parametrosPegadoBotonesAbajo);
+       linearPrincipalAbajo.addView(botonConectar, parametrosPegadoBotonesAbajo);
+
+       //linear intermedio que da el estado de la conexxión bluetooth
+       LinearLayout linearPrincipalIntermedia = new LinearLayout(this);
+       LinearLayout.LayoutParams parametrosPegadoTextView = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametrosPegadoTextView.weight = 1.0f;
+       linearPrincipalIntermedia.addView(text_aviso, parametrosPegadoTextView);
+
+       //pegar linear arriba, intermedia y abajo
+       LinearLayout.LayoutParams parametrosPegadoArriba = new LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosPegadoArriba.weight = 8.6f;
+
+       LinearLayout.LayoutParams parametrosPegadoIntermedia = new LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosPegadoIntermedia.weight = 0.4f;
+
+       LinearLayout.LayoutParams parametrosPegadoAbajo = new LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosPegadoAbajo.weight = 1.0f;
+
+       linearPrincipal.addView(linearPrincipalArriba, parametrosPegadoArriba);
+       linearPrincipal.addView(linearPrincipalIntermedia, parametrosPegadoIntermedia);
+       linearPrincipal.addView(linearPrincipalAbajo, parametrosPegadoAbajo);
+
+       return linearPrincipal;
+
+   }//fin gui
+
+
+   private void eventos() {
+
+       //eventos botones
+       botonBuscar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+               lanzarBuscandoDispositivos();
+               AlmacenDatosRAM.estado_conexion_bluetooth=1;
+               botonConectar.setEnabled(true);
+               botonBuscar.setEnabled(false);
+
+           }
+       });
+
+
+       botonConectar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               if (botonConectar.getText() == "CONECTAR") {
+                   botonConectar.setText("EMPEZAR");
+                   botonBuscar.setEnabled(false);
+                   crearCliente();
+                   AlmacenDatosRAM.estado_conexion_bluetooth=2;
+                   hacerTrabajoDuro();
+
+               } else {
+                   botonConectar.setEnabled(false);
+                   cliente.conectarSocketCliente();
+                   empezarHilo();
+
+               }
+
+
+           }
+       });
+
+
+
+       //eventos seekbar
+       seek_bar_rojo.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+           int progressChanged = 0;
+
+           public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+               progressChanged = progress;
+               rojo = progressChanged;
+               tablero.setColoRojo(rojo);
+
+           }
+
+           public void onStartTrackingTouch(SeekBar seekBar) {
+               // TODO Auto-generated method stub
+           }
+
+           public void onStopTrackingTouch(SeekBar seekBar) {
+
+           }
+
+       });
+
+
+       seek_bar_verde.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+           int progressChanged = 0;
+
+           public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+               progressChanged = progress;
+               verde = progressChanged;
+               tablero.setColoVerde(verde);
+
+           }
+
+           public void onStartTrackingTouch(SeekBar seekBar) {
+               // TODO Auto-generated method stub
+
+           }
+
+           public void onStopTrackingTouch(SeekBar seekBar) {
+
+           }
+
+       });
+
+
+       seek_bar_azul.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+           int progressChanged = 0;
+
+           public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+               progressChanged = progress;
+               azul = (progressChanged);
+               tablero.setColoAzul(azul);
+
+           }
+
+           public void onStartTrackingTouch(SeekBar seekBar) {
+               // TODO Auto-generated method stub
+           }
+
+           public void onStopTrackingTouch(SeekBar seekBar) {
+
+           }
+
+       });
+
+
+
+
+   }//fin eventos
+
+
+   private void lanzarBuscandoDispositivos() {
+
+       Intent intent = new Intent(this, ActividadEscaneoDispositivos.class);
+       startActivity(intent);
+
+   }
+
+
+   public void empezarHilo() {
+
+       hilo = new Thread(this);
+       hilo.start();
+
+   }
+
+
+
+   private void crearCliente() {
+
+       //dirección del dispositivo elegido para emparejar
+       String direccion = AlmacenDatosRAM.direccion;
+       cliente = new ClienteBluetooth();
+
+       /*
+        el cliente instancia un dispositivo Bluetooth
+        (BluetoohDevice) a partir de la dirección
+        de este.Luego abre un socket de tipo  BuletoothSocket
+        a partir del dispositivo enlazado.
+        */
+       cliente.abrirSocketCliente(direccion);
+       empezarComunicacionConServidor();
+
+   }
+
+   private void empezarComunicacionConServidor() {
+
+      /*
+      Aceptada la conexión abre los flujos de entrada
+      y salida de este socket por donde fluirán (tubería)
+        los datos desde y hacia el servidor
+      */
+
+       cliente.abrirFlujoEntrada();
+       cliente.abrirFlujoSalida();
+
+   }
+
+   private void terminarComunicacionConServidor() {
+
+       cliente.cerrarFlujoEntrada();
+       cliente.cerrarFlujoSalida();
+       cliente.cerrarSocketCliente();
+
+   }
+
+
+
+
+   @Override
+   public void run() {
+       corriendo = true;
+       while (corriendo) {
+
+
+           try {
+               Thread.sleep(periodo_muestreo);
+
+           } catch (InterruptedException e) {
+               e.printStackTrace();
+           }
+
+
+           escribir();
+           hacerTrabajoDuro();
+
+       }
+
+   }
+
+
+
+   protected void onResume(){
+       super.onResume();
+
+       if (AlmacenDatosRAM.estado_conexion_bluetooth==1) {
+
+           if (AlmacenDatosRAM.direccion == "NO CONECTADO") {
+
+               AlmacenDatosRAM.conexion_bluetooth = "  Buscar dispositivo fuente de sensores para emparejar...";
+
+           } else {
+
+               AlmacenDatosRAM.conexion_bluetooth = "  Emparejado con " + AlmacenDatosRAM.direccion;
+
+           }
+
+           hacerTrabajoDuro();
+
+
+       }
+
+   }
+
+   protected void onPause() {
+       super.onPause();
+
+   }
+
+
+
+   public boolean onKeyDown(int keyCode, KeyEvent event) {
+       if (keyCode == KeyEvent.KEYCODE_BACK) {
+           finish();
+           return true;
+       }
+       return super.onKeyDown(keyCode, event);
+   }
+
+
+
+
+   //lo cambie por este
+   private void escribir(){
+
+       //escribir (enviar) datos al cliente
+       String dato = getStringJSON();
+       byte[] dato_en_byte = dato.getBytes();
+       if (dato_en_byte != null) {
+           cliente.escribirBytes(dato_en_byte);
+
+       }
+   }
+
+   private String getStringJSON(){
+
+       JSONObject obj = new JSONObject();
+
+       try {
+
+           obj.put("r", new Integer(rojo));
+           obj.put("g", new Integer(verde));
+           obj.put("b", new Integer(azul));
+
+       } catch (JSONException e) {
+           // TODO Auto-generated catch block
+           e.printStackTrace();
+       }
+
+       //convertir a String
+       return obj.toString();
+
+   }
+
+
+   protected void onDestroy() {
+       super.onDestroy();
+       if (hilo != null) {
+           detener();
+           hilo = null;
+       }
+
+       if (cliente != null) {
+           terminarComunicacionConServidor();
+       }
+
+   }
+
+   public void detener() {
+       corriendo = false;
+       hilo=null;
+
+   }
+
+
+
+   /*
+ Para el asunto de la table es mejor usar un
+ hilo manejador para que no se reviente la aplicación
+*/
+   public void hacerTrabajoDuro() {
+       //.... realizar el trabajo duro
+
+       //Actualiza la UI usando el handler y el runnable
+       myHandler.post(updateRunnable);
+
+   }
+
+   final Runnable updateRunnable = new Runnable() {
+       public void run() {
+
+           actualizarAviso();
+
+
+       }
+   };
+
+
+   private void actualizarAviso(){
+
+       if(AlmacenDatosRAM.estado_conexion_bluetooth==1) {
+           String aviso = AlmacenDatosRAM.conexion_bluetooth;
+           text_aviso.setText(aviso);
+       }
+
+       if(AlmacenDatosRAM.estado_conexion_bluetooth==2) {
+           String aviso = AlmacenDatosRAM.conexion_bluetooth;
+           text_aviso.setText(aviso);
+       }
+
+       if(AlmacenDatosRAM.estado_conexion_bluetooth==3) {
+           String aviso = AlmacenDatosRAM.conexion_bluetooth;
+           text_aviso.setText(aviso);
+       }
+
+   }
+
+
+
+
+}
+
+
+La clase ActividadEscaneoDispositivos.
+public class ActividadEscaneoDispositivos extends Activity {
+
+
+   ScannerBluetooth scanear;
+   //@Override
+   protected void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       scanear=new ScannerBluetooth(this);
+       scanear.descubriendoDispositivos();
+
+   }
+
+   @Override
+   public void onPause() {
+       super.onPause();
+       AlmacenDatosRAM.direccion= scanear.direccion;
+       AlmacenDatosRAM.conexion_bluetooth= scanear.direccion;
+   }
+
+
+}
+ 
+La clase AlmacenDatosRAM.
+public class AlmacenDatosRAM {
+
+   public static int ancho, alto, dimensionReferencia, tamanoLetraResolucionIncluida;
+
+   public static String conexion_bluetooth;
+
+   public static int estado_conexion_bluetooth=1;
+
+   public static String direccion;
+}
+
+
+La clase Boton.
+public class Boton extends ImageView {
+
+   private Bitmap imagen;
+   Bitmap imagen_escalada = null;
+   private float tamamano_letra;
+   private String cadena = "";
+
+
+   public Boton(Context context) {
+
+       super(context);
+
+
+   }
+
+
+   public void setText(String cadena) {
+
+       this.cadena = cadena;
+
+
+   }
+
+
+   public String getText() {
+
+       this.cadena = cadena;
+
+       return cadena;
+
+
+   }
+
+
+   public void setImagen(int imagen_importada) {
+
+
+       imagen = BitmapFactory.decodeResource(getResources(), imagen_importada);
+
+
+   }
+
+
+   protected void onDraw(Canvas canvas) {
+
+
+       Paint pincel = new Paint();
+       pincel.setAntiAlias(true);
+       pincel.setLinearText(true);
+
+       float ancho=getWidth();
+       float alto=getHeight();
+       float escala=1;
+       if(ancho>alto){
+           escala=alto;
+       } else {escala=ancho;}
+
+       if (imagen != null) {
+
+           imagen_escalada = escalarImagen(imagen, (int) (0.9f * escala), (int) (0.9f * escala));
+
+       }
+
+       int ex = (getWidth() - imagen_escalada.getWidth()) / 2;
+       int ey = (getHeight() - imagen_escalada.getHeight()) / 2;
+
+       tamamano_letra = 0.08f * getWidth();
+
+       if (imagen != null) {
+           canvas.drawBitmap(imagen_escalada, ex, ey, null);//dimension,dimension, null);
+       }
+
+
+       pincel.setTextSize(tamamano_letra);
+       float anchoCadenaUnidades = pincel.measureText(cadena);
+       float posicion_x_letra = (getWidth() - anchoCadenaUnidades) / 2;
+       float posicion_y_letra = ey + imagen_escalada.getHeight() + tamamano_letra;
+
+       pincel.setColor(Color.BLACK);
+       canvas.drawText(cadena, posicion_x_letra, posicion_y_letra, pincel);
+
+
+       invalidate();
+
+   }
+
+   /*
+      Se escala con Matrix para no dañar la resolución
+    */
+
+
+   public Bitmap escalarImagen(Bitmap bitmap, int newWidth, int newHeight) {
+       Bitmap scaledBitmap = Bitmap.createBitmap(newWidth, newHeight, bitmap.getConfig());
+
+       float scaleX = newWidth / (float) bitmap.getWidth();
+       float scaleY = newHeight / (float) bitmap.getHeight();
+
+       Matrix scaleMatrix = new Matrix();
+       scaleMatrix.setScale(scaleX, scaleY, 0, 0);
+
+       Canvas canvas = new Canvas(scaledBitmap);
+       canvas.setMatrix(scaleMatrix);
+       Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
+       paint.setAntiAlias(true);
+       paint.setDither(true);
+       paint.setFilterBitmap(true);
+       canvas.drawBitmap(bitmap, 0, 0, paint);
+
+       return scaledBitmap;
+
+   }
+
+
+}
+
+
+La clase TableroColor.
+public class TableroColor extends View {
+
+   private Context context;
+   private int rojo=100;
+   private int verde=200;
+   private int azul=60;
+   private int color_rgb, color_azul, color_rojo,color_verde;
+
+   public TableroColor(Context context) {
+
+       super(context);
+
+       this.context = context;
+
+
+       eventos();
+   }
+
+
+   private void eventos(){
+
+       this.setOnTouchListener(new View.OnTouchListener() {
+           //@Override
+
+           public boolean onTouch(View v, MotionEvent event) {
+
+               int action = event.getAction();
+               //x = event.getX();//en pixeles
+               //    y = event.getY();//en pixeles
+
+               switch (action) {
+                   case MotionEvent.ACTION_DOWN:
+
+
+                       break;
+
+                   case MotionEvent.ACTION_MOVE:
+
+
+                       break;
+
+                   case MotionEvent.ACTION_UP:
+
+
+                       break;
+
+
+               }
+
+
+               return true;
+           }
+       });
+
+
+   }
+
+
+   public void setColoRojo(int rojo){
+
+       this.rojo=rojo;
+
+   }
+
+   public void setColoVerde(int verde){
+
+       this.verde=verde;
+
+   }
+
+   public void setColoAzul(int azul){
+
+       this.azul=azul;
+
+   }
+
+
+   //Método para dibujar
+   protected void onDraw(Canvas canvas) {
+
+
+       Paint pincel = new Paint();
+       pincel.setAntiAlias(true);
+       pincel.setLinearText(true);
+
+       pincel.setFilterBitmap(true);//si se escala
+       pincel.setDither(true);//si se escala
+
+       float ancho = this.getWidth();
+       float alto = this.getHeight();
+
+       float a=0;
+
+       if( ancho>alto){
+           a=alto;
+       } else{
+
+           a=ancho;
+
+       }
+
+
+
+       float indent=0.05f*alto;
+
+       color_rgb= Color.rgb(rojo,verde,azul);
+       pincel.setColor(color_rgb);
+       pincel.setStyle(Paint.Style.FILL);
+       canvas.drawRect(indent, indent, 0.5f * ancho - indent, alto - indent, pincel);
+       pincel.setColor(Color.BLACK);
+       pincel.setStyle(Paint.Style.STROKE);
+       canvas.drawRect(indent, indent, 0.5f * ancho - indent, alto - indent, pincel);
+
+       pincel.setStyle(Paint.Style.FILL);
+       color_rojo= Color.rgb(rojo, 0, 0);
+       pincel.setColor(color_rojo);
+       canvas.drawRect(indent + 0.5f * ancho, indent, ancho - indent, indent + 0.1f * alto, pincel);
+
+
+
+       pincel.setTextSize(0.05f * a);
+       pincel.setColor(Color.RED);
+       canvas.drawText("Rojo= " + rojo, indent + 0.5f * ancho, indent + 0.2f * alto, pincel);
+
+
+       color_verde = Color.rgb(0, verde, 0);
+       pincel.setColor(color_verde);
+       canvas.drawRect(indent + 0.5f * ancho, indent + 0.3f * alto, ancho - indent, indent + 0.4f * alto, pincel);
+
+       pincel.setColor(Color.rgb(0,128,0));
+       canvas.drawText("Verde= " + verde, indent + 0.5f * ancho, indent + 0.5f * alto, pincel);
+
+       color_azul = Color.rgb(0, 0, azul);
+       pincel.setColor(color_azul);
+       canvas.drawRect(indent + 0.5f * ancho, indent + 0.6f * alto, ancho - indent, indent + 0.7f * alto, pincel);
+
+       pincel.setColor(Color.BLUE);
+       canvas.drawText("Azul= " + azul, indent + 0.5f * ancho, indent + 0.8f * alto, pincel);
+
+       pincel.setTextSize(0.03f * a);
+       pincel.setColor(Color.LTGRAY);
+       canvas.drawText("Copyright 2021 para Diego L. Aristizábal Ramírez", indent,alto-0.3f*indent, pincel);
+
+
+       //Para efectos de animación
+       invalidate();
+
+
+   }
+
+}
+
+
+La clase ActividadPrincipalMiTrigesimaSeptimaApp.
+
+
+
+
+
+
+public class ActividadPrincipalMiTrigesimaSeptimaApp extends Activity {
+
+
+   LinearLayout linear_layout_segunda_fila;
+   private Boton entrar, salir;
+   private BluetoothAdapter BA;
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       gestionarResolucion();
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       /*
+       Para informar cómo se debe pegar el administrador de
+       diseño LinearLayout obtenido con el método crearGui()
+       */
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+
+       eventos();
+
+       //permisos
+       verificacionPermisos();
+
+
+   }//fin del método onCreate
+
+   /*Método auxiliar para asuntos de resolución*/
+   private void gestionarResolucion() {
+
+       //independencia de la resolución de la pantalla
+       DisplayMetrics displayMetrics = this.getApplicationContext().getResources().getDisplayMetrics();
+       int alto = displayMetrics.heightPixels;
+       int ancho = displayMetrics.widthPixels;
+       AlmacenDatosRAM.ancho = ancho;
+       AlmacenDatosRAM.alto = alto;
+       int dimensionReferencia;
+
+       //tomar el menor valor entre alto y ancho de pantalla
+       if (alto > ancho) {
+
+           dimensionReferencia = ancho;
+       } else {
+
+           dimensionReferencia = alto;
+       }
+
+       AlmacenDatosRAM.dimensionReferencia = dimensionReferencia;
+
+       //una estimación de un buen tamaño
+       int tamanoLetra = dimensionReferencia / 20;
+
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       int tamanoLetraResolucionIncluida = (int) (tamanoLetra / displayMetrics.scaledDensity);
+
+       //guardar en el almacen de datos para que otras clases la accedan fácilmente
+       AlmacenDatosRAM.tamanoLetraResolucionIncluida = tamanoLetraResolucionIncluida;
+
+   }
+
+
+   private void crearElementosGUI() {
+
+       entrar = new Boton(this);
+       entrar.setImagen(R.drawable.entrar);
+
+       salir = new Boton(this);
+       salir.setImagen(R.drawable.salir);
+
+   }
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+
+       LinearLayout linear_layout_principal = new LinearLayout(this);
+       linear_layout_principal.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_principal.setGravity(Gravity.CENTER_HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.FILL);
+       linear_layout_principal.setBackgroundColor(Color.WHITE);
+       linear_layout_principal.setWeightSum(10);
+
+
+       //LinearLayout primera fila
+       LinearLayout linear_layout_primera_fila = new LinearLayout(this);
+       linear_layout_primera_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_primera_fila.setGravity(Gravity.FILL);
+       linear_layout_primera_fila.setBackgroundColor(Color.WHITE);
+       LinearLayout.LayoutParams parametros_primera_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);//ViewGroup.LayoutParams.WRAP_CONTENT);
+       parametros_primera_fila.weight = 8.0f;
+       linear_layout_primera_fila.setLayoutParams(parametros_primera_fila);
+
+
+       //fondo primera fila
+       Drawable fondo = getResources().getDrawable(R.drawable.rgb_android);
+       linear_layout_primera_fila.setBackgroundDrawable(fondo);
+
+       //LinearLayout segunda fila
+       linear_layout_segunda_fila = new LinearLayout(this);
+       linear_layout_segunda_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_segunda_fila.setGravity(Gravity.FILL);
+       LinearLayout.LayoutParams parametros_segunda_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_segunda_fila.weight = 2.0f;
+       linear_layout_segunda_fila.setWeightSum(1.0f);
+       linear_layout_segunda_fila.setLayoutParams(parametros_segunda_fila);
+
+
+       LinearLayout.LayoutParams parametros_pegado_boton = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_boton.weight = 1.0f;
+       entrar.setLayoutParams(parametros_pegado_boton);
+       salir.setLayoutParams(parametros_pegado_boton);
+       linear_layout_segunda_fila.addView(entrar);
+
+
+       linear_layout_principal.addView(linear_layout_primera_fila);
+       linear_layout_principal.addView(linear_layout_segunda_fila);
+
+
+       return linear_layout_principal;
+
+
+   }
+
+
+   private void eventos() {
+
+       entrar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+
+               activarBluetooth();
+               lanzarActividadComunicacion();
+               linear_layout_segunda_fila.removeAllViews();
+               linear_layout_segunda_fila.addView(salir);
+
+
+           }
+       });
+
+       salir.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               finish();
+           }
+       });
+
+
+   }
+
+
+   private void activarBluetooth() {
+
+       BA = BluetoothAdapter.getDefaultAdapter();
+       //activar bluetooth si está desactivado
+       if (!BA.isEnabled()) {
+           BA.enable();
+       }
+
+   }
+
+   private void lanzarActividadComunicacion() {
+
+       Intent intent = new Intent(this, ActividadComoClienteBluetooth.class);
+       startActivity(intent);
+
+   }
+
+
+   protected void onPause() {
+       super.onPause();
+
+   }
+
+   protected void onDestroy() {
+       super.onDestroy();
+       BA.disable();
+       // AlmacenDatosRAM.conexion_bluetooth= "  ";
+       finish();
+
+   }
+
+   /*
+   A partir de Android 12 es necesario agregar estos permisos para usar el Bluetooth
+    */
+   private void verificacionPermisos() {
+
+       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+           Toast.makeText(this, "This version is not Android 12 or later " + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show();
+       } else {
+
+           int hasReadWritePermission = checkSelfPermission(Manifest.permission.BLUETOOTH);
+           int hasBluetoothScan = checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN);
+
+           if (hasReadWritePermission != PackageManager.PERMISSION_GRANTED || hasBluetoothScan != PackageManager.PERMISSION_GRANTED) {
+
+
+               /* Request user permissions in runtime */
+               ActivityCompat.requestPermissions(ActividadPrincipalMiTrigesimaSeptimaApp.this,
+                       new String[]{
+                               Manifest.permission.BLUETOOTH_ADMIN,
+                               Manifest.permission.BLUETOOTH_ADVERTISE,
+                               Manifest.permission.BLUETOOTH_SCAN,
+                               Manifest.permission.BLUETOOTH_CONNECT
+
+                       },
+                       100);
+
+           } else {
+
+           }
+
+       }
+
+   }
+
+   @TargetApi(23)
+   @Override
+   public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+       switch (requestCode) {
+           case 100:
+               if (grantResults.length > 0
+                       || grantResults[0] == PackageManager.PERMISSION_GRANTED
+                       || grantResults[1] == PackageManager.PERMISSION_GRANTED
+                       || grantResults[2] == PackageManager.PERMISSION_GRANTED
+                       || grantResults[3] == PackageManager.PERMISSION_GRANTED) {
+
+               } else {
+
+                   Toast.makeText(ActividadPrincipalMiTrigesimaSeptimaApp.this, "Permiso denegado.", Toast.LENGTH_SHORT).show();
+                   finish();
+               }
+               return;
+       }
+   }
+
+
+}
+
+
+El archivo manifiesto.
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools"
+   package="com.curso_simulaciones.mitrigesimaseptimaapp">
+
+   <application
+       android:allowBackup="true"
+       android:dataExtractionRules="@xml/data_extraction_rules"
+       android:fullBackupContent="@xml/backup_rules"
+       android:icon="@mipmap/ic_launcher"
+       android:label="@string/app_name"
+       android:roundIcon="@mipmap/ic_launcher_round"
+       android:supportsRtl="true"
+       android:theme="@style/Theme.MiTrigesimaSeptimaApp"
+       tools:targetApi="31">
+
+       <activity android:name=".ActividadPrincipalMiTrigesimaSeptimaApp"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="portrait"
+           android:exported="true">
+
+           <intent-filter>
+               <action android:name="android.intent.action.MAIN" />
+               <category android:name="android.intent.category.LAUNCHER" />
+           </intent-filter>
+
+       </activity>
+
+
+       <!--declarando otra actividad-->
+       <activity
+           android:name=".actividades_secundarias.ActividadComoClienteBluetooth"
+           android:screenOrientation="portrait"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+
+       </activity>
+
+
+       <!--declarando otra actividad-->
+       <activity
+           android:name=".actividades_secundarias.ActividadEscaneoDispositivos"
+           android:screenOrientation="portrait"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+
+       </activity>
+
+
+   </application>
+
+
+
+
+    <!-- Permisos adicionales para usar bluetooth antes de Android 12 ).-->
+   <uses-permission android:name="android.permission.BLUETOOTH"  tools:remove="android:maxSdkVersion" />
+   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+
+   <!-- Permisos adicionales para usar bluetooth a partir de Android 12.-->
+   <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+   <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+   <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+
+
+</manifest>
+
+
+El programa para ESP32
+Conectar la ESP32 al computador y programarla desde el IDE de ARDUINO con el siguiente código (led_rgb_bluetooth_android_esp32.ino).
+ 
+#include "BluetoothSerial.h"
+
+
+//para manejar JSON
+#include <ArduinoJson.hpp>
+#include <ArduinoJson.h>
+
+
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
+
+
+StaticJsonDocument<300> doc;//300 bytes
+
+
+int pinRed=23;    
+int pinGreen= 22; 
+int pinBlue= 21; 
+int frecuencia = 5000;
+int canal_1 = 0; 
+int canal_2 = 1;
+int canal_3 = 2;
+int resolucion = 8;
+
+
+int r,g,b;
+BluetoothSerial SerialBT;
+
+
+void setup() {
+  
+  Serial.begin(115200);
+  SerialBT.begin("PhysicsESP32"); //nombre del dispsoitivo Bluetooth 
+  Serial.println("El dispositivo empezó, ahora puede emparejarlo con bluetooth!");
+  
+  configurarPines();
+
+
+}
+
+
+void loop() {
+  delay(250); 
+    while (SerialBT.available() > 0){//Revisamos si hay datos en el puerto serial
+    deserializarJSON();  
+  
+  } 
+  
+} 
+
+
+void configurarPines(){
+  //configuración de los canales
+  //rojo
+  ledcSetup(canal_1, frecuencia, resolucion); 
+  ledcAttachPin(pinRed,canal_1);
+
+
+  //azul
+  ledcSetup(canal_2, frecuencia, resolucion); 
+  ledcAttachPin(pinGreen,canal_2); 
+
+
+  //verde
+  ledcSetup(canal_3, frecuencia, resolucion); 
+  ledcAttachPin(pinBlue,canal_3);
+ 
+}
+
+
+void establecerColor(int R, int G, int B) {
+   ledcWrite(canal_1,R);
+   ledcWrite(canal_2,G);
+   ledcWrite(canal_3,B);
+  
+}
+
+
+
+
+void deserializarJSON(){
+  deserializeJson(doc, SerialBT);
+  
+  r = doc["r"];
+  g = doc["g"]; 
+  b = doc["b"];
+
+
+  establecerColor(r, g, b); 
+   
+}
+
+
+El montaje ESP32
+Desconectar la ESP32 del computador y proceder a realizar el montaje ilustrado en la Figura 16.
+
+
+Ejecutar
+Ejecutar la app. Se despliega la GUI de la Figura 20 izquierda. Hacer clic en el botón ENTRAR y se despliega la GUI de la Figura 20 derecha.
+ Imagen que contiene Logotipo
+
+Descripción generada automáticamente 
+       Forma, Cuadrado
+
+Descripción generada automáticamente 
+Figura 20
+Hacer clic en el botón BUSCAR y se despliega la GUI de la Figura 21 centro. Hacer clic en botón CONECTAR y luego en el botón EMPEZAR, Figura 21 derecha.
+  
+  Forma, Cuadrado
+
+Descripción generada automáticamente   Forma, Cuadrado
+
+Descripción generada automáticamente 
+Figura 21
+Proceder a cambiar el color en el tablero y observar el comportamiento del led RGB, Figura 17. 
+APP CON ESP32 BLUETOOTH: ESP32 ENVIANDO DATOS
+En este segundo ejemplo, se tiene un módulo GY-30 BH1750, sensor de iluminación digital para medición de iluminancia (lux) , Figura 22 izquierda,  acoplado a la ESP32. Un dispositivo móvil Android recibe los datos de ilumniación que son enviados por la ESP32 vía bluetooth. Aquí el dispositivo móvil Android hace de CLIENTE y la ESP32 hace de SERVIDOR.
+  
+
+Figura 22
+La app
+Crear un proyecto denominado MiTrigesimaOctavaApp con la jerarquía de paquetes y clases de la Figura 23.
+En este proyecto también se usa la librería comunicaciones.aar Proceder como se hizo en la app anterior a incorporar esta librería al proyecto.
+ Interfaz de usuario gráfica, Aplicación
+
+Descripción generada automáticamente 
+
+Figura 23
+Adicionalmente se usa para graficar la librería MPAndroidChart. Proceder a obtenerla tal y como se indicó en módulos anteriores.
+Las siguientes imágenes se deben incorporar al proyecto, Figura 24.
+ Interfaz de usuario gráfica, Aplicación
+
+Descripción generada automáticamente 
+
+Figura 24
+Los códigos de las clases son los siguientes. Las clases ClienteBluetooth, Boton y ActividadEscaneoDispositivos son los mismos de la app anterior.
+Las otras clases tienen los siguientes códigos.
+La clase GaugeSimple.
+public class GaugeSimple extends View {
+
+
+   private float minimo = -0;
+   private float maximo = 100f;
+   private float medida = 0.0f;
+   private String unidades = "UNIDADES";
+   private int colorPrimerTercio = Color.rgb(200, 200, 0);
+   private int colorSegundoTercio = Color.rgb(0, 180, 0);
+   private int colorTercerTercio = Color.RED;
+   private int colorLineas = Color.BLACK;
+   private int colorFondo = Color.WHITE;
+   private int colorTablerroDespliegue = Color.BLACK;
+   private int colorNumerosDesplieggue = Color.WHITE;
+   private int colorFranjaDinamica = Color.rgb(0, 0, 255);
+   private int angPrimertercio = 100;
+   private int angSegundoTercio = 100;
+   private int angTercerTercio = 50;
+
+
+   /**
+    * Constructor de GaugeSimple
+    */
+
+   public GaugeSimple(Context context) {
+
+       super(context);
+
+       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+           this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
+       }
+
+   }
+
+   /**
+    * Modifica el rango de medicion
+    * desde minimo hasta maximo
+    *
+    * @param minimo
+    * @param maximo
+    */
+
+   public void setRango(float minimo, float maximo) {
+
+       this.minimo = minimo;
+       this.maximo = maximo;
+
+   }
+
+
+   /**
+    * Modifica el valor medido
+    *
+    * @param medida
+    */
+
+   public void setMedida(float medida) {
+
+       this.medida = medida;
+
+   }
+
+
+   /**
+    * Regresa el valor medido
+    *
+    * @return medda
+    */
+   public float getMedida() {
+
+       return medida;
+   }
+
+
+   /**
+    * Modifica las unidades del instrumento virtual
+    *
+    * @param unidades
+    */
+   public void setUnidades(String unidades) {
+
+       this.unidades = unidades;
+
+   }
+
+
+   /**
+    * Modifica los colores de los sectores circulares
+    *
+    * @param colorPrimerTercio
+    * @param colorSegundoTercio
+    * @param colorTercerTercio
+    */
+   public void setColorSectores(int colorPrimerTercio, int colorSegundoTercio, int colorTercerTercio) {
+
+       this.colorPrimerTercio = colorPrimerTercio;
+       this.colorSegundoTercio = colorSegundoTercio;
+       this.colorTercerTercio = colorTercerTercio;
+
+   }
+
+   /**
+    * Modifica los angulos de los sectores circulares
+    * Deben sumar 250 grados
+    *
+    * @param angPrimerTercio
+    * @param angSegundoTercio
+    * @param angTercerTercio
+    */
+   public void setAngulosSectores(int angPrimerTercio, int angSegundoTercio, int angTercerTercio) {
+       this.angPrimertercio = angPrimerTercio;
+       this.angSegundoTercio = angSegundoTercio;
+       this.angTercerTercio = angTercerTercio;
+
+   }
+
+   public void setColorFranjaDinámica(int colorFranjaDinamica) {
+
+       this.colorFranjaDinamica = colorFranjaDinamica;
+
+
+   }
+
+   /**
+    * Modifica el color de fondo del tacometro
+    *
+    * @param colorFondo
+    */
+   public void setColorFondoTacometro(int colorFondo) {
+
+       this.colorFondo = colorFondo;
+
+
+   }
+
+
+   /**
+    * Modifica el color de las lineas del tacometro
+    *
+    * @param color_lineas
+    */
+   public void setColorLineasTacometro(int color_lineas) {
+
+       this.colorLineas = color_lineas;
+
+
+   }
+
+   /**
+    * Modifica el color del tablero de despliegue
+    *
+    * @param colorTableroDespliegue
+    */
+
+   public void setColorTableroDespliegue(int colorTableroDespliegue) {
+
+       this.colorTablerroDespliegue = colorTableroDespliegue;
+
+   }
+
+
+   /**
+    * Modifica el color del numero que se despliega
+    *
+    * @param colorNumerosDesplieggue
+    */
+
+   public void setColorNumeroDespliegue(int colorNumerosDesplieggue) {
+
+       this.colorNumerosDesplieggue = colorNumerosDesplieggue;
+
+   }
+
+
+   /**
+    * @param canvas
+    */
+
+   //método para dibujar
+   protected void onDraw(Canvas canvas) {
+       super.onDraw(canvas);
+
+       canvas.save();
+
+       /*
+        La vista tendra las mismas dimensiones de su
+        contenedor
+        */
+       float ancho = this.getWidth();//ancho de la vista
+       float alto = this.getHeight();//alto de la vista
+       float largo = 0f;
+
+       /*
+         Se define la vairable larho como el 80%
+         del menor valor entre al y largo
+        */
+
+       if (ancho > alto) {
+
+           largo = 0.8f * alto;
+
+       } else {
+
+           largo = 0.8f * ancho;
+
+
+       }
+
+       /*
+         se hace tralación del (0,0) al centro
+         del contenedor
+        */
+       canvas.translate(0.5f * ancho, 0.5f * alto);
+
+
+       Paint pincel = new Paint();
+       //evita efecto sierra
+       pincel.setAntiAlias(true);
+       //tamaño texto
+       pincel.setTextSize(0.05f * largo);
+       //para mejor manejo de la métrica de texto
+       pincel.setLinearText(true);
+       //para efectos de buen escalado de bitmaps
+       pincel.setFilterBitmap(true);
+       //para buen manejo de gradientes de color
+       pincel.setDither(true);
+       float esquinaSuperiorIzquierdaX = -0.5f * largo;
+       float esquinaSuperiorIzquierdaY = -0.5f * largo;
+       float esquinaInferiorDerechaX = 0.5f * largo;
+       float esquinaInferiorDerechaY = 0.5f * largo;
+
+       RectF rect = new RectF(esquinaSuperiorIzquierdaX, esquinaSuperiorIzquierdaY,
+               esquinaInferiorDerechaX, esquinaInferiorDerechaY);
+
+       pincel.setStyle(Paint.Style.FILL);
+
+      /*
+       Partamos en tres segmentos de diferente color.
+      */
+
+       pincel.setColor(colorPrimerTercio);
+       canvas.drawArc(rect, 145, angPrimertercio, true, pincel);
+       pincel.setColor(colorSegundoTercio);
+       canvas.drawArc(rect, 145 + angPrimertercio, angSegundoTercio, true, pincel);
+       pincel.setColor(colorTercerTercio);
+       canvas.drawArc(rect, 145 + angPrimertercio + angSegundoTercio, angTercerTercio, true, pincel);
+
+       //franja dinámica
+       float angulo_rotacion_medida = 235 + (250f / (maximo - minimo)) * (medida - minimo);
+       float a = (float) 0.03 * largo;
+       rect = new RectF(esquinaSuperiorIzquierdaX + a, esquinaSuperiorIzquierdaY + a,
+               esquinaInferiorDerechaX - a, esquinaInferiorDerechaY - a);
+       pincel.setColor(colorFranjaDinamica);
+       canvas.drawArc(rect, 145, angulo_rotacion_medida - 235, true, pincel);
+
+
+       float radio = (float) (0.45 * largo);
+       pincel.setColor(colorFondo);
+       canvas.drawCircle(0, 0, radio, pincel);
+       pincel.setColor(colorLineas);
+       pincel.setStyle(Paint.Style.STROKE);
+       canvas.drawCircle(0, 0, radio, pincel);
+       pincel.setStrokeWidth(1f);
+       canvas.drawCircle(0, 0, 0.5f * largo, pincel);
+
+     /*
+       Hacer las divisiones
+     */
+
+       pincel.setStrokeWidth(0.005f * largo);
+
+      /*
+        Divisiones grandes
+        Se dibuja primero la división vertical.
+        Luego se repite rotando de a 50 grados comenzando
+        en 235 grados.
+        Se aprovechará para marcar
+      */
+
+       float indent = (float) (0.2 * largo);
+       float posicionY = (float) (0.5 * largo);
+
+       for (int i = 0; i < 6; i = i + 1) {
+           float anguloRotacion = 235 + 50 * i;
+           canvas.rotate(anguloRotacion, 0, 0);
+           canvas.drawLine(0, -posicionY, 0, -posicionY + indent, pincel);
+
+           //marcas
+           // Centrar números con las divisiones grandes
+           int valorIncrementoMarcas = (int) ((maximo - minimo) / 5f);
+           int valorMarca = (int) (minimo + valorIncrementoMarcas * i);
+           String numero = "" + valorMarca;
+           float anchoCadenaNumero = pincel.measureText(numero);
+           float posicionXNumero = -0.5f * anchoCadenaNumero;
+           float posicionYNumero = (float) (-posicionY + 1.2 * indent);
+           //dibujar los números
+           pincel.setStyle(Paint.Style.FILL);
+           canvas.drawText(numero, posicionXNumero, posicionYNumero, pincel);
+           canvas.rotate(-anguloRotacion, 0, 0);
+
+       }
+
+
+       /*
+        Divisiones pequeñas
+        Se dibuja primero la división vertical.
+        Luego se repite rotando de a 10 grados comenzando
+        en 235 grados.
+        */
+       pincel.setStyle(Paint.Style.STROKE);
+       for (int i = 0; i < 26; i = i + 1) {
+
+           float anguloRotacion = 235 + 10 * i;
+           canvas.rotate(anguloRotacion, 0, 0);
+           canvas.drawLine(0, -posicionY, 0, -posicionY + (float) (0.2 * indent), pincel);
+           canvas.rotate(-anguloRotacion, 0, 0);
+
+       }
+
+       //Dibujar aguja
+       pincel.setStrokeWidth(0.005f * largo);
+       pincel.setColor(Color.RED);
+       // float angulo_rotacion_medida = 235 + (250f / (maximo - minimo)) * (medida - minimo);
+       canvas.rotate(angulo_rotacion_medida, 0, 0);
+       canvas.drawLine(0, -posicionY, 0, 0, pincel);
+       canvas.rotate(-angulo_rotacion_medida, 0, 0);
+       pincel.setStyle(Paint.Style.FILL);
+       canvas.drawCircle(0, 0, (float) (0.1 * indent), pincel);
+       //unidades
+       pincel.setColor(colorLineas);
+       float anchoCadenaUnidades = pincel.measureText(unidades);
+       canvas.drawText(unidades, -0.5f * anchoCadenaUnidades, 0.11f * largo, pincel);
+       //pantallita de despliegue
+       float anchoCadenaNumero = pincel.measureText("" + medida);
+       RectF rect_1 = new RectF(-0.12f * largo, 0.14f * largo, 0.12f * largo, 0.23f * largo);
+       pincel.setColor(colorTablerroDespliegue);
+       canvas.drawRect(rect_1, pincel);
+       pincel.setColor(colorNumerosDesplieggue);
+       canvas.drawText("" + medida, -0.5f * anchoCadenaNumero, 0.2f * largo, pincel);
+
+       //franja amarilla transparente
+
+
+       canvas.restore();
+
+       invalidate();//para animación
+
+   }//fin onDraw
+
+}
+
+
+La clase Luxometro.
+
+
+public class Luxometro extends GaugeSimple {
+
+   
+
+   public Luxometro(Context context){
+       super(context);
+
+
+   }
+
+
+   public void cambiarEscala(float medida){
+
+       float maximo=100f;
+       float minimo=0f;
+
+       if(medida>0 && ((medida < 100)^(medida==100f ))){
+
+           maximo=100f;
+           minimo=0f;
+
+       }
+
+       if(medida>100 && ((medida < 1000)^(medida==500f ))){
+
+           maximo=500f;
+           minimo=0f;
+
+       }
+
+       if(medida>500 && ((medida < 1000)^(medida==1000f ))){
+
+           maximo=1000f;
+           minimo=0f;
+
+       }
+
+
+       if(medida>1000 && ((medida < 5000)^(medida==5000f ))){
+
+           maximo=5000f;
+           minimo=0f;
+
+       }
+
+       if(medida>5000 && ((medida < 10000)^(medida==10000f ))){
+
+           maximo=10000f;
+           minimo=0f;
+
+       }
+
+       if(medida>10000 && ((medida < 50000)^(medida==50000f ))){
+
+           maximo=50000f;
+           minimo=0f;
+
+       }
+
+
+       this.setRango(minimo,maximo);
+
+   }
+
+
+}
+
+
+La clase TablaSimple.
+
+
+public class TablaSimple extends LinearLayout {
+
+   private ScrollView panelScroll;
+   private TableLayout table;
+   private int tamanoLetraResolucionIncluida;
+   private int dimensionReferencia;
+   private Context context;
+   private int contador = -1;
+   private String etiquetaX="x";
+   private String etiquetaY="y";
+   private float x,y;
+   private int colorColumna1= Color.YELLOW;
+   private int colorColumna2=Color.BLUE;
+   private int colorColumna3=Color.RED;
+   // private int n=0;
+
+
+   /**
+    * Cosntructor de TablaSimple
+    * @param context
+    */
+   public TablaSimple(Context context) {
+       super(context);
+       this.context=context;
+
+       gestionarResolucion();
+
+
+
+       this.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+
+       gui();
+
+   }
+
+
+   private void gestionarResolucion(){
+
+       /*
+       El alto en la actividad principal (PORTRAI)
+       corresponde al ancho aquí (LANSCAPE
+       */
+       dimensionReferencia = (int)(0.4f* AlmacenDatosRAM.alto);
+
+       tamanoLetraResolucionIncluida = (int)(0.6* AlmacenDatosRAM.tamanoLetraResolucionIncluida);
+
+
+   }//fin método gestionarResolucion()
+
+
+   private void gui(){
+
+       panelScroll = new ScrollView(context);
+       table=new TableLayout(context);
+
+       LinearLayout linearLayoutPrincipal = new LinearLayout(context);
+       linearLayoutPrincipal.setOrientation(LinearLayout.VERTICAL);
+       linearLayoutPrincipal.setBackgroundColor(Color.BLACK);
+
+       LinearLayout.LayoutParams parametroPegado = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT);
+
+       panelScroll.addView(table);
+       linearLayoutPrincipal.addView(panelScroll);
+
+       this.addView(linearLayoutPrincipal, parametroPegado);
+
+
+   }
+
+   /**
+    * Modifica las etiquetas de las columnas
+    * @param etiquetaX
+    * @param etiquetaY
+    */
+   public void setEtiquetaColumnas(String etiquetaX, String etiquetaY){
+
+       this.etiquetaX=etiquetaX;
+       this.etiquetaY=etiquetaY;
+
+   }
+
+   /**
+    * Envía los datos a la tabla
+    * @param x
+    * @param y
+    */
+   public void enviarDatos(float x, float y){
+
+       this.x=x;
+       this.y=y;
+       contador=contador+1;
+       incrementarFila();
+
+   }
+
+
+   /**
+    * Borra los datos enviados a la tabla
+    */
+   public void borrar(){
+       removerFilas();
+   }
+
+   /**
+    * Modifica los colores de las columnas
+    * @param colorColumna1
+    * @param colorColumna2
+    * @param colorColumna3
+    */
+   public void setColorColumnas(int colorColumna1, int colorColumna2,int colorColumna3){
+
+       this.colorColumna1=colorColumna1;
+       this.colorColumna2=colorColumna2;
+       this.colorColumna3=colorColumna3;
+
+   }
+
+
+   private void incrementarFila() {
+
+       //crear nueva TableRow
+       TableRow fila = new TableRow(context);
+
+       TableRow.LayoutParams layoutTexto = new TableRow.LayoutParams((int)(0.33*dimensionReferencia), TableRow.LayoutParams.WRAP_CONTENT);
+
+
+       //columna uno
+       TextView textNumeroDato = new TextView(context);
+       textNumeroDato.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       textNumeroDato.setLayoutParams(layoutTexto);
+
+       if(contador==0){
+
+           textNumeroDato.setText("# de DATO");
+
+       } else {
+
+           textNumeroDato.setText("DATO " + contador);
+       }
+
+       //columna 2
+       textNumeroDato.setTextSize(tamanoLetraResolucionIncluida);
+       textNumeroDato.setTextColor(colorColumna1);
+       textNumeroDato.setGravity(Gravity.CENTER_HORIZONTAL);
+
+       TextView textValorX = new TextView(context);
+       textValorX.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       textValorX.setLayoutParams(layoutTexto);
+
+       if(contador==0)
+       {
+           textValorX.setText(etiquetaX);
+
+       }  else {
+
+           textValorX.setText("" + x);
+
+       }
+
+       //columna 3
+       textValorX.setTextSize(tamanoLetraResolucionIncluida);
+       textValorX.setTextColor(colorColumna2);
+       textValorX.setGravity(Gravity.CENTER_HORIZONTAL);
+
+
+       TextView textValorY = new TextView(context);
+       textValorY.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       textValorY.setLayoutParams(layoutTexto);
+
+       if(contador==0)
+       {
+           textValorY.setText(etiquetaY);
+
+       } else {
+
+           textValorY.setText("" + y);
+
+       }
+
+       textValorY.setTextSize(tamanoLetraResolucionIncluida);
+       textValorY.setTextColor(colorColumna3);
+       textValorY.setGravity(Gravity.CENTER_HORIZONTAL);
+
+
+       fila.setGravity(Gravity.CENTER_HORIZONTAL);
+       //adicionar las tres columnas a la fila
+       fila.addView(textNumeroDato);
+       fila.addView(textValorX);
+       fila.addView(textValorY);
+
+       //Adicionar TabRow a la Tabla
+       table.addView( fila, new TableLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+
+
+   }
+
+
+   private void removerFilas() {
+
+
+       if (contador > 1) {
+
+           table.removeAllViews();
+           contador=-1;
+
+       }
+
+   }
+}
+
+
+La clase Graficador.
+
+
+public class Graficador extends LineChart {
+
+
+   private LineDataSet lineDataSet;
+   private String tituloEjeY="";
+   private int colorLinea;
+   private float grosorLinea=1f;
+   private int colorValores;
+   private int colorMarcadores;
+
+
+
+   public Graficador(Context context) {
+
+       super(context);
+
+       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+           this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
+       }
+
+
+   }
+
+
+   public void setDatos(ArrayList datos) {
+
+       LineDataSet lineDataSet = new LineDataSet(datos, tituloEjeY);
+       lineDataSet.setLineWidth(grosorLinea);
+       lineDataSet.setColor(colorLinea);
+       lineDataSet.setValueTextColor(colorValores);
+       lineDataSet.setCircleColor(colorMarcadores);
+       LineData lineData = new LineData(lineDataSet);
+       this.setData(lineData);
+
+       /*
+        Esta instrucción es de la librería y es necesaria para
+        que el eje se vaya desplazando a medida que entran datos
+        */
+
+       this.moveViewTo(lineData.getEntryCount() - 7, 50f, YAxis.AxisDependency.LEFT);
+
+
+   }
+
+
+   /*
+    Modifica el grosr del trazo de la gráfica
+    */
+   public void setGrosorLinea(float grosorLinea){
+
+       this.grosorLinea=grosorLinea;
+   }
+
+   public void setColorLinea(int colorLinea){
+
+       this.colorLinea=colorLinea;
+
+   }
+
+
+   public  void setColorFondo(int colorFondo){
+
+       this.setBackgroundColor(colorFondo);
+
+   }
+
+
+   public void setColorTextoEjes(int colorTextoEjes){
+
+       //texto eje y izquierda
+       this.getAxisLeft().setTextColor(colorTextoEjes);
+       //texto eje y derecha
+       this.getAxisRight().setTextColor(colorTextoEjes);
+       //texto eje x
+       this.getXAxis().setTextColor(colorTextoEjes);
+       //texto título eje y
+       this.getLegend().setTextColor(colorTextoEjes);
+       //texto título eje x
+       this.getDescription().setTextColor(colorTextoEjes);
+
+   }
+
+   public void setColorValores(int colorValores){
+
+       this.colorValores=colorValores;
+
+
+   }
+
+
+   public void setTituloEjeX(String tituloEjeX){
+
+
+       this.getDescription().setText(tituloEjeX);
+
+   }
+
+
+   public void setTituloEjeY(String tituloEjeY){
+
+       this.tituloEjeY=tituloEjeY;
+
+   }
+
+
+   public void setColorMarcadores(int colorMarcadores){
+
+       this.colorMarcadores=colorMarcadores;
+   }
+
+
+}
+
+
+La clase AlmacenDatosRAM.
+public class AlmacenDatosRAM {
+
+   public static int ancho, alto, dimensionReferencia, tamanoLetraResolucionIncluida;
+
+   public static String conexion_bluetooth;
+
+   public static int estado_conexion_bluetooth=1;
+
+   public static String direccion;
+
+
+   public static int nDatos=20;
+
+   public static int periodo_muestreo= 1000; // 1 segundo
+
+   public static String unidades = "unidades";
+
+   public static String tiempo;
+
+   public static double[] x = new double[1000];
+
+   public static double[] y = new double[1000];
+
+    /*
+     ArrayList es una clase que permite almacenar
+     objetos con la diferencia respecto a los
+     arreglos [], que ellla misma va cambiando
+     dinámicamente su tamaño a medida que se le
+     agregan elementos
+    */
+
+   public static ArrayList datos = new ArrayList<>();
+
+}
+
+
+La clase ActividadConfiguracion.
+
+
+public class ActividadConfiguracion extends Activity {
+
+   private EditText edit_text_numero_datos;
+   private TextView text_numero_datos;
+   //variable tamaño de las letras basado en resolución de pantalla
+   private int tamanoLetraResolucionIncluida;
+
+   public void onCreate(Bundle savedInstanceState){
+       super.onCreate(savedInstanceState);
+
+
+       gestionarResolucion();
+
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       //para informar cómo se debe pegar el adminitrador de
+       //diseño obtenido con el método GUI
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+       //Eventos GUI
+       eventosGui();
+
+   } //fin del método onCreate
+
+
+   private void gestionarResolucion(){
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       tamanoLetraResolucionIncluida = (int)(0.6* AlmacenDatosRAM.tamanoLetraResolucionIncluida);
+
+   }
+
+   private void eventosGui() {
+
+
+          }
+
+
+
+   /*método responsable de la creación de los elementos de la GUI*/
+   private void crearElementosGUI(){
+
+       text_numero_datos = new TextView(this);
+       text_numero_datos.setGravity(Gravity.FILL_VERTICAL);
+       text_numero_datos.setTextSize(tamanoLetraResolucionIncluida);
+       text_numero_datos.setText("  NÚMERO DE DATOS (máximo 1000)");
+       text_numero_datos.setTextColor(Color.BLACK);
+
+       edit_text_numero_datos = new EditText(this);
+       //Despliega teclado solo con números enteros positivos.
+       edit_text_numero_datos.setKeyListener(DigitsKeyListener.getInstance(false, false));
+       edit_text_numero_datos.setTextSize(tamanoLetraResolucionIncluida);
+       edit_text_numero_datos.setText("" + AlmacenDatosRAM.nDatos);
+
+
+   }
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+       //LinearLayoutPrincipal
+       LinearLayout linear_principal = new LinearLayout(this);
+       linear_principal.setOrientation(LinearLayout.VERTICAL);
+       linear_principal.setBackgroundColor(Color.WHITE);
+       linear_principal.setWeightSum(10.0f);
+
+       //LinearLayout primera fila
+       LinearLayout linearLayoutPrimeraFila = new LinearLayout(this);
+       linearLayoutPrimeraFila.setBackgroundColor(Color.YELLOW);
+       linearLayoutPrimeraFila.setWeightSum(2f);
+       linearLayoutPrimeraFila.setOrientation(LinearLayout.HORIZONTAL);
+
+       //LinearLayout segunda fila
+       LinearLayout linearLayoutSegundaFila = new LinearLayout(this);
+       linearLayoutSegundaFila.setBackgroundColor(Color.YELLOW);
+       linearLayoutSegundaFila.setWeightSum(2f);
+       linearLayoutSegundaFila.setOrientation(LinearLayout.HORIZONTAL);
+
+
+       //LinearLayout tercera fila
+       LinearLayout linearLayoutTerceraFila = new LinearLayout(this);
+       linearLayoutTerceraFila.setBackgroundColor(Color.BLACK);
+       linearLayoutTerceraFila.setOrientation(LinearLayout.VERTICAL);
+
+       //pegar las filas en el principal
+       LinearLayout.LayoutParams parametrosPrimerasdosFilas = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,0);
+       parametrosPrimerasdosFilas.weight = 0.5f;
+       linearLayoutPrimeraFila.setLayoutParams(parametrosPrimerasdosFilas);
+       linearLayoutSegundaFila.setLayoutParams(parametrosPrimerasdosFilas);
+
+
+       LinearLayout.LayoutParams parametrosTerceraFila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,0);
+       parametrosTerceraFila.weight = 9.0f;
+       linearLayoutTerceraFila.setLayoutParams(parametrosTerceraFila);
+
+       linear_principal.addView(linearLayoutPrimeraFila);
+       linear_principal.addView(linearLayoutSegundaFila);
+       linear_principal.addView(linearLayoutTerceraFila);
+
+       //pegar elementos en dos primeras filas
+       LinearLayout.LayoutParams parametros_pegado_elementos_dos_primeras_filas_I = new LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_elementos_dos_primeras_filas_I .weight = 1.0f;
+       LinearLayout.LayoutParams parametros_pegado_elementos_dos_primeras_filas_D = new LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_elementos_dos_primeras_filas_D .weight = 1.0f;
+
+
+       //segunda fila
+       text_numero_datos.setLayoutParams(parametros_pegado_elementos_dos_primeras_filas_I);
+       edit_text_numero_datos.setLayoutParams(parametros_pegado_elementos_dos_primeras_filas_D);
+       linearLayoutSegundaFila.addView(text_numero_datos);
+       linearLayoutSegundaFila.addView(edit_text_numero_datos);
+
+
+       return linear_principal;
+   }
+
+
+   /*
+     Guardar el estado automáticamente cuando se salga
+     de esta pantalla
+   */
+   protected void onPause() {
+       super.onPause();
+
+       String string_numero_datos = edit_text_numero_datos.getText().toString();
+       int numero_datos = Integer.parseInt(string_numero_datos);
+       AlmacenDatosRAM.nDatos = numero_datos;
+
+
+   }
+
+
+
+}
+
+
+
+
+
+
+
+
+La clase ActividadComoClienteBluetooth.
+
+
+public class ActividadComoClienteBluetooth extends Activity implements Runnable {
+
+   //Objetos GUI necesarios
+   private LinearLayout linear_layout_segunda_fila;
+   private Luxometro luxometro;
+   private TablaSimple tabla;
+   private Graficador graficador;
+   private TextView text_aviso;
+   private Button botonConectar, botonBuscar, boton_tabla_grafica;
+   //variable tamaño de las letras basado en resolución de pantalla
+   private int tamanoLetraResolucionIncluida;
+   //hilos para actualizar tabla y letreros
+   private final Handler myHandler = new Handler();
+
+
+   int n=-1;
+   int tiempo_base=0;
+   int tiempo_anterior;
+   int tiempo_real;
+
+
+   private ClienteBluetooth cliente;
+   /*
+   hilo resposable de estar pendiente
+   del intercambio de datos con el servidor
+   */
+   private Thread hilo;
+   private boolean corriendo;
+   private float medida;
+   private int numero_datos=0;
+   private JSONObject obj;
+
+   private LinearLayout.LayoutParams parametros_tabla_grafica;
+
+
+
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       gestionarResolucion();
+
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       //para informar cómo se debe pegar el adminitrador de
+       //diseño obtenido con el método GUI
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+       //para administrar los eventos
+       eventos();
+
+
+
+
+   }//fin onCreate
+
+
+   private void gestionarResolucion() {
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       tamanoLetraResolucionIncluida = (int)(0.8* AlmacenDatosRAM.tamanoLetraResolucionIncluida);
+
+   }
+
+
+   /*método responsable de la creación de los elementos de la GUI*/
+   private void crearElementosGUI() {
+
+       //tacometro
+       luxometro = new Luxometro(this);
+       luxometro.setRango(0,100);
+       luxometro.setUnidades("lx");
+
+       //tabla
+       tabla = new TablaSimple(this);
+       tabla.setEtiquetaColumnas("Tiempo (s)", AlmacenDatosRAM.unidades);//"Medida");
+
+
+       //graficador
+       graficador = new Graficador(this);
+       //se está muestreando cada segundo (1000 ms)
+       graficador.setTituloEjeX("Tiempo (s)");
+       graficador.setTituloEjeY(AlmacenDatosRAM.unidades);
+       graficador.setGrosorLinea(2f);
+       graficador.setColorLinea(Color.RED);
+       graficador.setColorValores(Color.YELLOW);
+       graficador.setColorMarcadores(Color.GREEN);
+       graficador.setColorFondo(Color.BLACK);
+       graficador.setColorTextoEjes(Color.WHITE);
+
+       botonBuscar = new Button(this);
+       botonBuscar.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonBuscar.setText("BUSCAR");
+       botonBuscar.getBackground().setColorFilter(Color.rgb(183, 216, 199), PorterDuff.Mode.MULTIPLY);
+
+       botonConectar = new Button(this);
+       botonConectar.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonConectar.setText("CONECTAR");
+       botonConectar.getBackground().setColorFilter(Color.rgb(183, 216, 199), PorterDuff.Mode.MULTIPLY);
+       botonConectar.setEnabled(false);
+
+       boton_tabla_grafica = new Button(this);
+       boton_tabla_grafica.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       boton_tabla_grafica.setText("GRAFICA");
+       boton_tabla_grafica.getBackground().setColorFilter(Color.rgb(183, 216, 199), PorterDuff.Mode.MULTIPLY);
+       boton_tabla_grafica.setEnabled(false);
+
+       text_aviso = new TextView(this);
+       text_aviso.setGravity(Gravity.FILL_VERTICAL);
+       text_aviso.setBackgroundColor(Color.rgb(183,216,199));
+       text_aviso.setTextSize(0.8f*tamanoLetraResolucionIncluida);
+       text_aviso.setText(" Buscar dispositivo fuente de sensores para emparejar...");
+       text_aviso.setTextColor(Color.BLACK);
+
+
+   }//fin crearElemnetosGUI
+
+
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+       LinearLayout linear_layout_principal = new LinearLayout(this);
+       linear_layout_principal.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_principal.setBackgroundColor(Color.rgb(183,216,199));
+       linear_layout_principal.setWeightSum(10.0f);
+
+       //LinearLayout primera fila
+       LinearLayout linear_layout_primera_fila = new LinearLayout(this);
+       linear_layout_primera_fila.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_primera_fila.setGravity(Gravity.FILL);
+       linear_layout_primera_fila.setBackgroundColor(Color.rgb(245, 245, 245));
+
+
+       //LinearLayout segunda fila
+       linear_layout_segunda_fila = new LinearLayout(this);
+       linear_layout_segunda_fila.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_segunda_fila.setGravity(Gravity.FILL);
+       linear_layout_segunda_fila.setBackgroundColor(Color.rgb(245, 245, 245));
+       linear_layout_segunda_fila.setWeightSum(1.0f);
+
+
+       //LinearLayout tercera fila
+       LinearLayout linear_layout_tercera_fila = new LinearLayout(this);
+       linear_layout_tercera_fila.setBackgroundColor(Color.RED);
+
+
+       //LinearLayout cuarta fila
+       LinearLayout linear_layout_cuarta_fila = new LinearLayout(this);
+       linear_layout_cuarta_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_cuarta_fila.setBackgroundColor(Color.rgb(183,216,199));
+       linear_layout_cuarta_fila.setWeightSum(3.0f);
+
+       //pegar primera fila al principal
+       LinearLayout.LayoutParams parametros_primera_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_primera_fila.weight = 4.25f;
+       parametros_primera_fila.setMargins(20, 20, 20, 20);
+       linear_layout_primera_fila.setLayoutParams(parametros_primera_fila);
+       linear_layout_principal.addView(linear_layout_primera_fila);
+
+
+       //pegar segunda fila al principal
+       LinearLayout.LayoutParams parametros_segunda_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_segunda_fila.weight = 4.25f;
+       parametros_segunda_fila.setMargins(20, 20, 20, 20);
+       linear_layout_segunda_fila.setLayoutParams(parametros_segunda_fila);
+       linear_layout_principal.addView(linear_layout_segunda_fila);
+
+
+       //pegar tercera fila al principal
+       LinearLayout.LayoutParams parametros_tercera_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_tercera_fila.weight =0.5f;
+       parametros_tercera_fila.setMargins(20, 0, 20, 0);
+       linear_layout_tercera_fila.setLayoutParams(parametros_tercera_fila);
+       linear_layout_principal.addView(linear_layout_tercera_fila);
+
+
+       //pegar cuarta fila al principal
+       LinearLayout.LayoutParams parametros_cuarta_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_cuarta_fila.weight = 1.0f;
+       parametros_cuarta_fila.setMargins(20, 20, 20, 20);
+       linear_layout_cuarta_fila.setLayoutParams(parametros_cuarta_fila);
+       linear_layout_principal.addView(linear_layout_cuarta_fila);
+
+
+       //pegar gauge en primera fila
+       linear_layout_primera_fila.addView(luxometro);
+       //pegar tabla en segunda fila
+       parametros_tabla_grafica = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,0);
+       parametros_tabla_grafica.weight = 1.0f;
+       linear_layout_segunda_fila.addView(tabla,parametros_tabla_grafica);
+
+       //pegado textView en tercera fila
+       LinearLayout.LayoutParams parametrosPegadoTextView = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametrosPegadoTextView.weight = 1.0f;
+       linear_layout_tercera_fila.addView(text_aviso, parametrosPegadoTextView);
+
+       //pegar los botones en la cuarta fila
+       LinearLayout.LayoutParams parametros_botones_cuarta_fila = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_botones_cuarta_fila.weight = 1.0f;
+       botonBuscar.setLayoutParams(parametros_botones_cuarta_fila);
+       botonConectar.setLayoutParams(parametros_botones_cuarta_fila);
+       boton_tabla_grafica.setLayoutParams(parametros_botones_cuarta_fila);
+
+       linear_layout_cuarta_fila.addView(botonBuscar);
+       linear_layout_cuarta_fila.addView(botonConectar);
+       linear_layout_cuarta_fila.addView(boton_tabla_grafica);
+
+
+       return linear_layout_principal;
+   }//fin gui
+
+
+   private void eventos() {
+
+       //eventos botones
+       botonBuscar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+               lanzarBuscandoDispositivos();
+               AlmacenDatosRAM.estado_conexion_bluetooth=1;
+               botonConectar.setEnabled(true);
+               botonBuscar.setEnabled(false);
+
+           }
+       });
+
+
+       botonConectar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               if (botonConectar.getText() == "CONECTAR") {
+                   botonConectar.setText("EMPEZAR");
+                   botonBuscar.setEnabled(false);
+                   crearCliente();
+                   cliente.conectarSocketCliente();
+                   AlmacenDatosRAM.estado_conexion_bluetooth=2;
+                   hacerTrabajoDuro_2();
+
+               } else {
+                   borrarDatos();
+                   botonConectar.setEnabled(false);
+                   boton_tabla_grafica.setEnabled(true);
+                   empezarHilo();
+
+               }
+
+
+           }
+       });
+
+
+       //eventos botones
+       boton_tabla_grafica.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               if (boton_tabla_grafica.getText() == "TABLA") {
+                   boton_tabla_grafica.setText("GRAFICA");
+                   linear_layout_segunda_fila.removeView(graficador);
+                   //pegar tabla en segunda fila
+                   linear_layout_segunda_fila.addView(tabla,parametros_tabla_grafica);
+
+
+               } else {
+
+                   boton_tabla_grafica.setText("TABLA");
+                   linear_layout_segunda_fila.removeView(tabla);
+                   //pegar graficador en segunda fila
+                   linear_layout_segunda_fila.addView(graficador,parametros_tabla_grafica);
+
+
+               }
+
+
+           }
+       });
+
+
+   }//fin eventos
+
+
+   private void lanzarBuscandoDispositivos() {
+
+       Intent intent = new Intent(this, ActividadEscaneoDispositivos.class);
+       startActivity(intent);
+
+   }
+
+
+   public void empezarHilo() {
+
+       // numero_datos=0;
+       // n=-1;
+
+       hilo = new Thread(this);
+       hilo.start();
+
+   }
+
+
+
+   private void crearCliente() {
+
+       //dirección del dispositivo elegido para emparejar
+       String direccion = AlmacenDatosRAM.direccion;
+       cliente = new ClienteBluetooth();
+
+       /*
+        el cliente instancia un dispositivo Bluetooth
+        (BluetoohDevice) a partir de la dirección
+        de este.Luego abre un socket de tipo  BuletoothSocket
+        a partir del dispositivo enlazado.
+        */
+       cliente.abrirSocketCliente(direccion);
+       empezarComunicacionConServidor();
+
+   }
+
+   private void empezarComunicacionConServidor() {
+
+      /*
+      Aceptada la conexión abre los flujos de entrada
+      y salida de este socket por donde fluirán (tubería)
+        los datos desde y hacia el servidor
+      */
+
+       cliente.abrirFlujoEntrada();
+       cliente.abrirFlujoSalida();
+
+   }
+
+   private void terminarComunicacionConServidor() {
+
+       cliente.cerrarFlujoEntrada();
+       cliente.cerrarFlujoSalida();
+       cliente.cerrarSocketCliente();
+
+   }
+
+   //no estaba
+   private void borrarDatos(){
+
+       AlmacenDatosRAM.datos.clear();
+       n=-1;
+       numero_datos=0;
+       tabla.borrar();
+
+   }
+
+
+   @Override
+   public void run() {
+       corriendo = true;
+
+
+       while (corriendo) {
+
+           try {
+               Thread.sleep(AlmacenDatosRAM.periodo_muestreo);
+
+           } catch (InterruptedException e) {
+               e.printStackTrace();
+           }
+
+           leer();
+
+       }
+
+   }
+
+
+   private void leer(){
+
+       String nuevo_dato_string = cliente.leerString();//String JSON
+
+       if (nuevo_dato_string!= null) {
+           convertirStrigJson(nuevo_dato_string);
+           actualizarTacometroTabla();
+           luxometro.setMedida(medida);
+           //actualizar tabla y gráfica
+           hacerTrabajoDuro_1();
+           //avisar que se están recibiendo datso
+           AlmacenDatosRAM.estado_conexion_bluetooth=3;
+           AlmacenDatosRAM.conexion_bluetooth= "  Recibiendo datos ...";//de " +  AlmacenDatosRAM.tipo_sensor;
+           hacerTrabajoDuro_2();
+       }
+
+   }
+
+   //obtener la información del JSON
+   public void convertirStrigJson(String datoString) {
+
+       //convertir String a JSON
+       try {
+           obj = new JSONObject(datoString);
+       } catch (JSONException e) {
+           e.printStackTrace();
+       }
+
+       //obtener la información
+       //la medida
+       try {
+           AlmacenDatosRAM.unidades= obj.getString("unidad");
+           // AlmacenDatosRAM.tipo_sensor= obj.getString("sensor");
+
+       } catch (JSONException e) {
+           e.printStackTrace();
+       }
+
+       try {
+           AlmacenDatosRAM.tiempo= ""+obj.getInt("tiempo");
+           //muestrear a más del doble de frecuencia
+           AlmacenDatosRAM.periodo_muestreo = (int)(0.4*obj.getInt("periodo"));
+           medida =(float) obj.getDouble("valor");
+
+       } catch (JSONException e) {
+           e.printStackTrace();
+       }
+
+   }
+
+
+   private void actualizarTacometroTabla(){
+
+       luxometro.setUnidades(AlmacenDatosRAM.unidades);
+       luxometro.cambiarEscala(medida);
+       tabla.setEtiquetaColumnas("Tiempo en s", "Medida en " + AlmacenDatosRAM.unidades);
+
+   }
+
+
+
+
+   protected void onResume(){
+       super.onResume();
+
+       if (AlmacenDatosRAM.estado_conexion_bluetooth==1) {
+
+           if (AlmacenDatosRAM.direccion == "NO CONECTADO") {
+
+               AlmacenDatosRAM.conexion_bluetooth = "  Buscar dispositivo fuente de sensores para emparejar...";
+
+           } else {
+
+               AlmacenDatosRAM.conexion_bluetooth = "  Emparejado con " + AlmacenDatosRAM.direccion;
+
+           }
+
+           hacerTrabajoDuro_2();
+          // actualizarAviso();
+
+       }
+
+   }
+
+   protected void onPause() {
+       super.onPause();
+
+   }
+
+   protected void onDestroy() {
+       super.onDestroy();
+
+
+       if (hilo != null) {
+           detener();
+           hilo = null;
+       }
+
+
+
+       if (cliente != null) {
+           terminarComunicacionConServidor();
+       }
+
+   }
+
+
+   public void detener() {
+       corriendo = false;
+       hilo=null;
+
+   }
+
+
+    /*
+     Para el asunto de la table es mejor usar un manejador
+     para que no se reviente la aplicación
+    */
+
+   private void hacerTrabajoDuro_1() {
+       //.... realizar el trabajo duro
+
+       //Actualiza la UI usando el handler y el runnable
+       myHandler.post(updateRunnable_1);
+
+   }
+
+
+   int t_r_base;
+
+   final Runnable updateRunnable_1 = new Runnable() {
+       public void run() {
+
+           n=n+1;
+
+           if(n==0){
+
+               tiempo_base=Integer.parseInt(AlmacenDatosRAM.tiempo);//convertir a entero (ms)
+
+           }
+
+
+           //el tiempo es el real recibido
+           tiempo_real = Integer.parseInt(AlmacenDatosRAM.tiempo)-tiempo_base;
+
+
+           if(tiempo_real!=tiempo_anterior & numero_datos<AlmacenDatosRAM.nDatos) {
+               //if(numero_datos<AlmacenDatosRAM.nDatos) {
+
+
+          /*
+            Cuando comineza puede pasar que no tome bien datos mientras
+            sincroniza bien, y por lo tanto no se ha entrado en este if
+            y el tiempo se toma ananzando, por lo que se debe refdefinir el cero
+          */
+
+               if(numero_datos==0){
+
+                   t_r_base= tiempo_real;
+
+               }
+
+               tiempo_real= tiempo_real-t_r_base;
+               // Log.d(TAG, "t_r"+tiempo_real);
+
+
+               //ya redeinido de nuevo el cero procedemos a procesar los datos
+               numero_datos = numero_datos + 1;
+               //convertir a segundos con dos decimales
+               float t_r = (float) Math.round(tiempo_real * 0.001 * 100f) / 100f;
+
+               //actualizar la tabla
+               tabla.enviarDatos(t_r, (medida));
+
+               //actualizar la gráfica
+               graficador.setTituloEjeY(AlmacenDatosRAM.unidades);
+               AlmacenDatosRAM.datos.add((new Entry(t_r, medida)));
+               graficador.setDatos(AlmacenDatosRAM.datos);
+
+               tiempo_anterior = tiempo_real;
+
+           }
+
+
+           if (numero_datos+1 > AlmacenDatosRAM.nDatos) {
+
+               botonConectar.setEnabled(true);
+
+
+           }
+
+       }
+   };
+
+
+   /*
+ Para el asunto de actualizar avisos
+ hilo manejador para que no se reviente la aplicación
+  */
+   public void hacerTrabajoDuro_2() {
+       //.... realizar el trabajo duro
+
+       //Actualiza la UI usando el handler y el runnable
+       myHandler.post(updateRunnable_2);
+
+   }
+
+   final Runnable updateRunnable_2 = new Runnable() {
+       public void run() {
+
+           actualizarAviso();
+
+
+       }
+   };
+
+
+
+   private void actualizarAviso(){
+
+       if(AlmacenDatosRAM.estado_conexion_bluetooth==1) {
+           String aviso = AlmacenDatosRAM.conexion_bluetooth;
+           text_aviso.setText(aviso);
+       }
+
+       if(AlmacenDatosRAM.estado_conexion_bluetooth==2) {
+           String aviso = AlmacenDatosRAM.conexion_bluetooth;
+           text_aviso.setText(aviso);
+       }
+
+       if(AlmacenDatosRAM.estado_conexion_bluetooth==3) {
+           String aviso = AlmacenDatosRAM.conexion_bluetooth;
+           text_aviso.setText(aviso);
+       }
+
+   }
+
+}
+
+
+
+
+La clase ActividadPrincipalMiTrigesimaOctavaApp.
+
+
+public class ActividadPrincipalMiTrigesimaOctavaApp extends Activity {
+
+
+   LinearLayout linear_layout_segunda_fila;
+   private Boton entrar, salir, ajustar;
+   private BluetoothAdapter BA;
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       gestionarResolucion();
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       /*
+       Para informar cómo se debe pegar el administrador de
+       diseño LinearLayout obtenido con el método crearGui()
+       */
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+
+       eventos();
+
+       //permisos
+       verificacionPermisos();
+
+
+   }//fin del método onCreate
+
+   /*Método auxiliar para asuntos de resolución*/
+   private void gestionarResolucion() {
+
+       //independencia de la resolución de la pantalla
+       DisplayMetrics displayMetrics = this.getApplicationContext().getResources().getDisplayMetrics();
+       int alto = displayMetrics.heightPixels;
+       int ancho = displayMetrics.widthPixels;
+       AlmacenDatosRAM.ancho = ancho;
+       AlmacenDatosRAM.alto = alto;
+       int dimensionReferencia;
+
+       //tomar el menor valor entre alto y ancho de pantalla
+       if (alto > ancho) {
+
+           dimensionReferencia = ancho;
+       } else {
+
+           dimensionReferencia = alto;
+       }
+
+       AlmacenDatosRAM.dimensionReferencia = dimensionReferencia;
+
+       //una estimación de un buen tamaño
+       int tamanoLetra = dimensionReferencia / 20;
+
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       int tamanoLetraResolucionIncluida = (int) (tamanoLetra / displayMetrics.scaledDensity);
+
+       //guardar en el almacen de datos para que otras clases la accedan fácilmente
+       AlmacenDatosRAM.tamanoLetraResolucionIncluida = tamanoLetraResolucionIncluida;
+
+   }
+
+
+   private void crearElementosGUI() {
+
+       entrar = new Boton(this);
+       entrar.setImagen(R.drawable.entrar);
+
+       salir = new Boton(this);
+       salir.setImagen(R.drawable.salir);
+
+       ajustar = new Boton(this);
+       ajustar.setImagen(R.drawable.configuracion);
+
+   }
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+
+       LinearLayout linear_layout_principal = new LinearLayout(this);
+       linear_layout_principal.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_principal.setGravity(Gravity.CENTER_HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.FILL);
+       linear_layout_principal.setBackgroundColor(Color.WHITE);
+       linear_layout_principal.setWeightSum(10);
+
+
+       //LinearLayout primera fila
+       LinearLayout linear_layout_primera_fila = new LinearLayout(this);
+       linear_layout_primera_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_primera_fila.setGravity(Gravity.FILL);
+       linear_layout_primera_fila.setBackgroundColor(Color.WHITE);
+       LinearLayout.LayoutParams parametros_primera_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);//ViewGroup.LayoutParams.WRAP_CONTENT);
+       parametros_primera_fila.weight = 8.0f;
+       linear_layout_primera_fila.setLayoutParams(parametros_primera_fila);
+
+
+       //fondo primera fila
+       Drawable fondo = getResources().getDrawable(R.drawable.luxometro_android);
+       linear_layout_primera_fila.setBackgroundDrawable(fondo);
+
+       //LinearLayout segunda fila
+       linear_layout_segunda_fila = new LinearLayout(this);
+       linear_layout_segunda_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_segunda_fila.setGravity(Gravity.FILL);
+       LinearLayout.LayoutParams parametros_segunda_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_segunda_fila.weight = 2.0f;
+       linear_layout_segunda_fila.setWeightSum(2.0f);
+       linear_layout_segunda_fila.setLayoutParams(parametros_segunda_fila);
+
+
+       LinearLayout.LayoutParams parametros_pegado_boton = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_boton.weight = 1.0f;
+       entrar.setLayoutParams(parametros_pegado_boton);
+       salir.setLayoutParams(parametros_pegado_boton);
+       ajustar.setLayoutParams(parametros_pegado_boton);
+       linear_layout_segunda_fila.addView(entrar);
+       linear_layout_segunda_fila.addView(ajustar);
+
+
+       linear_layout_principal.addView(linear_layout_primera_fila);
+       linear_layout_principal.addView(linear_layout_segunda_fila);
+
+
+       return linear_layout_principal;
+
+
+   }
+
+
+   private void eventos() {
+
+       entrar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+
+               activarBluetooth();
+               lanzarActividadComunicacion();
+               linear_layout_segunda_fila.removeAllViews();
+               linear_layout_segunda_fila.addView(salir);
+               linear_layout_segunda_fila.addView(ajustar);
+
+
+           }
+       });
+
+       salir.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               finish();
+           }
+       });
+
+       ajustar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               lanzarActividadConfiguracion();
+
+           }
+       });
+
+
+   }
+
+
+   private void activarBluetooth() {
+
+       BA = BluetoothAdapter.getDefaultAdapter();
+       //activar bluetooth si está desactivado
+       if (!BA.isEnabled()) {
+           BA.enable();
+       }
+
+   }
+
+   private void lanzarActividadComunicacion() {
+
+       Intent intent = new Intent(this, ActividadComoClienteBluetooth.class);
+       startActivity(intent);
+
+   }
+
+   private void lanzarActividadConfiguracion() {
+
+       Intent intent = new Intent(this, ActividadConfiguracion.class);
+       startActivity(intent);
+
+   }
+
+
+   protected void onPause() {
+       super.onPause();
+
+   }
+
+   protected void onDestroy() {
+       super.onDestroy();
+       BA.disable();
+       // AlmacenDatosRAM.conexion_bluetooth= "  ";
+       finish();
+
+   }
+
+
+   /*
+       A partir de Android 12 es necesario agregar estos permisos para usar el Bluetooth
+        */
+   private void verificacionPermisos() {
+
+       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+           Toast.makeText(this, "This version is not Android 12 or later " + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show();
+       } else {
+
+           int hasReadWritePermission = checkSelfPermission(Manifest.permission.BLUETOOTH);
+           int hasBluetoothScan = checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN);
+
+           if (hasReadWritePermission != PackageManager.PERMISSION_GRANTED || hasBluetoothScan != PackageManager.PERMISSION_GRANTED) {
+
+
+
+               /* Request user permissions in runtime */
+               ActivityCompat.requestPermissions(ActividadPrincipalMiTrigesimaOctavaApp.this,
+                       new String[]{
+                               Manifest.permission.BLUETOOTH_ADMIN,
+                               Manifest.permission.BLUETOOTH_ADVERTISE,
+                               Manifest.permission.BLUETOOTH_SCAN,
+                               Manifest.permission.BLUETOOTH_CONNECT
+
+                       },
+                       100);
+
+           } else {
+
+           }
+
+       }
+
+   }
+
+   @TargetApi(23)
+   @Override
+   public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+       switch (requestCode) {
+           case 100:
+               if (grantResults.length > 0
+                       || grantResults[0] == PackageManager.PERMISSION_GRANTED
+                       || grantResults[1] == PackageManager.PERMISSION_GRANTED
+                       || grantResults[2] == PackageManager.PERMISSION_GRANTED
+                       || grantResults[3] == PackageManager.PERMISSION_GRANTED) {
+
+               } else {
+
+                   Toast.makeText(ActividadPrincipalMiTrigesimaOctavaApp.this, "Permiso denegado.", Toast.LENGTH_SHORT).show();
+                   finish();
+               }
+               return;
+       }
+   }
+
+
+}
+
+
+
+
+
+
+El archivo manifiesto.
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools"
+   package="com.curso_simulaciones.mitrigesimaoctavaapp">
+
+   <application
+       android:allowBackup="true"
+       android:dataExtractionRules="@xml/data_extraction_rules"
+       android:fullBackupContent="@xml/backup_rules"
+       android:icon="@mipmap/ic_launcher"
+       android:label="@string/app_name"
+       android:roundIcon="@mipmap/ic_launcher_round"
+       android:supportsRtl="true"
+       android:theme="@style/Theme.MiTrigesimaOctavaApp"
+       tools:targetApi="31" >
+
+       <activity android:name=".ActividadPrincipalMiTrigesimaOctavaApp"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="portrait"
+           android:exported="true">
+
+           <intent-filter>
+               <action android:name="android.intent.action.MAIN" />
+               <category android:name="android.intent.category.LAUNCHER" />
+           </intent-filter>
+
+       </activity>
+
+       <!--declarando otra actividad-->
+       <activity
+           android:name=".actividades_secundarias.ActividadEscaneoDispositivos"
+           android:screenOrientation="portrait"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"></activity>
+
+       <!--declarando otra actividad-->
+       <activity
+           android:name=".actividades_secundarias.ActividadComoClienteBluetooth"
+           android:screenOrientation="portrait"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"></activity>
+
+
+
+
+       <!--declarando otra actividad-->
+       <activity
+           android:name=".actividades_secundarias.ActividadConfiguracion"
+           android:screenOrientation="portrait"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"></activity>
+
+   </application>
+
+
+     <!-- Permisos adicionales para usar bluetooth antes de Android 12 ).-->
+   <uses-permission android:name="android.permission.BLUETOOTH"  tools:remove="android:maxSdkVersion" />
+   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+
+   <!-- Permisos adicionales para usar bluetooth a partir de Android 12.-->
+   <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+   <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+   <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+
+</manifest>
+
+
+
+
+El programa para ESP32
+Conectar la ESP32 al computador y (luxometro_bluetooth_esp32.ino) programarla desde el IDE de ARDUINO con el siguiente código.
+#include <Wire.h>
+#include <BH1750.h>
+#include "BluetoothSerial.h"
+
+
+//para manejar bluetooth
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
+
+
+//para manejar JSON
+#include <ArduinoJson.hpp>
+#include <ArduinoJson.h>
+
+
+BH1750 lightMeter(0x23);
+BluetoothSerial SerialBT;
+StaticJsonDocument<300> doc;//300 bytes
+uint16_t valor;
+int tiempo; //en ms
+int periodo = 100; //en ms
+
+
+void setup(){
+  Serial.begin(115200);
+  SerialBT.begin("PhysicsESP32"); //nombre del dispsoitivo Bluetooth 
+  Serial.println("El dispositivo empezó, ahora puede emparejarlo con bluetooth!");
+  //envía el mensaje de texto a través del serial
+  SerialBT.println("LED encendido"); // Envía el mensaje de texto a través de BT Serial
+
+
+  //Initiacializa el bus I2C (la librería BH1750 no lo hace automáticamente)
+  Wire.begin();
+     if (lightMeter.begin()) {
+    Serial.println(F("BH1750 inicializado"));
+  }
+  else {
+    Serial.println(F("Error inicializando BH1750"));
+  }
+  Serial.println(F("BH1750 Test begin"));
+}
+
+
+void loop() {
+  valor = lightMeter.readLightLevel();
+  SerializeObject();
+  Serial.println();
+
+
+
+
+  //cada segundo
+  delay(periodo);
+  tiempo = tiempo + periodo;
+}
+ 
+void SerializeObject()
+{
+    doc["unidad"] = "lux";
+    doc["periodo"] = periodo;
+    doc["tiempo"] = tiempo;
+    doc["valor"] = valor;   
+   char buffer[200];
+   serializeJsonPretty(doc, buffer);
+   SerialBT.println(buffer);
+   //Espera a que se complete la transmisión de datos en serie salientes
+   SerialBT.flush();      
+}
+
+
+El montaje ESP32
+Desconectar la ESP32 del computador y proceder a realizar el montaje ilustrado en la Figura 22.
+
+
+Ejecutar
+Ejecutar la app. Se despliega la GUI de la Figura 25 izquierda. Hacer clic en el botón AJUSTAR y se despliega la GUI de la Figura 25 derecha. Entrar el número de datos deseados para desplegar en la tabla y en la gráfica. Proceder a emparejar el dispoitovo móvil con la ESP32 y comenzar a obtener datos, Figuras 26, 27 y 28.
+
+
+
+
+ Imagen que contiene Texto
+
+Descripción generada automáticamente 
+         Forma
+
+Descripción generada automáticamente 
+Figura 25
+
+
+ Interfaz de usuario gráfica, Aplicación
+
+Descripción generada automáticamente 
+          
+Figura 26
+  
+          
+Figura 27
+ Interfaz de usuario gráfica, Texto
+
+Descripción generada automáticamente 
+         Interfaz de usuario gráfica, Gráfico
+
+Descripción generada automáticamente  
+Figura 28
+
+
+APP CON ESP32 BLUETOOTH: ESP32 ENVIANDO Y RECIBIENDO DATOS
+En este tercer ejemplo, se tiene un módulo ultroasóico HC-SR04, para la medición de distacias a obstáculos, Figura 29 izquierda,  acoplado a la ESP32. Un dispositivo móvil Android recibe los datos de las distancias que son enviados por la ESP32 vía bluetooth y éstos son desplegados en el móvil vía un gauge, una tabla y una gráfica. Simultáneamente se acopla a la ESP32 un led RGB tal cual se hizo en la primera app, Figura 30. Esto último con el fin de que el móvil controle el color de éste con base en rangos de distancias. En esta app nuevamente el dispositivo móvil Android hace de CLIENTE y la ESP32 hace de SERVIDOR.
+
+
+  
+
+Figura 29
+ Imagen que contiene electrónica, circuito
+
+Descripción generada automáticamente 
+
+Figura 30
+
+
+
+
+La app
+Crear un proyecto denominado MiTrigesimaNovenaApp con la jerarquía de paquetes y clases de la Figura 31.
+ Interfaz de usuario gráfica, Aplicación
+
+Descripción generada automáticamente 
+
+Figura 31
+En este proyecto se usa la librería comunicaciones.aar. Proceder como se hizo en las apps anteriores a incorporar esta librería al proyecto.
+Adicionalmente se usa para graficar la librería MPAndroidChart. Proceder a obtenerla tal y como se indicó en módulos anteriores.
+Las siguientes imágenes se deben incorporar al proyecto, Figura 32.
+ Interfaz de usuario gráfica, Aplicación
+
+Descripción generada automáticamente 
+
+Figura 32
+Los códigos de las clases son los siguientes. Todas las clases tienen el mismo código de la app anterior excepto las clases Distanciomtero, ActividadComoClienteBluetooth y ActividadPrincipalMiTrigesimaNovenaApp los cuales son los siguientes.
+La clase Distanciometro.
+
+
+public class Distanciometro extends GaugeSimple {
+
+
+   public Distanciometro(Context context){
+       super(context);
+
+
+   }
+
+
+   public void cambiarEscala(float medida){
+
+       float maximo=20f;
+       float minimo=0f;
+
+       if(medida>0 && ((medida < 20)^(medida==20))){
+           maximo=20f;
+           minimo=0f;
+
+       }
+
+       if(medida>20 && ((medida < 50)^(medida==50f ))){
+
+           maximo=50f;
+           minimo=0f;
+
+       }
+
+       if(medida>50 && ((medida < 100)^(medida==100f ))){
+
+           maximo=100f;
+           minimo=0f;
+
+       }
+
+
+       if(medida>100 && ((medida < 200)^(medida==200f ))){
+
+           maximo=200f;
+           minimo=0f;
+
+       }
+
+       if(medida>200 && ((medida < 300)^(medida==300f ))){
+
+           maximo=300f;
+           minimo=0f;
+
+       }
+
+       if(medida>300 && ((medida < 600)^(medida==600f ))){
+
+           maximo=600f;
+           minimo=0f;
+
+       }
+
+
+       this.setRango(minimo,maximo);
+
+   }
+
+
+}
+
+
+La clase ActividadComoClienteBluetooth.
+
+
+public class ActividadComoClienteBluetooth extends Activity implements Runnable {
+
+   //Objetos GUI necesarios
+   private LinearLayout linear_layout_segunda_fila;
+   private Distanciometro distanciometro;
+   private TablaSimple tabla;
+   private Graficador graficador;
+   private TextView text_aviso;
+   private Button botonConectar, botonBuscar, boton_tabla_grafica;
+   //variable tamaño de las letras basado en resolución de pantalla
+   private int tamanoLetraResolucionIncluida;
+   //hilo para actualizar tabla
+   private final Handler myHandler = new Handler();
+   int n=-1;
+   int tiempo_base=0;
+   int tiempo_anterior;
+   int tiempo_real;
+
+
+   private ClienteBluetooth cliente;
+   /*
+   hilo resposable de estar pendiente
+   del intercambio de datos con el servidor
+   */
+   private Thread hilo;
+   private boolean corriendo;
+   private float medida;
+   private int numero_datos=0;
+   private JSONObject obj;
+
+   private int rojo,verde,azul;
+
+   private LinearLayout.LayoutParams parametros_tabla_grafica;
+
+
+
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       gestionarResolucion();
+
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       //para informar cómo se debe pegar el adminitrador de
+       //diseño obtenido con el método GUI
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+       //para administrar los eventos
+       eventos();
+
+
+   }//fin onCreate
+
+
+   private void gestionarResolucion() {
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       tamanoLetraResolucionIncluida = (int)(0.8* AlmacenDatosRAM.tamanoLetraResolucionIncluida);
+
+   }
+
+
+   /*método responsable de la creación de los elementos de la GUI*/
+   private void crearElementosGUI() {
+
+       //tacometro
+       distanciometro = new Distanciometro(this);
+       distanciometro.setRango(0,100);
+       distanciometro.setUnidades("cm");
+
+       //tabla
+       tabla = new TablaSimple(this);
+       tabla.setEtiquetaColumnas("Tiempo (s)", AlmacenDatosRAM.unidades);//"Medida");
+
+
+       //graficador
+       graficador = new Graficador(this);
+       //se está muestreando cada segundo (1000 ms)
+       graficador.setTituloEjeX("Tiempo (s)");
+       graficador.setTituloEjeY(AlmacenDatosRAM.unidades);
+       graficador.setGrosorLinea(2f);
+       graficador.setColorLinea(Color.RED);
+       graficador.setColorValores(Color.YELLOW);
+       graficador.setColorMarcadores(Color.GREEN);
+       graficador.setColorFondo(Color.BLACK);
+       graficador.setColorTextoEjes(Color.WHITE);
+
+       botonBuscar = new Button(this);
+       botonBuscar.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonBuscar.setText("BUSCAR");
+       botonBuscar.getBackground().setColorFilter(Color.rgb(183, 216, 199), PorterDuff.Mode.MULTIPLY);
+
+       botonConectar = new Button(this);
+       botonConectar.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonConectar.setText("CONECTAR");
+       botonConectar.getBackground().setColorFilter(Color.rgb(183, 216, 199), PorterDuff.Mode.MULTIPLY);
+       botonConectar.setEnabled(false);
+
+       boton_tabla_grafica = new Button(this);
+       boton_tabla_grafica.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       boton_tabla_grafica.setText("GRAFICA");
+       boton_tabla_grafica.getBackground().setColorFilter(Color.rgb(183, 216, 199), PorterDuff.Mode.MULTIPLY);
+       boton_tabla_grafica.setEnabled(false);
+
+       text_aviso = new TextView(this);
+       text_aviso.setGravity(Gravity.FILL_VERTICAL);
+       text_aviso.setBackgroundColor(Color.rgb(183,216,199));
+       text_aviso.setTextSize(0.8f*tamanoLetraResolucionIncluida);
+       text_aviso.setText(" Buscar dispositivo fuente de sensores para emparejar...");
+       text_aviso.setTextColor(Color.BLACK);
+
+
+   }//fin crearElemnetosGUI
+
+
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+       LinearLayout linear_layout_principal = new LinearLayout(this);
+       linear_layout_principal.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_principal.setBackgroundColor(Color.rgb(183,216,199));
+       linear_layout_principal.setWeightSum(10.0f);
+
+       //LinearLayout primera fila
+       LinearLayout linear_layout_primera_fila = new LinearLayout(this);
+       linear_layout_primera_fila.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_primera_fila.setGravity(Gravity.FILL);
+       linear_layout_primera_fila.setBackgroundColor(Color.rgb(245, 245, 245));
+
+
+       //LinearLayout segunda fila
+       linear_layout_segunda_fila = new LinearLayout(this);
+       linear_layout_segunda_fila.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_segunda_fila.setGravity(Gravity.FILL);
+       linear_layout_segunda_fila.setBackgroundColor(Color.rgb(245, 245, 245));
+       linear_layout_segunda_fila.setWeightSum(1.0f);
+
+
+       //LinearLayout tercera fila
+       LinearLayout linear_layout_tercera_fila = new LinearLayout(this);
+       linear_layout_tercera_fila.setBackgroundColor(Color.RED);
+
+
+       //LinearLayout cuarta fila
+       LinearLayout linear_layout_cuarta_fila = new LinearLayout(this);
+       linear_layout_cuarta_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_cuarta_fila.setBackgroundColor(Color.rgb(183,216,199));
+       linear_layout_cuarta_fila.setWeightSum(3.0f);
+
+       //pegar primera fila al principal
+       LinearLayout.LayoutParams parametros_primera_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_primera_fila.weight = 4.25f;
+       parametros_primera_fila.setMargins(20, 20, 20, 20);
+       linear_layout_primera_fila.setLayoutParams(parametros_primera_fila);
+       linear_layout_principal.addView(linear_layout_primera_fila);
+
+
+       //pegar segunda fila al principal
+       LinearLayout.LayoutParams parametros_segunda_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_segunda_fila.weight = 4.25f;
+       parametros_segunda_fila.setMargins(20, 20, 20, 20);
+       linear_layout_segunda_fila.setLayoutParams(parametros_segunda_fila);
+       linear_layout_principal.addView(linear_layout_segunda_fila);
+
+
+       //pegar tercera fila al principal
+       LinearLayout.LayoutParams parametros_tercera_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_tercera_fila.weight =0.5f;
+       parametros_tercera_fila.setMargins(20, 0, 20, 0);
+       linear_layout_tercera_fila.setLayoutParams(parametros_tercera_fila);
+       linear_layout_principal.addView(linear_layout_tercera_fila);
+
+
+       //pegar cuarta fila al principal
+       LinearLayout.LayoutParams parametros_cuarta_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_cuarta_fila.weight = 1.0f;
+       parametros_cuarta_fila.setMargins(20, 20, 20, 20);
+       linear_layout_cuarta_fila.setLayoutParams(parametros_cuarta_fila);
+       linear_layout_principal.addView(linear_layout_cuarta_fila);
+
+
+       //pegar gauge en primera fila
+       linear_layout_primera_fila.addView(distanciometro);
+       //pegar tabla en segunda fila
+       parametros_tabla_grafica = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,0);
+       parametros_tabla_grafica.weight = 1.0f;
+       linear_layout_segunda_fila.addView(tabla,parametros_tabla_grafica);
+
+       //pegado textView en tercera fila
+       LinearLayout.LayoutParams parametrosPegadoTextView = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametrosPegadoTextView.weight = 1.0f;
+       linear_layout_tercera_fila.addView(text_aviso, parametrosPegadoTextView);
+
+       //pegar los botones en la cuarta fila
+       LinearLayout.LayoutParams parametros_botones_cuarta_fila = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_botones_cuarta_fila.weight = 1.0f;
+       botonBuscar.setLayoutParams(parametros_botones_cuarta_fila);
+       botonConectar.setLayoutParams(parametros_botones_cuarta_fila);
+       boton_tabla_grafica.setLayoutParams(parametros_botones_cuarta_fila);
+
+       linear_layout_cuarta_fila.addView(botonBuscar);
+       linear_layout_cuarta_fila.addView(botonConectar);
+       linear_layout_cuarta_fila.addView(boton_tabla_grafica);
+
+
+       return linear_layout_principal;
+   }//fin gui
+
+
+   private void eventos() {
+
+       //eventos botones
+       botonBuscar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+               lanzarBuscandoDispositivos();
+               AlmacenDatosRAM.estado_conexion_bluetooth=1;
+               botonConectar.setEnabled(true);
+               botonBuscar.setEnabled(false);
+
+           }
+       });
+
+
+       botonConectar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               if (botonConectar.getText() == "CONECTAR") {
+                   botonConectar.setText("EMPEZAR");
+                   botonBuscar.setEnabled(false);
+                   crearCliente();
+                   cliente.conectarSocketCliente();
+                   AlmacenDatosRAM.estado_conexion_bluetooth=2;
+                   hacerTrabajoDuro_2();
+
+               } else {
+                   borrarDatos();
+                   botonConectar.setEnabled(false);
+                   boton_tabla_grafica.setEnabled(true);
+                   empezarHilo();
+
+               }
+
+
+           }
+       });
+
+
+       //eventos botones
+       boton_tabla_grafica.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               if (boton_tabla_grafica.getText() == "TABLA") {
+                   boton_tabla_grafica.setText("GRAFICA");
+                   linear_layout_segunda_fila.removeView(graficador);
+                   //pegar tabla en segunda fila
+                   linear_layout_segunda_fila.addView(tabla,parametros_tabla_grafica);
+
+
+               } else {
+
+                   boton_tabla_grafica.setText("TABLA");
+                   linear_layout_segunda_fila.removeView(tabla);
+                   //pegar graficador en segunda fila
+                   linear_layout_segunda_fila.addView(graficador,parametros_tabla_grafica);
+
+
+               }
+
+
+           }
+       });
+
+
+   }//fin eventos
+
+
+   private void lanzarBuscandoDispositivos() {
+
+       Intent intent = new Intent(this, ActividadEscaneoDispositivos.class);
+       startActivity(intent);
+
+   }
+
+
+   public void empezarHilo() {
+
+       hilo = new Thread(this);
+       hilo.start();
+
+   }
+
+   private void crearCliente() {
+
+       //dirección del dispositivo elegido para emparejar
+       String direccion = AlmacenDatosRAM.direccion;
+       cliente = new ClienteBluetooth();
+
+       /*
+        el cliente instancia un dispositivo Bluetooth
+        (BluetoohDevice) a partir de la dirección
+        de este.Luego abre un socket de tipo  BuletoothSocket
+        a partir del dispositivo enlazado.
+        */
+       cliente.abrirSocketCliente(direccion);
+       empezarComunicacionConServidor();
+
+   }
+
+   private void empezarComunicacionConServidor() {
+
+      /*
+      Aceptada la conexión abre los flujos de entrada
+      y salida de este socket por donde fluirán (tubería)
+        los datos desde y hacia el servidor
+      */
+
+       cliente.abrirFlujoEntrada();
+       cliente.abrirFlujoSalida();
+
+   }
+
+   private void terminarComunicacionConServidor() {
+
+       cliente.cerrarFlujoEntrada();
+       cliente.cerrarFlujoSalida();
+       cliente.cerrarSocketCliente();
+
+   }
+
+   //no estaba
+   private void borrarDatos(){
+
+       AlmacenDatosRAM.datos.clear();
+       n=-1;
+       numero_datos=0;
+       tabla.borrar();
+
+   }
+
+
+   @Override
+   public void run() {
+       corriendo = true;
+
+
+       while (corriendo) {
+
+           try {
+               Thread.sleep(AlmacenDatosRAM.periodo_muestreo);
+
+           } catch (InterruptedException e) {
+               e.printStackTrace();
+           }
+
+           leer();
+
+           escribir();
+
+       }
+
+   }
+
+
+   private void leer(){
+
+       String nuevo_dato_string = cliente.leerString();//String JSON
+
+       if (nuevo_dato_string!= null) {
+           convertirStrigJson(nuevo_dato_string);
+           actualizarTacometroTabla();
+           distanciometro.setMedida(medida);
+           //actualizar tabla y gráfica
+           hacerTrabajoDuro_1();
+           //avisar que se están recibiendo datos
+           AlmacenDatosRAM.estado_conexion_bluetooth=3;
+           AlmacenDatosRAM.conexion_bluetooth= "  Recibiendo datos ...";//de " +  AlmacenDatosRAM.tipo_sensor;
+           hacerTrabajoDuro_2();
+       }
+
+
+   }
+
+   //obtener la información del JSON
+   public void convertirStrigJson(String datoString) {
+
+       //convertir String a JSON
+       try {
+           obj = new JSONObject(datoString);
+       } catch (JSONException e) {
+           e.printStackTrace();
+       }
+
+       //obtener la información
+       //la medida
+       try {
+           AlmacenDatosRAM.unidades= obj.getString("unidad");
+
+       } catch (JSONException e) {
+           e.printStackTrace();
+       }
+
+       try {
+           AlmacenDatosRAM.tiempo= ""+obj.getInt("tiempo");
+           //muestrear a más del doble de frecuencia
+           AlmacenDatosRAM.periodo_muestreo = (int)(0.4*obj.getInt("periodo"));
+           medida =(float) obj.getDouble("valor");
+
+       } catch (JSONException e) {
+           e.printStackTrace();
+       }
+
+   }
+
+
+   //lo cambie por este
+   private void escribir(){
+
+       elegirColor();
+
+       //escribir (enviar) datos al cliente
+       String dato = getStringJSON();
+       byte[] dato_en_byte = dato.getBytes();
+       if (dato_en_byte != null) {
+           cliente.escribirBytes(dato_en_byte);
+
+       }
+   }
+
+   private String getStringJSON(){
+
+       JSONObject obj = new JSONObject();
+
+       try {
+
+           obj.put("r", new Integer(rojo));
+           obj.put("g", new Integer(verde));
+           obj.put("b", new Integer(azul));
+
+       } catch (JSONException e) {
+           // TODO Auto-generated catch block
+           e.printStackTrace();
+       }
+
+       //convertir a String
+       return obj.toString();
+
+   }
+
+
+
+   private void actualizarTacometroTabla(){
+
+       distanciometro.setUnidades(AlmacenDatosRAM.unidades);
+       distanciometro.cambiarEscala(medida);
+       tabla.setEtiquetaColumnas("Tiempo en s", "Medida en " + AlmacenDatosRAM.unidades);
+
+   }
+
+
+
+   protected void onResume(){
+       super.onResume();
+
+       if (AlmacenDatosRAM.estado_conexion_bluetooth==1) {
+
+           if (AlmacenDatosRAM.direccion == "NO CONECTADO") {
+
+               AlmacenDatosRAM.conexion_bluetooth = "  Buscar dispositivo fuente de sensores para emparejar...";
+
+           } else {
+
+               AlmacenDatosRAM.conexion_bluetooth = "  Emparejado con " + AlmacenDatosRAM.direccion;
+
+           }
+
+          hacerTrabajoDuro_2();
+
+       }
+
+   }
+
+   protected void onPause() {
+       super.onPause();
+
+   }
+
+   protected void onDestroy() {
+       super.onDestroy();
+
+
+       if (hilo != null) {
+           detener();
+           hilo = null;
+       }
+
+
+
+       if (cliente != null) {
+           terminarComunicacionConServidor();
+       }
+
+   }
+
+
+   public void detener() {
+       corriendo = false;
+       hilo=null;
+
+   }
+
+
+   /*
+     Para el asunto de la tabla es mejor usar un manejador
+     para que no se reviente la aplicación
+   */
+
+   private void hacerTrabajoDuro_1() {
+       //.... realizar el trabajo duro
+       //Actualiza la UI usando el handler y el runnable
+       myHandler.post(updateRunnable_1);
+
+   }
+
+
+   int t_r_base;
+
+   final Runnable updateRunnable_1 = new Runnable() {
+       public void run() {
+
+           n=n+1;
+
+           if(n==0){
+
+               tiempo_base=Integer.parseInt(AlmacenDatosRAM.tiempo);//convertir a entero (ms)
+
+           }
+
+
+           //el tiempo es el real recibido
+           tiempo_real = Integer.parseInt(AlmacenDatosRAM.tiempo)-tiempo_base;
+
+
+           if(tiempo_real!=tiempo_anterior & numero_datos<AlmacenDatosRAM.nDatos) {
+
+          /*
+            Cuando comineza puede pasar que no tome bien datos mientras
+            sincroniza bien, y por lo tanto no se ha entrado en este if
+            y el tiempo se toma ananzando, por lo que se debe refdefinir el cero
+          */
+
+               if(numero_datos==0){
+
+                   t_r_base= tiempo_real;
+
+               }
+
+               tiempo_real= tiempo_real-t_r_base;
+
+               //ya redeinido de nuevo el cero procedemos a procesar los datos
+               numero_datos = numero_datos + 1;
+               //convertir a segundos con dos decimales
+               float t_r = (float) Math.round(tiempo_real * 0.001 * 100f) / 100f;
+
+               //actualizar la tabla
+               tabla.enviarDatos(t_r, (medida));
+               //actualizar la gráfica
+               graficador.setTituloEjeY(AlmacenDatosRAM.unidades);
+               AlmacenDatosRAM.datos.add((new Entry(t_r, medida)));
+               graficador.setDatos(AlmacenDatosRAM.datos);
+
+               tiempo_anterior = tiempo_real;
+
+           }
+
+
+
+
+           if (numero_datos+1 > AlmacenDatosRAM.nDatos) {
+
+               botonConectar.setEnabled(true);
+
+
+           }
+
+       }
+   };
+
+
+   private void elegirColor(){
+
+       if (medida< 20){
+           rojo=255;
+           verde=0;
+           azul=0;
+
+       }
+
+
+       if (medida>20&medida<100){
+           rojo=0;
+           verde=255;
+           azul=0;
+
+       }
+
+       if (medida>100){
+           rojo=0;
+           verde=0;
+           azul=255;
+
+       }
+   }
+
+
+
+   /*
+ Para el asunto de la table es mejor usar un
+ hilo manejador para que no se reviente la aplicación
+*/
+   public void hacerTrabajoDuro_2() {
+       //.... realizar el trabajo duro
+
+       //Actualiza la UI usando el handler y el runnable
+       myHandler.post(updateRunnable_2);
+
+   }
+
+   final Runnable updateRunnable_2 = new Runnable() {
+       public void run() {
+
+          actualizarAviso();
+
+
+       }
+   };
+
+
+   private void actualizarAviso(){
+
+       if(AlmacenDatosRAM.estado_conexion_bluetooth==1) {
+           String aviso = AlmacenDatosRAM.conexion_bluetooth;
+           text_aviso.setText(aviso);
+       }
+
+       if(AlmacenDatosRAM.estado_conexion_bluetooth==2) {
+           String aviso = AlmacenDatosRAM.conexion_bluetooth;
+           text_aviso.setText(aviso);
+       }
+
+       if(AlmacenDatosRAM.estado_conexion_bluetooth==3) {
+           String aviso = AlmacenDatosRAM.conexion_bluetooth;
+           text_aviso.setText(aviso);
+       }
+
+   }
+
+    
+
+
+}
+
+
+
+
+La clase ActividadPrincipalMiTrigesimaNovenaApp
+
+
+public class ActividadPrincipalMiTrigesimaNovenaApp extends Activity {
+
+
+   LinearLayout linear_layout_segunda_fila;
+   private Boton entrar, salir, ajustar;
+   private BluetoothAdapter BA;
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       gestionarResolucion();
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       /*
+       Para informar cómo se debe pegar el administrador de
+       diseño LinearLayout obtenido con el método crearGui()
+       */
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+
+       eventos();
+
+       //permisos
+       verificacionPermisos();
+
+
+   }//fin del método onCreate
+
+   /*Método auxiliar para asuntos de resolución*/
+   private void gestionarResolucion() {
+
+       //independencia de la resolución de la pantalla
+       DisplayMetrics displayMetrics = this.getApplicationContext().getResources().getDisplayMetrics();
+       int alto = displayMetrics.heightPixels;
+       int ancho = displayMetrics.widthPixels;
+       AlmacenDatosRAM.ancho = ancho;
+       AlmacenDatosRAM.alto = alto;
+       int dimensionReferencia;
+
+       //tomar el menor valor entre alto y ancho de pantalla
+       if (alto > ancho) {
+
+           dimensionReferencia = ancho;
+       } else {
+
+           dimensionReferencia = alto;
+       }
+
+       AlmacenDatosRAM.dimensionReferencia = dimensionReferencia;
+
+       //una estimación de un buen tamaño
+       int tamanoLetra = dimensionReferencia / 20;
+
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       int tamanoLetraResolucionIncluida = (int) (tamanoLetra / displayMetrics.scaledDensity);
+
+       //guardar en el almacen de datos para que otras clases la accedan fácilmente
+       AlmacenDatosRAM.tamanoLetraResolucionIncluida = tamanoLetraResolucionIncluida;
+
+   }
+
+
+   private void crearElementosGUI() {
+
+       entrar = new Boton(this);
+       entrar.setImagen(R.drawable.entrar);
+
+       salir = new Boton(this);
+       salir.setImagen(R.drawable.salir);
+
+       ajustar = new Boton(this);
+       ajustar.setImagen(R.drawable.configuracion);
+
+   }
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+
+       LinearLayout linear_layout_principal = new LinearLayout(this);
+       linear_layout_principal.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_principal.setGravity(Gravity.CENTER_HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.FILL);
+       linear_layout_principal.setBackgroundColor(Color.WHITE);
+       linear_layout_principal.setWeightSum(10);
+
+
+       //LinearLayout primera fila
+       LinearLayout linear_layout_primera_fila = new LinearLayout(this);
+       linear_layout_primera_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_primera_fila.setGravity(Gravity.FILL);
+       linear_layout_primera_fila.setBackgroundColor(Color.WHITE);
+       LinearLayout.LayoutParams parametros_primera_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);//ViewGroup.LayoutParams.WRAP_CONTENT);
+       parametros_primera_fila.weight = 8.0f;
+       linear_layout_primera_fila.setLayoutParams(parametros_primera_fila);
+
+
+       //fondo primera fila
+       Drawable fondo = getResources().getDrawable(R.drawable.distanciometro_android);
+       linear_layout_primera_fila.setBackgroundDrawable(fondo);
+
+       //LinearLayout segunda fila
+       linear_layout_segunda_fila = new LinearLayout(this);
+       linear_layout_segunda_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_segunda_fila.setGravity(Gravity.FILL);
+       LinearLayout.LayoutParams parametros_segunda_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_segunda_fila.weight = 2.0f;
+       linear_layout_segunda_fila.setWeightSum(2.0f);
+       linear_layout_segunda_fila.setLayoutParams(parametros_segunda_fila);
+
+
+       LinearLayout.LayoutParams parametros_pegado_boton = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_boton.weight = 1.0f;
+       entrar.setLayoutParams(parametros_pegado_boton);
+       salir.setLayoutParams(parametros_pegado_boton);
+       ajustar.setLayoutParams(parametros_pegado_boton);
+       linear_layout_segunda_fila.addView(entrar);
+       linear_layout_segunda_fila.addView(ajustar);
+
+
+       linear_layout_principal.addView(linear_layout_primera_fila);
+       linear_layout_principal.addView(linear_layout_segunda_fila);
+
+
+       return linear_layout_principal;
+
+
+   }
+
+
+   private void eventos() {
+
+       entrar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+
+               activarBluetooth();
+               lanzarActividadComunicacion();
+               linear_layout_segunda_fila.removeAllViews();
+               linear_layout_segunda_fila.addView(salir);
+               linear_layout_segunda_fila.addView(ajustar);
+
+
+           }
+       });
+
+       salir.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               finish();
+           }
+       });
+
+       ajustar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               lanzarActividadConfiguracion();
+
+           }
+       });
+
+
+   }
+
+
+   private void activarBluetooth() {
+
+       BA = BluetoothAdapter.getDefaultAdapter();
+       //activar bluetooth si está desactivado
+       if (!BA.isEnabled()) {
+           BA.enable();
+       }
+
+   }
+
+   private void lanzarActividadComunicacion() {
+
+       Intent intent = new Intent(this, ActividadComoClienteBluetooth.class);
+       startActivity(intent);
+
+   }
+
+   private void lanzarActividadConfiguracion() {
+
+       Intent intent = new Intent(this, ActividadConfiguracion.class);
+       startActivity(intent);
+
+   }
+
+
+   protected void onPause() {
+       super.onPause();
+
+   }
+
+   protected void onDestroy() {
+       super.onDestroy();
+       BA.disable();
+       // AlmacenDatosRAM.conexion_bluetooth= "  ";
+       finish();
+
+   }
+
+   /*
+   A partir de Android 12 es necesario agregar estos permisos para usar el Bluetooth
+    */
+   private void verificacionPermisos() {
+
+       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+           Toast.makeText(this, "This version is not Android 12 or later " + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show();
+       } else {
+
+           int hasReadWritePermission = checkSelfPermission(Manifest.permission.BLUETOOTH);
+           int hasBluetoothScan = checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN);
+
+           if (hasReadWritePermission != PackageManager.PERMISSION_GRANTED || hasBluetoothScan != PackageManager.PERMISSION_GRANTED) {
+
+
+
+               /* Request user permissions in runtime */
+               ActivityCompat.requestPermissions(ActividadPrincipalMiTrigesimaNovenaApp.this,
+                       new String[]{
+                               Manifest.permission.BLUETOOTH_ADMIN,
+                               Manifest.permission.BLUETOOTH_ADVERTISE,
+                               Manifest.permission.BLUETOOTH_SCAN,
+                               Manifest.permission.BLUETOOTH_CONNECT
+
+                       },
+                       100);
+
+           } else {
+
+           }
+
+       }
+
+   }
+
+   @TargetApi(23)
+   @Override
+   public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+       switch (requestCode) {
+           case 100:
+               if (grantResults.length > 0
+                       || grantResults[0] == PackageManager.PERMISSION_GRANTED
+                       || grantResults[1] == PackageManager.PERMISSION_GRANTED
+                       || grantResults[2] == PackageManager.PERMISSION_GRANTED
+                       || grantResults[3] == PackageManager.PERMISSION_GRANTED) {
+
+               } else {
+
+                   Toast.makeText(ActividadPrincipalMiTrigesimaNovenaApp.this, "Permiso denegado.", Toast.LENGTH_SHORT).show();
+                   finish();
+               }
+               return;
+       }
+   }
+
+
+}
+
+
+
+
+El archivo manifiesto.
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:tools="http://schemas.android.com/tools"
+   package="com.curso_simulaciones.mitrigesimanovenaapp">
+
+   <application
+       android:allowBackup="true"
+       android:dataExtractionRules="@xml/data_extraction_rules"
+       android:fullBackupContent="@xml/backup_rules"
+       android:icon="@mipmap/ic_launcher"
+       android:label="@string/app_name"
+       android:roundIcon="@mipmap/ic_launcher_round"
+       android:supportsRtl="true"
+       android:theme="@style/Theme.MiTrigesimaNovenaApp"
+       tools:targetApi="31" >
+
+       <activity android:name=".ActividadPrincipalMiTrigesimaNovenaApp"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+           android:screenOrientation="portrait"
+           android:exported="true">
+
+           <intent-filter>
+               <action android:name="android.intent.action.MAIN" />
+               <category android:name="android.intent.category.LAUNCHER" />
+           </intent-filter>
+
+       </activity>
+
+       <!--declarando otra actividad-->
+       <activity
+           android:name=".actividades_secundarias.ActividadEscaneoDispositivos"
+           android:screenOrientation="portrait"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"></activity>
+
+       <!--declarando otra actividad-->
+       <activity
+           android:name=".actividades_secundarias.ActividadComoClienteBluetooth"
+           android:screenOrientation="portrait"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"></activity>
+
+       <!--declarando otra actividad-->
+       <activity
+           android:name=".actividades_secundarias.ActividadConfiguracion"
+           android:screenOrientation="portrait"
+           android:theme="@android:style/Theme.NoTitleBar.Fullscreen"></activity>
+
+   </application>
+
+ 
+
+
+<!-- Permisos adicionales para usar bluetooth antes de Android 12 ).-->
+   <uses-permission android:name="android.permission.BLUETOOTH"  tools:remove="android:maxSdkVersion" />
+   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+
+   <!-- Permisos adicionales para usar bluetooth a partir de Android 12.-->
+   <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+   <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+   <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+
+
+</manifest>
+
+
+El programa para ESP32
+Conectar la ESP32 al computador y programarla desde el IDE de ARDUINO con el siguiente código (distanciometro_bluetooth_esp32.ino).
+
+
+#include "BluetoothSerial.h"
+
+
+//para manejar JSON
+#include <ArduinoJson.hpp>
+#include <ArduinoJson.h>
+
+
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
+
+
+StaticJsonDocument<300> doc;//300 bytes
+
+
+int pinRed=23;    
+int pinGreen= 22; 
+int pinBlue= 21; 
+int frecuencia = 5000;
+int canal_1 = 0; 
+int canal_2 = 1;
+int canal_3 = 2;
+int resolucion = 8;
+
+
+BluetoothSerial SerialBT;
+
+
+int r,g,b;
+int valor;
+
+
+int tiempo; //en ms
+int periodo = 100; //en ms
+
+
+//SENSOR  HC-SR04
+//define los números de los pines
+//del sensor ultrasónico HC-SR04
+const int trigPin = 5;
+const int echoPin = 18;
+ 
+void setup() {
+  //Asigna el pin trigPin como de salida
+  pinMode(trigPin, OUTPUT); 
+  //Asigna el pin echoPin como de entrada
+  pinMode(echoPin, INPUT);
+     
+  Serial.begin(115200);
+  SerialBT.begin("PhysicsESP32"); //nombre del dispsoitivo Bluetooth 
+  Serial.println("El dispositivo empezó, ahora puede emparejarlo con bluetooth!");
+  configurarPines();  
+}
+ 
+void loop() {
+  //retardo de 50 ms entre las ondas generadas. 
+  delay(50);
+  distancia();  
+  while (SerialBT.available() > 0){//Revisamos si hay datos en el puerto serial
+    deserializarJSON();  
+      } 
+     
+  //Se envía el valor en forma de cadena por bluetooth
+  //bluetooth aquí hace el papel de puerto serial  
+  SerializarObject();
+  Serial.println();
+
+
+  //cada periodo
+  delay(periodo);
+  tiempo = tiempo + periodo;
+}
+ 
+void configurarPines(){
+  //configuración de los canales
+  //rojo
+  ledcSetup(canal_1, frecuencia, resolucion); 
+  ledcAttachPin(pinRed,canal_1);
+
+
+  //azul
+  ledcSetup(canal_2, frecuencia, resolucion); 
+  ledcAttachPin(pinGreen,canal_2); 
+
+
+  //verde
+  ledcSetup(canal_3, frecuencia, resolucion); 
+  ledcAttachPin(pinBlue,canal_3);
+  
+}
+
+
+void distancia(){
+
+
+    //Borra el trigPin
+    digitalWrite(trigPin, LOW);
+    delayMicroseconds(2);
+    
+    digitalWrite(trigPin, HIGH);
+    //envía pulso de 10 us
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
+
+
+    //tiempode viaje del sonido en microsegundos
+    float duracion = pulseIn(echoPin, HIGH);
+        
+    //velocidad del sonido en el aire en m/s 
+    //sin corrección de temperatura y humedad   
+    float velocidad_sonido = 340;
+
+
+    //cálculo de distancia en cm
+    valor =((duracion*velocidad_sonido)/2)*0.0001;
+  
+}
+
+
+void establecerColor(int R, int G, int B) {
+   ledcWrite(canal_1,R);
+   ledcWrite(canal_2,G);
+   ledcWrite(canal_3,B); 
+}
+
+
+void deserializarJSON(){
+  deserializeJson(doc, SerialBT);
+  r = doc["r"];
+  g = doc["g"]; 
+  b = doc["b"];
+  establecerColor(r, g, b);   
+}
+
+
+void SerializarObject()
+{
+    doc["unidad"] = "cm";
+    doc["periodo"] = periodo;
+    doc["tiempo"] = tiempo;
+    doc["valor"] = valor;  
+
+
+   char buffer[200];
+   serializeJsonPretty(doc, buffer);
+   SerialBT.println(buffer);
+   //Espera a que se complete la transmisión de datos en serie salientes
+   SerialBT.flush();     
+}
+
+
+
+
+El montaje ESP32
+Desconectar la ESP32 del computador y proceder a realizar el montaje ilustrado en las Figuras 29 y 30.
+Ejecutar
+Ejecutar la app. Se despliega la GUI de la Figura 33. Continuar la interacción con las GUIS como e la app anterior y observar los resultados.      
+  
+
+Figura 33
+
+
+REFERENCIAS
+* Developers. Introducción general  a Bluetooth. https://developer.android.com/guide/topics/connectivity/bluetooth?hl=es-419. Consultada [Abril 16 de 2022].

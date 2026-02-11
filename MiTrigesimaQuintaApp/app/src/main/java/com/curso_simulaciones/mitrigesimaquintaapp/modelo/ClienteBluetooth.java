@@ -7,8 +7,9 @@ import android.util.Log;
 
 import com.curso_simulaciones.mitrigesimaquintaapp.AlmacenDatosRAM;
 
-import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.BufferedOutputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -18,7 +19,7 @@ public class ClienteBluetooth {
     public BluetoothDevice dispositivo;
     public BluetoothSocket clienteSocket;
 
-    private BufferedInputStream flujoEntrada;
+    private java.io.BufferedReader flujoEntrada;
     private BufferedOutputStream flujoSalida;
     private String datoString;
 
@@ -67,7 +68,9 @@ public class ClienteBluetooth {
 
             try {
 
-                flujoEntrada = new BufferedInputStream(clienteSocket.getInputStream());
+                // Use UTF-8 explicitly to avoid encoding issues
+                flujoEntrada = new BufferedReader(
+                        new java.io.InputStreamReader(clienteSocket.getInputStream(), "UTF-8"));
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -96,21 +99,14 @@ public class ClienteBluetooth {
 
     public String leerString() {
 
-        int dato;
-
-        byte[] buffer = new byte[8 * 1024];
+        datoString = null;
 
         try {
 
             if (flujoEntrada != null) {
 
-                dato = flujoEntrada.read(buffer);
-
-                if (dato > 0) {
-                    datoString = new String(buffer, 0, dato);
-                } else {
-                    datoString = null;
-                }
+                // Blocks until a full line is received or stream closes
+                datoString = flujoEntrada.readLine();
 
             }
         } catch (IOException e) {

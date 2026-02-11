@@ -331,9 +331,10 @@ public class ActividadComoServidorBluetooth extends Activity implements Runnable
                 e.printStackTrace();
             }
 
-            escribir();
+            String dato = getStringJSON();
+            escribir(dato);
 
-            AlmacenDatosRAM.conexion_bluetooth = "  Enviando datos al cliente ...";
+            AlmacenDatosRAM.conexion_bluetooth = "TX: " + dato;
             hacerTrabajoDuro();
 
         }
@@ -342,10 +343,11 @@ public class ActividadComoServidorBluetooth extends Activity implements Runnable
 
     }
 
-    private void escribir() {
+    private void escribir(String dato) {
 
-        String dato = getStringJSON();
-        byte[] dato_en_byte = dato.getBytes();
+        // Add newline delimiter for proper framing
+        String datoConSalto = dato + "\n";
+        byte[] dato_en_byte = datoConSalto.getBytes();
         if (dato_en_byte != null && servidor != null) {
             servidor.escribirBytes(dato_en_byte);
 

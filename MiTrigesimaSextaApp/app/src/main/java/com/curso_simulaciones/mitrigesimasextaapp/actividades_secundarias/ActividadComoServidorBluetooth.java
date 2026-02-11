@@ -94,14 +94,15 @@ public class ActividadComoServidorBluetooth extends Activity implements Runnable
         a.setImagen(R.drawable.a);
 
         // botones campo magnetico
+        // botones campo magnetico
         bx = new Boton(this);
-        bx.setImagen(R.drawable.bx);
+        bx.setImagen(R.drawable.bx, true);
         by = new Boton(this);
-        by.setImagen(R.drawable.by);
+        by.setImagen(R.drawable.by, true);
         bz = new Boton(this);
-        bz.setImagen(R.drawable.bz);
+        bz.setImagen(R.drawable.bz, true);
         b = new Boton(this);
-        b.setImagen(R.drawable.b);
+        b.setImagen(R.drawable.b, true);
 
         acelerometro = new Acelerometro(this);
         acelerometro.setUnidades(" m.s-2");
@@ -206,12 +207,12 @@ public class ActividadComoServidorBluetooth extends Activity implements Runnable
 
         LinearLayout.LayoutParams parametrosFilaDos = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 0);
-        parametrosFilaDos.weight = 3.5f;
+        parametrosFilaDos.weight = 3.75f;
         linearLayoutFilaDos.setLayoutParams(parametrosFilaDos);
 
         LinearLayout.LayoutParams parametrosFilaTres = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0);
-        parametrosFilaTres.weight = 3.5f;
+        parametrosFilaTres.weight = 3.75f;
         linearLayoutFilaTres.setLayoutParams(parametrosFilaTres);
 
         LinearLayout.LayoutParams parametrosFilaCuatro = new LinearLayout.LayoutParams(
@@ -221,7 +222,7 @@ public class ActividadComoServidorBluetooth extends Activity implements Runnable
 
         LinearLayout.LayoutParams parametrosFilaCinco = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0);
-        parametrosFilaCinco.weight = 1.5f;
+        parametrosFilaCinco.weight = 1.0f;
         linearLayoutFilaCinco.setLayoutParams(parametrosFilaCinco);
 
         linearLayoutPrincipal.addView(linearLayoutFilaUno);

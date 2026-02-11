@@ -1,0 +1,2537 @@
+﻿SIMULACIONES
+IV + IoT + DL 
+Industria 5.0
+Copyright 2026 para:
+Diego L. Aristizábal Ramírez
+Profesor, Facultad de Ciencias, Departamento de Física
+Universidad Nacional de Colombia
+Medellín
+
+
+	IV + IoT
+EN ANDROID
+
+
+	15
+	
+
+
+
+Temas
+	* INTRODUCCIÓN
+* INTERNET DE LAS COSAS (IoT)
+* ARQUITECTURA DE LA PLATAFORMA IoT – MQTT-
+* EJEMPLO DE APP IoT
+* TAREA
+* REFERENCIAS
+	
+
+INTRODUCCIÓN
+En éste módulo desarrolla una app que ilustra el uso de la tecnología de comunicaciones denominada Internet de las Cosas (IoT, por sus siglas en inngles, Internet of Things). El patrón de diseño usado es el conocido con el nombre  de PUBLICADOR-SUSCRIPTOR y el protocolo de comunicaciones es el denominado MQTT (por sus siglas en inglés, Message Queing Telemetry Transport). 
+INTERNET DE LAS COSAS (IoT)
+IoT describe la red de objetos físicos (cosas) que están integrados con sensores, software y otras tecnologías con el fin de conectar e intercambiar datos con otros dispositivos y sistemas a través de Internet. Estos dispositivos van desde objetos domésticos comunes hasta herramientas industriales sofisticadas. Para el 2025 se espera esten conectados vía IoT 22 mil millones de dispositivos.
+Esta tecnología permite que mediante la unión de la informática, los sensores de muy bajo costo y baja potencia de consumo, la nube, el big data, la inteligencia artificial y las tecnologías móviles (por ejemplo, la tecnología móvil 5G le dará un impulso exponencial al IoT), las cosas físicas pueden compartir y recopilar datos con una mínima intervención humana, permitiendo un análisis de estos para obtener información muy valiosa y con muy alta confiabildad. Esto conforma la denominada cuarta ola de la revolución industrial o Industria 4.0.
+ARQUITECTURA DE LA PLATAFORMA IoT – MQTT-
+¿QUÉ ES MQTT?
+MQTT es un protocolo liviano usado para la comunicación IoT y fue desarrollado por IBM para resolver la dificultad de comunicación en una plataforma de sensores para una petrolera. Está basado en la pila TCP/IP como base para la comunicación. En el caso de MQTT cada conexión se mantiene abierta y se “reutiliza” en cada comunicación. A diferencia, por ejemplo, a una petición HTTP 1.0 donde cada transmisión se realiza a través de conexión.
+MQTT es esencialmente un servicio de mensajería que usa el patrón publicador/suscritor (pub-sub), Figura 1. En este tipo de arquitecturas los clientes (publicadores ó suscritores) intercambian datos con un servidor centralizado o broker.
+ Firtec - Firtec 
+
+Figura 1: Imagen tomada de URL
+Para organizar las colas de envio y recepcion de datos estas se organizan por asuntos o topics.
+Cada cliente puede publicar un mensaje en un determinado topic o recibir información de los topics a los que se encuentra suscrito.
+Los clientes inician una conexión TCP/IP con el broker, el cual mantiene un registro de los clientes conectados. Esta conexión se mantiene abierta hasta que el cliente la finaliza.
+Para ello el cliente envía un mensaje al broker que contiene información necesaria (nombre de usuario, contraseña, tópico,…). El broker acepta o rechaza.  Por defecto, MQTT emplea el puerto 1883 y el 8883 cuando funciona sobre TLS (por sus siglas en inglés, Transport Layer Security). Un cliente puede ser suscritor, publicador o ambos.
+La función básica del MQTT es hacer posible la lectura de datos y envío de comandos a dispositivos que requieren bajo ancho de banda y un menor consumo energético. En síntesis, el MQTT permite que puedan comunicarse sin demasiado esfuerzo.
+Son varias las ventajas del protocolo MQTT como sistema de comunicación IoT al tener arquitectura publicador/suscritor:
+* escalabilidad, 
+* asincronismo, 
+* desacomplamiento entre clientes.
+Para entender mejor su funcionamiento, hay que tener claros los siguientes cinco conceptos claves relacionados:
+
+
+1. MQTT Broker
+Es un gestor de datos que se “ubica” en algún lugar de la nube. Recibe todos los datos que están siendo publicados, y decide qué suscriptores deben recibirlos según el interés de cada uno de ellos.
+2. Publish / Subscribe
+En MQTT existen publicadores de datos o suscritores (consumidores) de datos. El publicador puede ser, por ejemplo, un sensor de temperatura que, cada tantos segundos, mide la temperatura de una cámara fría y el suscritor es el destinatario del dato, el cual debe indicar al broker su interés en recibir dicho dato específico.
+3. Topics
+Se refiere a una jerarquía por temas que se les brinda a los mensajes por MQTT. De esta forma, quien publica los mensajes les asigna un tema, y quien se suscribe a los mensajes se suscribe solamente a los que le interesan.
+4. Messages
+Hay varios tipos de mensajes, según la función a ejecutar. Entre los más usuales se encuentran: connect, publish, subscribe, unsubscribe y disconnect.
+5. Quality of Services (QoS)
+Es parte esencial del protocolo. Son calidades de servicio que define la fiabilidad de los datos. Existen tres niveles que van del 0 al 2:
+* 0: El mensaje se envía una única vez. En caso de fallo puede que alguno no se entregue.
+* 1: El mensaje se envía hasta que se garantiza la entrega. En caso de fallo, el suscritor puede recibir algún mensaje duplicado.
+* 2: Se garantiza que cada mensaje se entregue al suscritor, y únicamente una vez.
+Por último, como se puede deducir, es necesario para el montaje de una red IoT, los servicios de un broker. Dentro de los brokers mas conocidos son: IBM Broker, Google Cloud, Alibaba Cloud, Azure de Microsoft,  HiveMQ, Mosquitto (libre), Eclipse Mosquitto (libre). Para el caso de este curso se usa un broker propio de la Escuela de Física de la Facultad de Ciencias de la Universidad Nacional de Colombia sede Medellín cuyo URL es:
+tcp://168.176.136.61:1883[1]
+EJEMPLO DE APP IoT
+Esta app se instala en dos dispositivos móviles Android. Uno de ellos hace las veces de PUBLICADOR y el otro de SUSCRIPTOR. El primero publica los datos de lo que mide  su acelerómetro y su luxometro. El segundo, que esta suscrito al mismo tópico del primero, recibe estos datos y los despliega en tacómetros.
+La app
+Crear un proyecto denominado MiCuadragesimaPrimeraApp con la jerarquía de paquetes y clases de la Figura 2.
+  
+
+Figura 2
+Para implementar el IoT se usará la librería Eclipse Paho. Para esto es necesario seguir los siguientes pasos:
+* Bajar el siguiente .jar:
+
+
+org.eclipse.paho.client.mqttv3-1.2.0.jar
+ 
+y agegarlo al la carpeta app>libs[2] del proyecto.
+
+
+* En el arcchivo build.gardle (module: …) agregar:
+
+
+dependencies {
+
+    . . .
+   
+
+
+
+
+implementation (files("libs/org.eclipse.paho.client.mqttv3-1.2.0.jar"))
+
+
+
+}
+
+
+* Por último sincronizar el proyecto con Gradles Files, Figura 3
+  
+
+Figura 3
+Las siguientes imágenes, Figura 4, se deben incorporar al proyecto en el directotrio app>src>main>res>drawable>,
+ Imagen que contiene Gráfico
+
+Descripción generada automáticamente 
+
+
+
+Figura 4
+
+
+El código de las clases es el siguiente.
+
+
+La clase AlmacenDatosRAM.
+
+
+
+
+public class AlmacenDatosRAM {
+
+
+   public static int ancho, alto, dimensionReferencia, tamanoLetraResolucionIncluida;
+
+   
+   public static String MQTTHOST;
+   public static String USERNAME;
+   public static String PASSWORD;
+   public static String topicStr;
+
+   public static String conectado_PubSub=" ";
+
+   public static boolean conectado=false;
+
+
+}
+
+
+La clase Boton.
+public class Boton extends ImageView {
+
+   private Bitmap imagen;
+   Bitmap imagen_escalada = null;
+   private float tamamano_letra;
+   private String cadena = "";
+
+
+   public Boton(Context context) {
+
+       super(context);
+
+
+   }
+
+
+   public void setText(String cadena) {
+
+       this.cadena = cadena;
+
+
+   }
+
+
+   public String getText() {
+
+       this.cadena = cadena;
+
+       return cadena;
+
+
+   }
+
+
+   public void setImagen(int imagen_importada) {
+
+
+       imagen = BitmapFactory.decodeResource(getResources(), imagen_importada);
+
+
+   }
+
+
+   protected void onDraw(Canvas canvas) {
+
+       Paint pincel = new Paint();
+       pincel.setAntiAlias(true);
+       pincel.setLinearText(true);
+
+       float ancho=getWidth();
+       float alto=getHeight();
+       float escala=1;
+       if(ancho>alto){
+           escala=alto;
+       } else {escala=ancho;}
+
+       if (imagen != null) {
+
+           imagen_escalada = escalarImagen(imagen, (int) (0.9f * escala), (int) (0.9f * escala));
+
+       }
+
+       int ex = (getWidth() - imagen_escalada.getWidth()) / 2;
+       int ey = (getHeight() - imagen_escalada.getHeight()) / 2;
+
+       tamamano_letra = 0.08f * getWidth();
+
+       if (imagen != null) {
+           canvas.drawBitmap(imagen_escalada, ex, ey, null);//dimension,dimension, null);
+       }
+
+
+       pincel.setTextSize(tamamano_letra);
+       float anchoCadenaUnidades = pincel.measureText(cadena);
+       float posicion_x_letra = (getWidth() - anchoCadenaUnidades) / 2;
+       float posicion_y_letra = ey + imagen_escalada.getHeight() + tamamano_letra;
+
+       pincel.setColor(Color.BLACK);
+       canvas.drawText(cadena, posicion_x_letra, posicion_y_letra, pincel);
+
+
+       invalidate();
+
+   }
+
+   /*
+      Se escala con Matrix para no dañar la resolución
+    */
+
+
+   public Bitmap escalarImagen(Bitmap bitmap, int newWidth, int newHeight) {
+       Bitmap scaledBitmap = Bitmap.createBitmap(newWidth, newHeight, bitmap.getConfig());
+
+       float scaleX = newWidth / (float) bitmap.getWidth();
+       float scaleY = newHeight / (float) bitmap.getHeight();
+
+       Matrix scaleMatrix = new Matrix();
+       scaleMatrix.setScale(scaleX, scaleY, 0, 0);
+
+       Canvas canvas = new Canvas(scaledBitmap);
+       canvas.setMatrix(scaleMatrix);
+       Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
+       paint.setAntiAlias(true);
+       paint.setDither(true);
+       paint.setFilterBitmap(true);
+       canvas.drawBitmap(bitmap, 0, 0, paint);
+
+       return scaledBitmap;
+
+   }
+
+
+}
+
+
+La clase GaugeSimple.
+
+
+public class GaugeSimple extends View {
+
+   private float largo;
+   private float minimo = 0;
+   private float maximo = 100f;
+   private float medida = 0.0f;//tomar como medida inicial
+   private String unidades = "UNIDADES";
+   private int colorPrimerTercio = Color.rgb(200, 200, 0);
+   private int colorSegundoTercio = Color.rgb(0, 180, 0);
+   private int colorTercerTercio = Color.RED;
+   private int colorLineas = Color.BLACK;
+   private int colorFondo = Color.WHITE;
+   private int colorNumerosDesplieggue = Color.BLACK;
+   private int colorFranjaDinamica = Color.rgb(0, 0, 255);
+   private int angPrimertercio = 100;
+   private int angSegundoTercio = 100;
+   private int angTercerTercio = 50;
+
+
+   /**
+    * Constructor de GaugeSimple
+    */
+   public GaugeSimple(Context context) {
+
+       super(context);
+
+       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+           this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
+       }
+   }
+
+   /**
+    * Modifica el rango de medicion
+    * desde minimo hasta maximo
+    *
+    * @param minimo
+    * @param maximo
+    */
+   public void setRango(float minimo, float maximo) {
+
+       this.minimo = minimo;
+       this.maximo = maximo;
+
+   }
+
+
+   /**
+    * Modifica el valor medido
+    *
+    * @param medida
+    */
+   public void setMedida(float medida) {
+
+       this.medida = medida;
+
+   }
+
+
+   /**
+    * Regresa el valor medido
+    *
+    * @return medida
+    */
+   public float getMedida() {
+
+       return medida;
+   }
+
+
+   /**
+    * Modifica las unidades del instrumento virtual
+    *
+    * @param unidades
+    */
+   public void setUnidades(String unidades) {
+
+       this.unidades = unidades;
+
+   }
+
+
+   /**
+    * Modifica los colores de los sectores circulares
+    *
+    * @param colorPrimerTercio
+    * @param colorSegundoTercio
+    * @param colorTercerTercio
+    */
+   public void setColorSectores(int colorPrimerTercio, int colorSegundoTercio, int colorTercerTercio) {
+
+       this.colorPrimerTercio = colorPrimerTercio;
+       this.colorSegundoTercio = colorSegundoTercio;
+       this.colorTercerTercio = colorTercerTercio;
+
+   }
+
+   /**
+    * Modifica los angulos de los sectores circulares
+    * Deben sumar 250 grados
+    *
+    * @param angPrimerTercio
+    * @param angSegundoTercio
+    * @param angTercerTercio
+    */
+   public void setAngulosSectores(int angPrimerTercio, int angSegundoTercio, int angTercerTercio) {
+       this.angPrimertercio = angPrimerTercio;
+       this.angSegundoTercio = angSegundoTercio;
+       this.angTercerTercio = angTercerTercio;
+
+   }
+
+   public void setColorFranjaDinámica(int colorFranjaDinamica) {
+
+       this.colorFranjaDinamica = colorFranjaDinamica;
+
+
+   }
+
+   /**
+    * Modifica el color de fondo del tacometro
+    *
+    * @param colorFondo
+    */
+   public void setColorFondoTacometro(int colorFondo) {
+
+       this.colorFondo = colorFondo;
+
+
+   }
+
+
+   /**
+    * Modifica el color de las lineas del tacometro
+    *
+    * @param color_lineas
+    */
+   public void setColorLineasTacometro(int color_lineas) {
+
+       this.colorLineas = color_lineas;
+
+
+   }
+
+
+   /**
+    * Modifica el color del numero que se despliega
+    *
+    * @param colorNumerosDesplieggue
+    */
+
+   public void setColorNumeroDespliegue(int colorNumerosDesplieggue) {
+
+       this.colorNumerosDesplieggue = colorNumerosDesplieggue;
+
+   }
+
+
+   /**
+    * @param canvas
+    */
+
+   //método para dibujar
+   protected void onDraw(Canvas canvas) {
+       super.onDraw(canvas);
+
+       /*
+       se graba el estado actual del canvas
+       para al final restaurarlo
+       */
+       canvas.save();
+
+
+        /*
+        La vista tendra las mismas dimensiones de su
+        contenedor
+        */
+       float ancho = this.getWidth();//ancho de la vista
+       float alto = this.getHeight();//alto de la vista
+
+       /*
+        Se define la variable largo como el 80%
+        del menor valor entre alto y largo del
+        contenedor
+        */
+
+       if (ancho > alto) {
+
+           largo = 0.8f * alto;
+
+       } else {
+
+           largo = 0.8f * ancho;
+
+
+       }
+
+       /*
+         se hace tralación del (0,0) al centro
+         del contenedor
+       */
+       canvas.translate(0.5f * ancho, 0.5f * alto);
+
+       //configurando el pincel
+       Paint pincel = new Paint();
+       //evita efecto sierra
+       pincel.setAntiAlias(true);
+       //tamaño texto
+       pincel.setTextSize(0.05f * largo);
+       //para mejor manejo de la métrica de texto
+       pincel.setLinearText(true);
+       //para efectos de buen escalado de bitmaps
+       pincel.setFilterBitmap(true);
+       //para buen manejo de gradientes de color
+       pincel.setDither(true);
+
+
+       float esquinaSuperiorIzquierdaX = -0.5f * largo;
+       float esquinaSuperiorIzquierdaY = -0.5f * largo;
+       float esquinaInferiorDerechaX = 0.5f * largo;
+       float esquinaInferiorDerechaY = 0.5f * largo;
+
+       //dibujar los tres segementos circulares
+       RectF rect = new RectF(esquinaSuperiorIzquierdaX, esquinaSuperiorIzquierdaY,
+               esquinaInferiorDerechaX, esquinaInferiorDerechaY);
+
+       pincel.setColor(colorPrimerTercio);
+       canvas.drawArc(rect, 145, angPrimertercio, true, pincel);
+       pincel.setColor(colorSegundoTercio);
+       canvas.drawArc(rect, 145 + angPrimertercio, angSegundoTercio, true, pincel);
+       pincel.setColor(colorTercerTercio);
+       canvas.drawArc(rect, 145 + angPrimertercio + angSegundoTercio, angTercerTercio, true, pincel);
+
+
+       float indent = (float) (0.05 * largo);
+       float posicionY = (float) (0.5 * largo);
+
+       //franja dinámica
+       //calcular angulo para ubicar la aguja de acuerdo al valor medido
+       float angulo_rotacion_medida = 235 + (250f / (maximo - minimo)) * (medida - minimo);
+       float a = (float) 0.01 * largo;
+       rect = new RectF(esquinaSuperiorIzquierdaX + a, esquinaSuperiorIzquierdaY + a,
+               esquinaInferiorDerechaX - a, esquinaInferiorDerechaY - a);
+       pincel.setColor(colorFranjaDinamica);
+       canvas.drawArc(rect, 145, angulo_rotacion_medida - 235, true, pincel);
+
+       /*
+        dibujar el tacometro sin la aguja
+       */
+       //aqui empieza el dibujo
+       float radio = (float) (0.48 * largo);
+       pincel.setColor(colorFondo);
+       canvas.drawCircle(0, 0, radio, pincel);
+       pincel.setColor(colorLineas);
+       pincel.setStyle(Paint.Style.STROKE);
+       canvas.drawCircle(0, 0, radio, pincel);
+       pincel.setStrokeWidth(1f);
+       canvas.drawCircle(0, 0, 0.5f * largo, pincel);
+
+       //grosor de las líneas
+       pincel.setStrokeWidth(0.01f * largo);
+
+
+
+        /*
+        Divisiones grandes
+        Se dibuja primero la división vertical.
+        Luego se repite rotando de a 50 grados comenzando
+        en 235 grados.
+         */
+       pincel.setStyle(Paint.Style.FILL);
+       for (int i = 0; i < 6; i = i + 1) {
+           float anguloRotacion = 235 + 50 * i;
+           canvas.rotate(anguloRotacion, 0, 0);
+           canvas.drawLine(0, -posicionY, 0, -posicionY + indent, pincel);
+           canvas.rotate(-anguloRotacion, 0, 0);
+
+           /*
+            Dibujar los números
+           */
+           int valorIncrementoMarcas = (int) ((maximo - minimo) / 5f);
+           int valorMarca = (int) (minimo + valorIncrementoMarcas * i);
+           String numero = "" + valorMarca;
+
+           //ancho de la cadena del número
+           float anchoCadenaNumero = pincel.measureText(numero);
+
+           canvas.save();
+           //dibuja números rotados
+           canvas.rotate(anguloRotacion, 0, 0);
+           //endereza los números a orientación horizontal
+           canvas.rotate(-anguloRotacion, 0, -posicionY + 2.5f*indent);
+           canvas.drawText(numero, -0.5f * anchoCadenaNumero, -posicionY + 2.5f * indent, pincel);
+           canvas.restore();
+
+       }
+
+       /*
+        Divisiones pequeñas
+        Se dibuja primero la división vertical.
+        Luego se repite rotando de a 10 grados comenzando
+        en 235 grados.
+        */
+       pincel.setStyle(Paint.Style.STROKE);
+       //grosor de las líneas
+       pincel.setStrokeWidth(0.005f * largo);
+       for (int i = 0; i < 26; i = i + 1) {
+
+           float anguloRotacion = 235 + 10 * i;
+           canvas.rotate(anguloRotacion, 0, 0);
+           canvas.drawLine(0, -posicionY, 0, -posicionY + (float) (0.6 * indent), pincel);
+           canvas.rotate(-anguloRotacion, 0, 0);
+
+       }
+       //aqui termina dibujo del tacometro sin aguja
+
+
+
+       /*
+       dibujar la aguja
+       */
+       //aqui empieza dibujo de la aguja
+       pincel.setStrokeWidth(0.005f * largo);
+       pincel.setColor(Color.RED);
+       canvas.rotate(angulo_rotacion_medida, 0, 0);
+       float b = (float) (1.5f* indent);
+       canvas.drawLine(0, -posicionY, 0, b, pincel);
+       canvas.rotate(-angulo_rotacion_medida, 0, 0);
+       pincel.setStyle(Paint.Style.FILL);
+       pincel.setColor(colorFondo);
+       canvas.drawCircle(0, 0, (float) (0.4 * indent), pincel);
+       pincel.setColor(Color.RED);
+       pincel.setStyle(Paint.Style.STROKE);
+       canvas.drawCircle(0, 0, (float) (0.4 * indent), pincel);
+
+       //dibujar circulo apoyo aguja
+
+       //aquí termina dibujo de la aguja
+
+       //Dibujar las unidades
+       pincel.setStyle(Paint.Style.FILL);
+       pincel.setColor(colorLineas);
+       pincel.setTextSize(0.08f * largo);
+       float anchoCadenaUnidades = pincel.measureText(unidades);
+       canvas.drawText(unidades, -0.5f * anchoCadenaUnidades,- 0.15f * largo, pincel);
+       //aqui termina dibujo de las unidades
+
+       //aqui despliegue de la medida
+       pincel.setTextSize(0.1f * largo);
+       float anchoCadenaNumero = pincel.measureText("" + medida);
+       pincel.setColor(colorNumerosDesplieggue);
+       canvas.drawText("" + medida, -0.5f * anchoCadenaNumero, 0.2f * largo, pincel);
+
+       //marcar empresa
+       String empresa = "IoT.PhysicsSensor";
+       pincel.setTextSize(0.05f * largo);
+       float anchoCadenaNombreEmpresa = pincel.measureText(empresa);
+       canvas.drawText(empresa, -0.5f * anchoCadenaNombreEmpresa, 0.35f * largo, pincel);
+
+
+       //se restaura el canvas al estado incial
+       //el que se garbó al principio de este método
+       canvas.restore();
+
+       //para efectos de animación
+       invalidate();
+
+   }//fin onDraw
+
+}
+
+
+
+
+
+
+La clase Acelerometro.
+
+
+public class Acelerometro extends GaugeSimple implements SensorEventListener {
+
+   private SensorManager sensorManager;
+   private int componenteAceleracion = 4;
+
+   public Acelerometro(Context context) {
+       super(context);
+       //estado inicial
+       setComponenteAcelerometro(componenteAceleracion);
+
+   }
+
+
+   public void setComponenteAcelerometro(int componenteAceleracion) {
+
+       this.componenteAceleracion = componenteAceleracion;
+
+       if (componenteAceleracion ==1) {
+           this.setUnidades("ax (m/s^2");
+           this.setRango(-20,20);}
+
+       if (componenteAceleracion ==2) {
+           this.setUnidades("ay (m/s^2");
+           this.setRango(-20,20);}
+
+       if (componenteAceleracion ==3) {
+           this.setUnidades("az (m/s^2");
+           this.setRango(-20,20);}
+
+       if (componenteAceleracion ==4) {
+           this.setUnidades("a (m/s^2");
+           this.setRango(0,20);}
+
+
+
+   }
+
+   public void captarSensor(Context context) {
+
+       //captamos el servicio del sensor
+       sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+       sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_FASTEST);
+
+   }
+
+   //se activa sólo cuando hay cambios
+   public void onSensorChanged(SensorEvent event) {
+
+       //en x
+       float a = 0;
+       float medida_x = 0;
+       float medida_y = 0;
+       float medida_z = 0;
+       float medida = 0;
+
+       medida_x = event.values[SensorManager.DATA_X];
+       medida_y = event.values[SensorManager.DATA_Y];
+       medida_z = event.values[SensorManager.DATA_Z];
+       float resultado = medida_x * medida_x + medida_y * medida_y + medida_z * medida_z;
+       a = (float) (Math.sqrt(resultado));
+
+
+       if (componenteAceleracion == 1) {
+           medida = medida_x;
+           this.setUnidades(" ax (m/S2)");
+           this.setRango(-20,20);
+       }
+       if (componenteAceleracion == 2){
+           medida = medida_y;
+           this.setUnidades(" ay (m/S2)");
+           this.setRango(-20,20);
+       }
+       if (componenteAceleracion == 3){
+           medida = medida_z;
+           this.setUnidades(" az (m/S2)");
+           this.setRango(-20,20);
+       }
+       if (componenteAceleracion == 4){
+           medida = a;
+           this.setUnidades(" a (m/S2)");
+           this.setRango(0,20);
+       }
+
+       //un decimal
+       medida = (float) (Math.round(medida * 10) / 10.0f);
+       this.setMedida(medida);
+
+
+   }
+
+   @Override
+   public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+   }
+
+}
+
+
+La clase Luxometro.
+
+
+public class Luxometro extends GaugeSimple implements SensorEventListener {
+
+   private SensorManager sensorManager;
+
+   public Luxometro(Context context){
+       super(context);
+
+
+   }
+
+
+   public void captarSensor(Context context) {
+
+       //captamos el servicio del sensor
+       sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+       sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT), SensorManager.SENSOR_DELAY_FASTEST);
+
+   }
+
+   //se activa sólo cuando hay cambios
+   public void onSensorChanged(SensorEvent event) {
+
+       float medida = event.values[SensorManager.DATA_X];
+       //medida con dos decimales
+       float medida_dos_decimales = (float)Math.floor(100*medida)/100f;
+       this.setMedida(medida_dos_decimales);
+       cambiarEscala(medida);
+
+   }
+
+   @Override
+   public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+   }
+
+
+   public void cambiarEscala(float medida){
+
+       float maximo=100f;
+       float minimo=0f;
+
+       if(medida>0 && ((medida < 100)^(medida==100f ))){
+
+           maximo=100f;
+           minimo=0f;
+
+       }
+
+       if(medida>100 && ((medida < 1000)^(medida==500f ))){
+
+           maximo=500f;
+           minimo=0f;
+
+       }
+
+       if(medida>500 && ((medida < 1000)^(medida==1000f ))){
+
+           maximo=1000f;
+           minimo=0f;
+
+       }
+
+
+       if(medida>1000 && ((medida < 5000)^(medida==5000f ))){
+
+           maximo=5000f;
+           minimo=0f;
+
+       }
+
+       if(medida>5000 && ((medida < 10000)^(medida==10000f ))){
+
+           maximo=10000f;
+           minimo=0f;
+
+       }
+
+       if(medida>10000 && ((medida < 50000)^(medida==50000f ))){
+
+           maximo=50000f;
+           minimo=0f;
+
+       }
+
+
+       this.setRango(minimo,maximo);
+
+   }
+
+
+}
+
+
+
+
+La clase ClientePubSubMQTT.
+
+
+Nota importante:
+
+
+/*
+ * ==========================================================
+ *   ADVERTENCIA IMPORTANTE PARA LOS ESTUDIANTES
+ * ==========================================================
+ *
+ * En versiones antiguas de Android se usaba con frecuencia
+ * la clase MqttAndroidClient junto con el archivo
+ * org.eclipse.paho.android.service.jar.
+ *
+ * ➡️ A partir de Android 12 este enfoque dejó de ser seguro
+ *    porque esa librería utiliza un componente interno
+ *    llamado AlarmReceiver que ya no es aceptado por el
+ *    sistema y produce errores de seguridad.
+ *
+ * ✅ La forma recomendada y “a prueba de futuro” es usar
+ *    directamente la clase MqttAsyncClient que se encuentra
+ *    en el archivo org.eclipse.paho.client.mqttv3.jar.
+ *
+ * Ventajas:
+ *   - Funciona en Android 12, 13 y posteriores.
+ *   - No necesita BroadcastReceiver ni configuraciones
+ *     especiales en AndroidManifest.xml.
+ *   - Es más simple y confiable para proyectos actuales.
+ *
+ * Por esta razón, en este curso usaremos MqttAsyncClient.
+ * ==========================================================
+ */
+
+
+
+
+
+
+package com.curso_simulaciones.micuadragesimaprimeraapp.comunicaciones;
+/*
+ * ==========================================================
+ *   ADVERTENCIA IMPORTANTE PARA LOS ESTUDIANTES
+ * ==========================================================
+ *
+ * En versiones antiguas de Android se usaba con frecuencia
+ * la clase MqttAndroidClient junto con el archivo
+ * org.eclipse.paho.android.service.jar.
+ *
+ * ➡️ A partir de Android 12 este enfoque dejó de ser seguro
+ *    porque esa librería utiliza un componente interno
+ *    llamado AlarmReceiver que ya no es aceptado por el
+ *    sistema y produce errores de seguridad.
+ *
+ * ✅ La forma recomendada y “a prueba de futuro” es usar
+ *    directamente la clase MqttAsyncClient que se encuentra
+ *    en el archivo org.eclipse.paho.client.mqttv3.jar.
+ *
+ * Ventajas:
+ *   - Funciona en Android 12, 13 y posteriores.
+ *   - No necesita BroadcastReceiver ni configuraciones
+ *     especiales en AndroidManifest.xml.
+ *   - Es más simple y confiable para proyectos actuales.
+ *
+ * Por esta razón, en este curso usaremos MqttAsyncClient.
+ * ==========================================================
+ */
+
+
+
+
+import static android.content.ContentValues.TAG;
+
+
+import android.app.Activity;
+import android.util.Log;
+
+
+import com.curso_simulaciones.micuadragesimaprimeraapp.datos.AlmacenDatosRAM;
+
+
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+
+
+public class ClientePubSubMQTT implements MqttCallback, IMqttActionListener {
+
+
+    private final Activity actividad;
+
+
+    private static String MQTTHOST;
+    private static String USERNAME;
+    private static String PASSWORD;
+    private String topicStr;
+
+
+    private MqttAsyncClient client;
+    private MqttConnectOptions options;
+    private String datoString;
+
+
+    public ClientePubSubMQTT(Activity actividad){
+        this.actividad = actividad;
+        MQTTHOST = AlmacenDatosRAM.MQTTHOST;
+        USERNAME = AlmacenDatosRAM.USERNAME;
+        PASSWORD = AlmacenDatosRAM.PASSWORD;
+        topicStr = AlmacenDatosRAM.topicStr;
+    }
+
+
+    // 1) Conectar
+    public void conectar() {
+        try {
+            String clientId = MqttAsyncClient.generateClientId();
+            client = new MqttAsyncClient(MQTTHOST, clientId, new MemoryPersistence());
+            client.setCallback(this);
+
+
+            options = new MqttConnectOptions();
+            options.setUserName(USERNAME);
+            options.setPassword(PASSWORD.toCharArray());
+            options.setCleanSession(true);
+            options.setAutomaticReconnect(true);   // reconexión propia
+            options.setKeepAliveInterval(60);      // segundos
+
+
+            client.connect(options, /*userContext*/null, /*callback*/this);
+            AlmacenDatosRAM.conectado_PubSub = "Conectando con el broker...";
+        } catch (MqttException e) {
+            AlmacenDatosRAM.conectado_PubSub = "Falla conexión con el broker...";
+            AlmacenDatosRAM.conectado = false;
+            e.printStackTrace();
+        }
+    }
+
+
+    // Éxito de connect()
+    @Override public void onSuccess(IMqttToken asyncActionToken) {
+        try {
+            client.subscribe(topicStr, 0);
+            AlmacenDatosRAM.conectado_PubSub = "Suscripción al tópico exitosa";
+            AlmacenDatosRAM.conectado = true;
+        } catch (MqttException e) {
+            AlmacenDatosRAM.conectado_PubSub = "Falla la suscripción al tópico...";
+            AlmacenDatosRAM.conectado = false;
+            e.printStackTrace();
+        }
+    }
+
+
+    // Falla de connect()
+    @Override public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+        Log.d(TAG, "Falla conexión", exception);
+        AlmacenDatosRAM.conectado_PubSub = "Falla conexión con el broker...";
+        AlmacenDatosRAM.conectado = false;
+    }
+
+
+    // Callbacks MQTT
+    @Override public void connectionLost(Throwable cause) {
+        Log.d(TAG, "Conexión perdida", cause);
+        AlmacenDatosRAM.conectado = false;
+    }
+
+
+    @Override public void messageArrived(String topic, MqttMessage mqttMessage) {
+        if (AlmacenDatosRAM.conectado) {
+            datoString = new String(mqttMessage.getPayload());
+            AlmacenDatosRAM.conectado_PubSub = "Recibiendo datos...";
+        }
+    }
+
+
+    @Override public void deliveryComplete(IMqttDeliveryToken token) {
+        Log.d(TAG, "Mensaje entregado");
+    }
+
+
+    // 2) Leer mensaje
+    public String leerString() {
+        return datoString;
+    }
+
+
+    // 3) Enviar mensajes
+    public void setEnviarMensajes(byte[] datoBytesEnviar) {
+        if (!AlmacenDatosRAM.conectado) return;
+        try {
+            AlmacenDatosRAM.conectado_PubSub = "Enviando datos...";
+            MqttMessage message = new MqttMessage(datoBytesEnviar);
+            message.setQos(1);
+            message.setRetained(false);
+            client.publish(topicStr, message);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    // 4) Desconectar
+    public void desconectar() {
+        try {
+            if (client != null && client.isConnected()) {
+                client.unsubscribe(topicStr);
+                client.disconnect();
+            }
+            AlmacenDatosRAM.conectado = false;
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+
+
+La clase ActividadComunicacion.
+
+
+public class ActividadComunicacion extends Activity {
+
+   private Boton pub, sub;
+
+
+
+   private int COLOR_1 = Color.rgb(220, 156, 80);
+
+
+
+
+   public void onCreate(Bundle icicle) {
+       super.onCreate(icicle);
+
+       gestionarResolucion();
+
+       creacionElementosGUI();
+
+       setContentView(crearGUI());
+
+       eventos();
+
+
+   }
+
+
+   private void gestionarResolucion(){
+
+
+   }//fin método gestionarResolucion()
+
+
+
+   private void creacionElementosGUI() {
+
+       pub = new Boton(this);
+       pub.setImagen(R.drawable.wifi_subida);
+
+       sub = new Boton(this);
+       sub.setImagen(R.drawable.wifi_bajada);
+
+   }
+
+
+   private LinearLayout crearGUI() {
+
+       //LinearLayoutPrincipal
+       LinearLayout linearLayoutPrincipal = new LinearLayout(this);
+       linearLayoutPrincipal.setOrientation(LinearLayout.VERTICAL);
+       linearLayoutPrincipal.setBackgroundColor(Color.WHITE);
+       linearLayoutPrincipal.setWeightSum(10f);
+
+
+       //LinearLayout primera fila
+       LinearLayout linearLayoutPrimeraFila = new LinearLayout(this);
+       linearLayoutPrimeraFila.setOrientation(LinearLayout.VERTICAL);
+
+       //fondo primera fila
+       Drawable fondo = getResources().getDrawable(R.drawable.modelo);
+       linearLayoutPrimeraFila.setBackgroundDrawable(fondo);
+
+
+       //LinearLayout segunda fila
+       LinearLayout linearLayoutSegundaFila = new LinearLayout(this);
+       linearLayoutSegundaFila.setOrientation(LinearLayout.HORIZONTAL);
+       linearLayoutSegundaFila.setBackgroundColor(Color.WHITE);
+       linearLayoutSegundaFila.setWeightSum(2f);
+
+
+       //pegar las filas en el princpal
+       LinearLayout.LayoutParams parametrosPrimeraFila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosPrimeraFila.weight = 9.0f;
+       linearLayoutPrimeraFila.setLayoutParams(parametrosPrimeraFila);
+
+
+       LinearLayout.LayoutParams parametrosSegundaFila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosSegundaFila.weight = 1.0f;
+       linearLayoutSegundaFila.setLayoutParams(parametrosSegundaFila);
+
+
+       linearLayoutPrincipal.addView(linearLayoutPrimeraFila);
+       linearLayoutPrincipal.addView(linearLayoutSegundaFila);
+
+
+       //pegado botones tercera fila
+       LinearLayout.LayoutParams parametrosPegadoBotones = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametrosPegadoBotones.weight = 1.0f;
+
+       //Adicionar a la tercera fila los botones
+       linearLayoutSegundaFila.addView(pub, parametrosPegadoBotones);
+       linearLayoutSegundaFila.addView(sub, parametrosPegadoBotones);
+
+       return linearLayoutPrincipal;
+   }
+
+   private void eventos() {
+
+       //evento cliente
+       pub.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+             lanzarActividadComoClientePubMQTT();
+
+           }
+       });
+
+       //evento cliente
+       sub.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               lanzarActividadComoClienteSubMQTT();
+
+           }
+       });
+
+
+   }//fin eventos()
+
+
+   private void lanzarActividadComoClientePubMQTT() {
+
+       Intent intent = new Intent(this, ActividadComoClientePubMQTT.class);
+       startActivity(intent);
+   }
+
+   private void lanzarActividadComoClienteSubMQTT() {
+
+       Intent intent = new Intent(this, ActividadComoClienteSubMQTT.class);
+       startActivity(intent);
+   }
+
+}
+
+
+
+
+La clase ActividadConfiguracion.
+
+
+public class ActividadConfiguracion extends Activity {
+
+   private EditText edit_text_broker, edit_text_usuario, edit_text_topico,
+           edit_text_contrasena;;
+   private TextView text_broker, text_usuario, text_contrasena, text_topico;
+   private int tamano_letra;
+   private Button boton_grabar;
+
+   public void onCreate(Bundle savedInstanceState){
+       super.onCreate(savedInstanceState);
+
+
+       gestionarResolucion();
+
+
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       //para informar cómo se debe pegar el adminitrador de
+       //diseño obtenido con el método GUI
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+       //Eventos GUI
+       eventosGui();
+
+   } //fin del método onCreate
+
+   private void gestionarResolucion(){
+
+       tamano_letra = (int)(0.5f*AlmacenDatosRAM.tamanoLetraResolucionIncluida);
+
+   }
+
+   private void eventosGui() {
+
+       boton_grabar.setOnClickListener(new View.OnClickListener() {
+
+           @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+           public void onClick(View v) {
+
+               guardar();
+               //regresar a la actividad anterior
+               onBackPressed();
+
+           }
+       });
+   }
+
+
+
+   /*método responsable de la creación de los elementos de la GUI*/
+   private void crearElementosGUI(){
+
+       text_broker = new TextView(this);
+       text_broker.setGravity(Gravity.FILL_VERTICAL);
+       text_broker.setBackgroundColor(Color.YELLOW);
+       text_broker.setTextSize(tamano_letra);
+       text_broker.setText("  URL DEL BROKER");
+       text_broker.setTextColor(Color.BLACK);
+
+       edit_text_broker = new EditText(this);
+       edit_text_broker.setTextSize(tamano_letra);
+       edit_text_broker.setText("" + AlmacenDatosRAM.MQTTHOST);
+
+       text_usuario = new TextView(this);
+       text_usuario.setGravity(Gravity.FILL_VERTICAL);
+       text_usuario.setBackgroundColor(Color.YELLOW);
+       text_usuario.setTextSize(tamano_letra);
+       text_usuario.setText("  USUARIO");
+       text_usuario.setTextColor(Color.BLACK);
+
+       edit_text_usuario = new EditText(this);
+       edit_text_usuario.setTextSize(tamano_letra);
+       edit_text_usuario.setText("" + AlmacenDatosRAM.USERNAME);
+
+       text_contrasena = new TextView(this);
+       text_contrasena.setGravity(Gravity.FILL_VERTICAL);
+       text_contrasena.setBackgroundColor(Color.YELLOW);
+       text_contrasena.setTextSize(tamano_letra);
+       text_contrasena.setText("  CONTRASEÑA");
+       text_contrasena.setTextColor(Color.BLACK);
+
+       edit_text_contrasena = new EditText(this);
+       // edit_text_contrasena.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+       edit_text_contrasena.setInputType( InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD );
+       edit_text_contrasena.setTransformationMethod(PasswordTransformationMethod.getInstance());
+       edit_text_contrasena.setTextSize(tamano_letra);
+       edit_text_contrasena.setText("" + AlmacenDatosRAM.PASSWORD);
+
+       text_topico = new TextView(this);
+       text_topico.setGravity(Gravity.FILL_VERTICAL);
+       text_topico.setBackgroundColor(Color.YELLOW);
+       text_topico.setTextSize(tamano_letra);
+       text_topico.setText("  TOPICO");
+       text_topico.setTextColor(Color.BLACK);
+
+       edit_text_topico = new EditText(this);
+       edit_text_topico.setTextSize(tamano_letra);
+       edit_text_topico.setText("" + AlmacenDatosRAM.topicStr);
+
+       boton_grabar = new Button(this);
+       boton_grabar.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamano_letra);
+       boton_grabar.setText("GUARDAR");
+       boton_grabar.getBackground().setColorFilter(Color.rgb(255, 255, 100), PorterDuff.Mode.MULTIPLY);
+
+   }
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+       //LinearLayoutPrincipal
+       LinearLayout linear_principal = new LinearLayout(this);
+       linear_principal.setOrientation(LinearLayout.VERTICAL);
+       linear_principal.setBackgroundColor(Color.WHITE);
+
+       //LinearLayout primera fila
+       LinearLayout linearLayoutPrimeraFila = new LinearLayout(this);
+       linearLayoutPrimeraFila.setBackgroundColor(Color.YELLOW);
+       linearLayoutPrimeraFila.setWeightSum(2f);
+       linearLayoutPrimeraFila.setOrientation(LinearLayout.HORIZONTAL);
+
+       //LinearLayout segunda fila
+       LinearLayout linearLayoutSegundaFila = new LinearLayout(this);
+       linearLayoutSegundaFila.setBackgroundColor(Color.YELLOW);
+       linearLayoutSegundaFila.setWeightSum(2f);
+       linearLayoutSegundaFila.setOrientation(LinearLayout.HORIZONTAL);
+
+       //LinearLayout tercera fila
+       LinearLayout linearLayoutTerceraFila = new LinearLayout(this);
+       linearLayoutTerceraFila.setBackgroundColor(Color.YELLOW);
+       linearLayoutTerceraFila.setWeightSum(2f);
+       linearLayoutTerceraFila.setOrientation(LinearLayout.HORIZONTAL);
+
+       //LinearLayout cuarta fila
+       LinearLayout linearLayoutCuartaFila = new LinearLayout(this);
+       linearLayoutCuartaFila.setBackgroundColor(Color.YELLOW);
+       linearLayoutCuartaFila.setWeightSum(2f);
+       linearLayoutCuartaFila.setOrientation(LinearLayout.HORIZONTAL);
+
+       //LinearLayout quinta fila
+       LinearLayout linearLayoutQuintaFila = new LinearLayout(this);
+       linearLayoutQuintaFila.setBackgroundColor(Color.YELLOW);
+       linearLayoutQuintaFila.setWeightSum(2f);
+       linearLayoutQuintaFila.setOrientation(LinearLayout.HORIZONTAL);
+
+       //LinearLayout sexta fila
+       LinearLayout linearLayoutSextaFila = new LinearLayout(this);
+       linearLayoutSextaFila.setBackgroundColor(Color.YELLOW);
+       linearLayoutSextaFila.setWeightSum(1f);
+       linearLayoutSextaFila.setOrientation(LinearLayout.HORIZONTAL);
+
+       //LinearLayout septima fila y pegar panel deslizable
+       LinearLayout linearLayoutSeptimaFila = new LinearLayout(this);
+       linearLayoutSeptimaFila.setBackgroundColor(Color.BLACK);
+       linearLayoutSeptimaFila.setOrientation(LinearLayout.VERTICAL);
+
+       //pegar las filas en el principal
+       LinearLayout.LayoutParams parametrosPrimerasCincoFilas = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,0);
+       parametrosPrimerasCincoFilas.weight = 0.5f;
+       linearLayoutPrimeraFila.setLayoutParams(parametrosPrimerasCincoFilas);
+       linearLayoutSegundaFila.setLayoutParams(parametrosPrimerasCincoFilas);
+       linearLayoutTerceraFila.setLayoutParams(parametrosPrimerasCincoFilas);
+       linearLayoutCuartaFila.setLayoutParams(parametrosPrimerasCincoFilas);
+       linearLayoutQuintaFila.setLayoutParams(parametrosPrimerasCincoFilas);
+       linearLayoutSextaFila.setLayoutParams(parametrosPrimerasCincoFilas);
+
+       LinearLayout.LayoutParams parametrosSeptimaFila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,0);
+       parametrosSeptimaFila.weight = 7.5f;
+       linearLayoutSeptimaFila.setLayoutParams(parametrosSeptimaFila);
+
+       linear_principal.addView(linearLayoutPrimeraFila);
+       linear_principal.addView(linearLayoutSegundaFila);
+       linear_principal.addView(linearLayoutTerceraFila);
+       linear_principal.addView(linearLayoutCuartaFila);
+       linear_principal.addView(linearLayoutQuintaFila);
+       linear_principal.addView(linearLayoutSextaFila);
+       linear_principal.addView(linearLayoutSeptimaFila);
+
+       //pegar elementos en cinco primeras filas
+       LinearLayout.LayoutParams parametros_pegado_elementos_cinco_primeras_filas_I = new LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_elementos_cinco_primeras_filas_I .weight = 1.0f;
+       LinearLayout.LayoutParams parametros_pegado_elementos_cinco_primeras_filas_D = new LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_elementos_cinco_primeras_filas_D .weight = 1.0f;
+       //primera fila
+       text_broker.setLayoutParams(parametros_pegado_elementos_cinco_primeras_filas_I);
+       edit_text_broker.setLayoutParams(parametros_pegado_elementos_cinco_primeras_filas_D);
+       linearLayoutPrimeraFila.addView(text_broker);
+       linearLayoutPrimeraFila.addView(edit_text_broker);
+
+       //segunda fila
+       text_usuario.setLayoutParams(parametros_pegado_elementos_cinco_primeras_filas_I);
+       edit_text_usuario.setLayoutParams(parametros_pegado_elementos_cinco_primeras_filas_D);
+       linearLayoutSegundaFila.addView(text_usuario);
+       linearLayoutSegundaFila.addView(edit_text_usuario);
+       //tercera fila
+       text_contrasena.setLayoutParams(parametros_pegado_elementos_cinco_primeras_filas_I);
+       edit_text_contrasena.setLayoutParams(parametros_pegado_elementos_cinco_primeras_filas_D);
+       linearLayoutTerceraFila.addView(text_contrasena);
+       linearLayoutTerceraFila.addView(edit_text_contrasena);
+
+       //cuarta fila
+       text_topico.setLayoutParams(parametros_pegado_elementos_cinco_primeras_filas_I);
+       edit_text_topico.setLayoutParams(parametros_pegado_elementos_cinco_primeras_filas_D);
+       linearLayoutCuartaFila.addView(text_topico);
+       linearLayoutCuartaFila.addView(edit_text_topico);
+
+       //pegar elemento quinta fila
+       LinearLayout.LayoutParams parametros_pegado_elemento_quinta_fila = new LinearLayout.LayoutParams(0, android.view.ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_elemento_quinta_fila .weight = 1.0f;
+       linearLayoutSextaFila.addView(boton_grabar,parametros_pegado_elemento_quinta_fila);
+
+
+       return linear_principal;
+   }
+
+
+   /*
+     Guardar el estado automáticamente cuando se salga
+     de esta pantalla
+   */
+   protected void onPause() {
+       super.onPause();
+
+   }
+
+   private void guardar(){
+
+       String broker = edit_text_broker.getText().toString();
+       AlmacenDatosRAM.MQTTHOST = broker;
+
+       String usuario = edit_text_usuario.getText().toString();
+       AlmacenDatosRAM.USERNAME = usuario;
+
+       String pasword = edit_text_contrasena.getText().toString();
+       AlmacenDatosRAM.PASSWORD = pasword;
+
+       String topico= edit_text_topico.getText().toString();
+       AlmacenDatosRAM.topicStr = topico;
+
+
+       SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
+       SharedPreferences.Editor editor = prefs.edit();
+       editor.putString("broker", AlmacenDatosRAM.MQTTHOST);
+       editor.putString("usuario", AlmacenDatosRAM.USERNAME);
+       editor.putString("pasword", AlmacenDatosRAM.PASSWORD);
+       editor.putString("topico", AlmacenDatosRAM.topicStr);
+       editor.commit();
+
+   }
+
+}
+
+
+La clase ActividadComoClientePubMQTT.
+
+
+public class ActividadComoClientePubMQTT extends Activity implements Runnable  {
+
+
+   private int tamanoLetraResolucionIncluida;
+   private int COLOR_1 = Color.rgb(220, 156, 80);
+   private Boton ax, ay, az, a;
+   private Acelerometro acelerometro;
+   private Luxometro luxometro;
+
+   protected TextView textviewRol;
+   private TextView textviewAviso;
+
+   protected Button botonConectar;
+   private float medida_acelerometro, medida_luxometro;
+   private int componente_aceleracion;
+
+   private ClientePubSubMQTT cliente;
+
+   private Thread hilo;
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       gestionarResolucion();
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       /*
+       Para informar cómo se debe pegar el administrador de
+       diseño LinearLayout obtenido con el método crearGui()
+       */
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+       eventos();
+
+       crearCliente();
+
+       hilo = new Thread(this);
+
+
+
+   }//fin del método onCreate
+
+   private void gestionarResolucion() {
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       tamanoLetraResolucionIncluida = (int) (0.8 * AlmacenDatosRAM.tamanoLetraResolucionIncluida);
+
+   }
+
+
+   private void crearElementosGUI() {
+
+       //botones
+       ax = new Boton(this);
+       ax.setImagen(R.drawable.ax);
+       ay = new Boton(this);
+       ay.setImagen(R.drawable.ay);
+       az = new Boton(this);
+       az.setImagen(R.drawable.az);
+       a = new Boton(this);
+       a.setImagen(R.drawable.a);
+
+       acelerometro = new Acelerometro(this);
+       acelerometro.captarSensor(this);
+       acelerometro.setUnidades(" m.s-2");
+       acelerometro.setRango(0, 50);//????
+       acelerometro.setAngulosSectores(50, 100, 100);
+       acelerometro.setColorFranjaDinámica(Color.rgb(0,255,0));
+       acelerometro.captarSensor(this);
+
+       luxometro = new Luxometro(this);
+       luxometro.captarSensor(this);
+       luxometro.setUnidades("lx");
+       luxometro.captarSensor(this);
+
+       textviewRol = new TextView(this);
+       textviewRol.setTextSize(TypedValue.COMPLEX_UNIT_SP, (int)(2f*tamanoLetraResolucionIncluida));
+       textviewRol.setBackgroundColor(Color.YELLOW);
+       textviewRol.setText("PUB");
+       textviewRol.setTextColor(Color.RED);
+       textviewRol.setGravity(Gravity.CENTER);
+       textviewRol.setEnabled(false);
+
+       textviewAviso = new TextView(this);
+       textviewAviso.setTextSize(TypedValue.COMPLEX_UNIT_SP, (int)(0.8*tamanoLetraResolucionIncluida));
+       textviewAviso.setBackgroundColor(Color.YELLOW);
+       textviewAviso.setTextColor(Color.RED);
+       textviewAviso.setGravity(Gravity.CENTER);
+
+
+       botonConectar = new Button(this);
+       botonConectar.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonConectar.setText("CONECTAR");
+       botonConectar.getBackground().setColorFilter(COLOR_1, PorterDuff.Mode.MULTIPLY);
+       botonConectar.setTextSize(tamanoLetraResolucionIncluida);
+
+   }
+
+
+   private LinearLayout crearGUI() {
+
+       //LinearLayoutPrincipal
+       LinearLayout linearLayoutPrincipal = new LinearLayout(this);
+       linearLayoutPrincipal.setOrientation(LinearLayout.VERTICAL);
+       linearLayoutPrincipal.setBackgroundColor(Color.BLACK);
+       linearLayoutPrincipal.setWeightSum(10f);
+
+       //LinearLayout primera fila
+       LinearLayout linearLayoutFilaUno = new LinearLayout(this);
+       linearLayoutFilaUno.setBackgroundColor(Color.WHITE);
+
+       //LinearLayout segunda fila
+       LinearLayout linearLayoutFilaDos = new LinearLayout(this);
+       linearLayoutFilaDos.setBackgroundColor(Color.WHITE);
+       linearLayoutFilaDos.setWeightSum(10f);
+
+       //linear segunda columna izquierda
+       LinearLayout linearLayoutColumnaDosIzquierda = new LinearLayout(this);
+
+       //linear segunda columna derecha
+       LinearLayout linearLayoutColumnaDosDerecha = new LinearLayout(this);
+       linearLayoutColumnaDosDerecha.setOrientation(LinearLayout.VERTICAL);
+       linearLayoutColumnaDosDerecha.setWeightSum(4f);
+
+       //LinearLayout tercera fila
+       LinearLayout linearLayoutFilaTres = new LinearLayout(this);
+       linearLayoutFilaTres.setBackgroundColor(Color.WHITE);
+
+
+       //LinearLayout fila 4
+       LinearLayout linearLayoutFilaCuatro = new LinearLayout(this);
+       linearLayoutFilaCuatro.setOrientation(LinearLayout.HORIZONTAL);
+       linearLayoutFilaCuatro.setBackgroundColor(Color.WHITE);
+
+
+       //LinearLayout fila 5
+       LinearLayout linearLayoutFilaCinco = new LinearLayout(this);
+       linearLayoutFilaCinco.setOrientation(LinearLayout.HORIZONTAL);
+       linearLayoutFilaCinco.setBackgroundColor(Color.WHITE);
+
+       //pegar las filas en el principal
+       LinearLayout.LayoutParams parametrosFilaUno = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaUno.weight = 1.0f;
+       linearLayoutFilaUno.setLayoutParams(parametrosFilaUno);
+
+       LinearLayout.LayoutParams parametrosFilaDos = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaDos.weight = 3.75f;
+       linearLayoutFilaDos.setLayoutParams(parametrosFilaDos);
+
+       LinearLayout.LayoutParams parametrosFilaTres = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaTres.weight = 3.75f;
+       linearLayoutFilaTres.setLayoutParams(parametrosFilaTres);
+
+       LinearLayout.LayoutParams parametrosFilaCuatro = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaCuatro.weight = 0.5f;
+       linearLayoutFilaCuatro.setLayoutParams(parametrosFilaCuatro);
+
+       LinearLayout.LayoutParams parametrosFilaCinco = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaCinco.weight = 1.0f;
+       linearLayoutFilaCinco.setLayoutParams(parametrosFilaCinco);
+
+       linearLayoutPrincipal.addView(linearLayoutFilaUno);
+       linearLayoutPrincipal.addView(linearLayoutFilaDos);
+       linearLayoutPrincipal.addView(linearLayoutFilaTres);
+       linearLayoutPrincipal.addView(linearLayoutFilaCuatro);
+       linearLayoutPrincipal.addView(linearLayoutFilaCinco);
+
+       //pegar columnas izquierda y derecha a la fila dos
+       LinearLayout.LayoutParams parametrosColumnaDosIzquierda = new LinearLayout.LayoutParams(0,ViewGroup.LayoutParams.MATCH_PARENT);
+       parametrosColumnaDosIzquierda.weight = 8.0f;
+       linearLayoutFilaDos.addView(linearLayoutColumnaDosIzquierda,parametrosColumnaDosIzquierda);
+
+       LinearLayout.LayoutParams parametrosColumnaDosDerecha = new LinearLayout.LayoutParams(0,ViewGroup.LayoutParams.MATCH_PARENT);
+       parametrosColumnaDosDerecha.weight = 2.0f;
+       linearLayoutFilaDos.addView(linearLayoutColumnaDosDerecha,parametrosColumnaDosDerecha);
+
+       //Adicionar acelerometro a la columna dos izquierda
+       linearLayoutColumnaDosIzquierda.addView(acelerometro);
+
+       //pegar botones
+       LinearLayout.LayoutParams parametrosPegadoBotonesAceleracion = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,0);
+       parametrosPegadoBotonesAceleracion.weight = 1.0f;
+       linearLayoutColumnaDosDerecha.addView(ax,parametrosPegadoBotonesAceleracion);
+       linearLayoutColumnaDosDerecha.addView(ay,parametrosPegadoBotonesAceleracion);
+       linearLayoutColumnaDosDerecha.addView(az,parametrosPegadoBotonesAceleracion);
+       linearLayoutColumnaDosDerecha.addView(a,parametrosPegadoBotonesAceleracion);
+
+
+       //Adicionar a la fila 1 EditText rol
+       LinearLayout.LayoutParams parametrosPegadoEditTextRol = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+       linearLayoutFilaUno.setGravity(Gravity.CENTER);
+       //textviewRol.setPadding(20, 20, 20, 20);
+       //parametrosPegadoEditTextRol.setMargins(20, 20, 20, 20);
+       textviewRol.setLayoutParams(parametrosPegadoEditTextRol);
+       linearLayoutFilaUno.addView(textviewRol);
+
+
+       //Adicionar a la fila tres el acelerómetro
+       LinearLayout.LayoutParams parametrosPegadoLuxometro = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+       linearLayoutFilaTres.setGravity(Gravity.CENTER);
+       linearLayoutFilaTres.addView(luxometro,parametrosPegadoLuxometro);
+
+       //Adicionar a la fila 4 el aviso
+       LinearLayout.LayoutParams parametrosPegadoAviso = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+       linearLayoutFilaCuatro.addView(textviewAviso, parametrosPegadoAviso);
+
+       //pegado botones a la fila 4
+       LinearLayout.LayoutParams parametrosPegadoBotones = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametrosPegadoBotones.weight = 1.0f;
+
+       //Adicionar a la fila 5 botón
+       linearLayoutFilaCinco.addView(botonConectar, parametrosPegadoBotones);
+
+
+       return linearLayoutPrincipal;
+   }
+
+
+   protected void eventos(){
+
+       ax.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+
+               acelerometro.setComponenteAcelerometro(1);
+
+               componente_aceleracion = 1;
+
+
+           }
+       });
+
+       ay.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               acelerometro.setComponenteAcelerometro(2);
+
+               componente_aceleracion = 2;
+
+
+           }
+       });
+
+       az.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               acelerometro.setComponenteAcelerometro(3);
+
+               componente_aceleracion = 3;
+
+
+
+           }
+       });
+
+       a.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               acelerometro.setComponenteAcelerometro(4);
+
+               componente_aceleracion = 4;
+
+
+           }
+       });
+
+       //evento cliente
+       botonConectar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               if (botonConectar.getText() == "CONECTAR") {
+                   botonConectar.setText("EMPEZAR");
+                   //conectar cliente
+                   cliente.conectar();
+
+
+               } else {
+
+
+                   hilo.start();
+                   botonConectar.setEnabled(false);
+
+               }
+
+           }
+       });
+
+   }
+
+
+   public void crearCliente() {
+
+       cliente = new ClientePubSubMQTT(this);
+
+
+   }
+
+
+   protected void onResume() {
+       super.onResume();
+
+   }
+
+
+   protected void onPause() {
+       super.onPause();
+       hilo=null;
+       if(cliente!=null)
+           cliente.desconectar();//no estaba, se está reventando
+
+   }
+
+
+   @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+   public void run() {
+
+       while (true) {
+
+           try {
+               Thread.sleep(200);//estaba 1000);
+
+           } catch (InterruptedException e) {
+               e.printStackTrace();
+           }
+
+
+           //escribir IoT
+           escribir();
+           //actualizar aqui estado de conexión
+           actualizarAviso();
+
+       }
+
+
+   }
+
+
+   /*
+   comunicaciones IoT PUB
+    */
+
+
+   //lo cambie por este
+   private void escribir(){
+
+       //escribir (enviar) datos al cliente
+       String dato = getStringJSON();
+       byte[] dato_en_byte = dato.getBytes();
+       if (dato_en_byte != null) {
+           cliente.setEnviarMensajes(dato_en_byte);
+
+       }
+   }
+
+
+   private String getStringJSON(){
+
+       JSONObject obj = new JSONObject();
+
+       try {
+
+           medida_acelerometro = acelerometro.getMedida();
+           medida_luxometro = luxometro.getMedida();
+           obj.put("componente", componente_aceleracion);
+           obj.put("valor_acelerometro", medida_acelerometro);
+           obj.put("valor_luxometro", medida_luxometro);
+
+       } catch (JSONException e) {
+           // TODO Auto-generated catch block
+           e.printStackTrace();
+       }
+
+       //convertir a String
+       return obj.toString();
+
+   }
+
+
+   private void actualizarAviso(){
+
+       textviewAviso.setText("Estado conexión IoT:" + AlmacenDatosRAM.conectado_PubSub);
+
+   }
+
+
+
+}
+La clase ActividadComoClienteSubMQTT.
+
+
+public class ActividadComoClienteSubMQTT extends Activity implements Runnable {
+
+
+
+   private int tamanoLetraResolucionIncluida;
+   private int COLOR_1 = Color.rgb(220, 156, 80);
+
+   private Acelerometro acelerometro;
+   private Luxometro luxometro;
+
+   private Button botonConectar;
+   private TextView textviewRol;
+   private TextView textviewAviso;
+
+   private ClientePubSubMQTT cliente;
+
+   private JSONObject obj;
+
+   private Thread hilo;
+
+    //hilo para actualizar estado de comunicación
+   private final Handler myHandler = new Handler();
+
+
+
+   public void onCreate(Bundle icicle) {
+       super.onCreate(icicle);
+
+       gestionarResolucion();
+
+       creacionElementosGUI();
+
+         /*
+       Para informar cómo se debe pegar el administrador de
+       diseño LinearLayout obtenido con el método crearGui()
+       */
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+
+       eventos();
+
+       crearCliente();
+
+       hilo = new Thread(this);
+
+   }
+
+   private void gestionarResolucion() {
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       tamanoLetraResolucionIncluida = (int) (0.8 * AlmacenDatosRAM.tamanoLetraResolucionIncluida);
+
+   }
+
+
+   private void creacionElementosGUI() {
+
+       acelerometro = new Acelerometro(this);
+       acelerometro.setUnidades(" a m/s^2");
+       acelerometro.setAngulosSectores(50, 100, 100);
+       acelerometro.setColorFranjaDinámica(Color.rgb(0,255,0));
+
+       luxometro = new Luxometro(this);
+       luxometro.setUnidades("lx");
+
+       textviewRol = new TextView(this);
+       textviewRol.setTextSize(TypedValue.COMPLEX_UNIT_SP, (int)(2*tamanoLetraResolucionIncluida));
+       textviewRol.setBackgroundColor(Color.YELLOW);
+       textviewRol.setText("SUB");
+       textviewRol.setTextColor(Color.RED);
+       textviewRol.setGravity(Gravity.CENTER);
+       textviewRol.setEnabled(false);
+
+       textviewAviso = new TextView(this);
+       textviewAviso.setTextSize(TypedValue.COMPLEX_UNIT_SP, (int)(0.8*tamanoLetraResolucionIncluida));
+       textviewAviso.setBackgroundColor(Color.YELLOW);
+       textviewAviso.setTextColor(Color.RED);
+       textviewAviso.setGravity(Gravity.CENTER);
+
+
+       botonConectar = new Button(this);
+       botonConectar.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
+       botonConectar.setText("CONECTAR");
+       botonConectar.getBackground().setColorFilter(COLOR_1, PorterDuff.Mode.MULTIPLY);
+       botonConectar.setTextSize(tamanoLetraResolucionIncluida);
+
+   }
+
+   private LinearLayout crearGUI() {
+
+       //LinearLayoutPrincipal
+       LinearLayout linearLayoutPrincipal = new LinearLayout(this);
+       linearLayoutPrincipal.setOrientation(LinearLayout.VERTICAL);
+       linearLayoutPrincipal.setBackgroundColor(Color.WHITE);
+       linearLayoutPrincipal.setWeightSum(10f);
+
+       //LinearLayout fila 1
+       LinearLayout linearLayoutFilaUno = new LinearLayout(this);
+       linearLayoutFilaUno.setBackgroundColor(Color.WHITE);
+
+       //LinearLayout fila 2
+       LinearLayout linearLayoutFilaDos = new LinearLayout(this);
+       linearLayoutFilaDos.setBackgroundColor(Color.WHITE);
+
+       //LinearLayout fila 3
+       LinearLayout linearLayoutFilaTres = new LinearLayout(this);
+       linearLayoutFilaTres.setBackgroundColor(Color.WHITE);
+
+       //LinearLayout fila 4
+       LinearLayout linearLayoutFilaCuatro = new LinearLayout(this);
+       linearLayoutFilaCuatro.setOrientation(LinearLayout.HORIZONTAL);
+       linearLayoutFilaCuatro.setBackgroundColor(Color.WHITE);
+
+
+       //LinearLayout fila 5
+       LinearLayout linearLayoutFilaCinco = new LinearLayout(this);
+       linearLayoutFilaCinco.setOrientation(LinearLayout.HORIZONTAL);
+       linearLayoutFilaCinco.setBackgroundColor(Color.WHITE);
+       linearLayoutFilaCinco.setWeightSum(1f);
+
+       //pegar las filas en el princpal
+       LinearLayout.LayoutParams parametrosFilaUno = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaUno.weight = 1.0f;
+       linearLayoutFilaUno.setLayoutParams(parametrosFilaUno);
+
+       LinearLayout.LayoutParams parametrosFilaDos = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaDos.weight = 3.75f;
+       linearLayoutFilaDos.setLayoutParams(parametrosFilaDos);
+
+       LinearLayout.LayoutParams parametrosFilaTres = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaTres.weight = 3.75f;
+       linearLayoutFilaTres.setLayoutParams(parametrosFilaTres);
+
+       LinearLayout.LayoutParams parametrosFilaCuatro = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaCuatro.weight = 0.5f;
+       linearLayoutFilaCuatro.setLayoutParams(parametrosFilaCuatro);
+
+       LinearLayout.LayoutParams parametrosFilaCinco = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametrosFilaCinco.weight = 1.0f;
+       linearLayoutFilaCinco.setLayoutParams(parametrosFilaCinco);
+
+       linearLayoutPrincipal.addView(linearLayoutFilaUno);
+       linearLayoutPrincipal.addView(linearLayoutFilaDos);
+       linearLayoutPrincipal.addView(linearLayoutFilaTres);
+       linearLayoutPrincipal.addView(linearLayoutFilaCuatro);
+       linearLayoutPrincipal.addView(linearLayoutFilaCinco);
+
+       //Adicionar a la fila 1 EditText rol
+       LinearLayout.LayoutParams parametrosPegadoEditTextRol = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+       linearLayoutFilaUno.setGravity(Gravity.CENTER);
+       //textviewRol.setPadding(20, 20, 20, 20);
+       //parametrosPegadoEditTextRol.setMargins(20, 20, 20, 20);
+       textviewRol.setLayoutParams(parametrosPegadoEditTextRol);
+       linearLayoutFilaUno.addView(textviewRol);
+
+       //Adicionar a la fila 2 el acelerometro
+       LinearLayout.LayoutParams parametrosPegadoAcelerometro = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+       linearLayoutFilaDos.setGravity(Gravity.CENTER);
+       linearLayoutFilaDos.addView(acelerometro, parametrosPegadoAcelerometro);
+
+       //Adicionar a la fila 3 el luxometro
+       LinearLayout.LayoutParams parametrosPegadoLuxometro = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+       linearLayoutFilaTres.setGravity(Gravity.CENTER);
+       linearLayoutFilaTres.addView(luxometro, parametrosPegadoLuxometro);
+
+       //Adicionar a la fila 4 el aviso
+       LinearLayout.LayoutParams parametrosPegadoAviso = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+       linearLayoutFilaCuatro.addView(textviewAviso, parametrosPegadoAviso);
+
+
+       //Adicionar a la fila 5 los botones
+       LinearLayout.LayoutParams parametrosPegadoBotones = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametrosPegadoBotones.weight = 1.0f;
+       linearLayoutFilaCinco.addView(botonConectar, parametrosPegadoBotones);
+
+
+       return linearLayoutPrincipal;
+   }
+
+
+   protected void eventos(){
+
+       //evento cliente
+       botonConectar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               if (botonConectar.getText() == "CONECTAR") {
+                   botonConectar.setText("EMPEZAR");
+                   //conectar cliente
+                   cliente.conectar();
+
+
+               } else {
+
+                   hilo.start();
+                   botonConectar.setEnabled(false);
+
+               }
+
+           }
+       });
+
+
+   }
+
+
+
+   public void crearCliente() {
+
+       cliente = new ClientePubSubMQTT(this);
+
+
+   }
+
+
+   @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+   public void run() {
+
+       while (true) {
+
+           try {
+               Thread.sleep(100);
+
+           } catch (InterruptedException e) {
+               e.printStackTrace();
+           }
+
+           //leer IoT
+           leer();
+           //actualizar aqui estado de conexión
+           actualizarAviso();
+
+       }
+
+
+   }
+
+
+
+    /*
+   comunicaciones IoT SUB
+    */
+
+   @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+   private void leer() {
+
+       //String JSON
+       String nuevo_dato_string = cliente.leerString();
+
+       if (nuevo_dato_string != null) {
+           convertirStrigJson(nuevo_dato_string);
+
+       } else {
+
+
+       }
+
+   }
+
+   //obtener la información del JSON
+   public void convertirStrigJson(String datoString) {
+
+       //convertir String a JSON
+       try {
+           obj = new JSONObject(datoString);
+       } catch (JSONException e) {
+           e.printStackTrace();
+       }
+
+       //obtener la información
+       //la medida
+       try {
+           int componente_aceleracion = obj.getInt("componente");
+           acelerometro.setComponenteAcelerometro(componente_aceleracion);
+
+       } catch (JSONException e) {
+           e.printStackTrace();
+       }
+
+       try {
+
+           float medida_aclerometro = (float)(obj.getDouble("valor_acelerometro"));
+           acelerometro.setMedida(medida_aclerometro);
+           float medida_luxometro = (float)(obj.getDouble("valor_luxometro"));
+           luxometro.cambiarEscala(medida_luxometro);
+           luxometro.setMedida(medida_luxometro);
+
+       } catch (JSONException e) {
+           e.printStackTrace();
+       }
+
+   }
+
+   private void actualizarAviso(){
+
+       textviewAviso.setText("Estado conexión IoT:" + AlmacenDatosRAM.conectado_PubSub);
+
+   }
+
+
+}
+
+
+La clase ActividadPrincipalMiCuadragesimaPrimeraApp.
+
+
+public class ActividadPrincipalMiCuadragesimaPrimeraApp extends Activity {
+
+
+   private Boton entrar, salir, ajustes;
+   LinearLayout linear_layout_segunda_fila;
+
+
+   public void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+
+       gestionarResolucion();
+
+       //para crear elementos de la GUI
+       crearElementosGUI();
+
+       /*
+       Para informar cómo se debe pegar el administrador de
+       diseño LinearLayout obtenido con el método crearGui()
+       */
+       ViewGroup.LayoutParams parametro_layout_principal = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+       //pegar el contenedor con la GUI
+       this.setContentView(crearGUI(), parametro_layout_principal);
+
+       //actualizar preferencias
+       actualizarPreferenciasMQTT();
+
+
+       eventos();
+
+
+
+   }//fin del método onCreate
+
+   /*Método auxiliar para asuntos de resolución*/
+   private void gestionarResolucion() {
+
+       //independencia de la resolución de la pantalla
+       DisplayMetrics displayMetrics = this.getApplicationContext().getResources().getDisplayMetrics();
+       int alto = displayMetrics.heightPixels;
+       int ancho = displayMetrics.widthPixels;
+       AlmacenDatosRAM.ancho=ancho;
+       AlmacenDatosRAM.alto=alto;
+       int dimensionReferencia;
+
+       //tomar el menor valor entre alto y ancho de pantalla
+       if (alto > ancho) {
+
+           dimensionReferencia = ancho;
+       } else {
+
+           dimensionReferencia = alto;
+       }
+
+       AlmacenDatosRAM.dimensionReferencia =dimensionReferencia;
+
+       //una estimación de un buen tamaño
+       int tamanoLetra = dimensionReferencia / 20;
+
+
+       //tamano de letra para usar acomodado a la resolución de pantalla
+       int tamanoLetraResolucionIncluida = (int) (tamanoLetra / displayMetrics.scaledDensity);
+
+       //guardar en el almacen de datos para que otras clases la accedan fácilmente
+       AlmacenDatosRAM.tamanoLetraResolucionIncluida = tamanoLetraResolucionIncluida;
+
+   }
+
+
+   private void crearElementosGUI() {
+
+       entrar = new Boton(this);
+       entrar.setImagen(R.drawable.entrar);
+
+       salir = new Boton(this);
+       salir.setImagen(R.drawable.salir);
+
+       ajustes = new Boton(this);
+       ajustes.setImagen(R.drawable.configuracion);
+
+   }
+
+
+   /*método responsable de administrar el diseño de la GUI*/
+   private LinearLayout crearGUI() {
+
+
+       LinearLayout linear_layout_principal = new LinearLayout(this);
+       linear_layout_principal.setOrientation(LinearLayout.VERTICAL);
+       linear_layout_principal.setGravity(Gravity.CENTER_HORIZONTAL);
+       linear_layout_principal.setGravity(Gravity.FILL);
+       linear_layout_principal.setBackgroundColor(Color.WHITE);
+       linear_layout_principal.setWeightSum(10);
+
+
+       //LinearLayout primera fila
+       LinearLayout linear_layout_primera_fila = new LinearLayout(this);
+       linear_layout_primera_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_primera_fila.setGravity(Gravity.FILL);
+       linear_layout_primera_fila.setBackgroundColor(Color.WHITE);
+       LinearLayout.LayoutParams parametros_primera_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);//ViewGroup.LayoutParams.WRAP_CONTENT);
+       parametros_primera_fila.weight = 9.0f;
+       linear_layout_primera_fila.setLayoutParams(parametros_primera_fila);
+
+
+       //fondo primera fila
+       Drawable fondo = getResources().getDrawable(R.drawable.comunicacion_iot);
+       linear_layout_primera_fila.setBackgroundDrawable(fondo);
+
+       //LinearLayout segunda fila
+       linear_layout_segunda_fila = new LinearLayout(this);
+       linear_layout_segunda_fila.setOrientation(LinearLayout.HORIZONTAL);
+       linear_layout_segunda_fila.setGravity(Gravity.FILL);
+       LinearLayout.LayoutParams parametros_segunda_fila = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+       parametros_segunda_fila.weight = 1.0f;
+       linear_layout_segunda_fila.setWeightSum(2.0f);
+       linear_layout_segunda_fila.setLayoutParams(parametros_segunda_fila);
+
+
+       LinearLayout.LayoutParams parametros_pegado_boton = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
+       parametros_pegado_boton.weight = 1.0f;
+       entrar.setLayoutParams(parametros_pegado_boton);
+       salir.setLayoutParams(parametros_pegado_boton);
+       ajustes.setLayoutParams(parametros_pegado_boton);
+       linear_layout_segunda_fila.addView(entrar);
+       linear_layout_segunda_fila.addView(ajustes);
+       //linear_layout_segunda_fila.addView(salir);
+
+
+       linear_layout_principal.addView(linear_layout_primera_fila);
+       linear_layout_principal.addView(linear_layout_segunda_fila);
+
+
+       return linear_layout_principal;
+
+
+   }
+
+
+   private void eventos() {
+
+       entrar.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               lanzarActividadComunicacion();
+               linear_layout_segunda_fila.removeAllViews();
+               linear_layout_segunda_fila.addView(salir);
+               linear_layout_segunda_fila.addView(ajustes);
+
+           }
+       });
+
+       salir.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               finish();
+           }
+       });
+
+       ajustes.setOnClickListener(new View.OnClickListener() {
+
+           public void onClick(View v) {
+
+               lanzarActividadConfiguracion();
+           }
+       });
+
+
+   }
+
+
+
+
+
+   private void lanzarActividadComunicacion() {
+
+       Intent intent = new Intent(this, ActividadComunicacion.class);
+       startActivity(intent);
+
+   }
+
+
+   private void lanzarActividadConfiguracion(){
+
+       Intent intent = new Intent(this, ActividadConfiguracion.class);
+       startActivity(intent);
+
+   }
+
+
+
+   protected void onDestroy() {
+       super.onDestroy();
+       finish();
+
+   }
+
+
+   private void actualizarPreferenciasMQTT(){
+
+       SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
+
+       AlmacenDatosRAM.MQTTHOST = prefs.getString("broker", "");
+       AlmacenDatosRAM.USERNAME = prefs.getString("usuario", "");
+       AlmacenDatosRAM.PASSWORD = prefs.getString("pasword","");///no lo tenía
+       AlmacenDatosRAM.topicStr = prefs.getString("topico", "");
+
+   }
+
+
+
+}
+
+
+El archivo manifiesto.
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.curso_simulaciones.micuadragesimaprimeraapp">
+
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MiCuadragesimaPrimeraApp"
+        tools:targetApi="31" >
+        <activity android:name=".ActividadPrincipalMiCuadragesimaPrimeraApp"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:screenOrientation="portrait"
+            android:exported="true">
+
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+
+
+
+        </activity>
+
+
+        <!--declarando otra actividad-->
+        <activity android:name=".actividades_secundarias.ActividadComunicacion"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:screenOrientation="portrait">
+        </activity>
+
+
+        <!--declarando otra actividad-->
+        <activity android:name=".actividades_secundarias.ActividadComoClienteSubMQTT"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:screenOrientation="portrait">
+        </activity>
+
+
+        <!--declarando otra actividad-->
+        <activity android:name=".actividades_secundarias.ActividadComoClientePubMQTT"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:screenOrientation="portrait">
+        </activity>
+
+
+        <!--declarando otra actividad-->
+        <activity android:name=".actividades_secundarias.ActividadConfiguracion"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:screenOrientation="portrait">
+        </activity>
+
+
+
+
+    </application>
+
+
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+
+    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS"/>
+
+
+
+
+</manifest>
+
+
+Compilar y ejecutar. El apk debe estar instalado en dos  dispositivos móviles Android. Uno hace de PUB y otro de SUB.
+El ejecutar en cada uno de los dos dispositivos la app se despliega la GUI de la Figura 5 izquierda. Hacer clic en el botón AJUSTES y se despliega la GUI de la Figura 5 derecha. En esta GUI se configura la app: URL del BROKER (escribir el URL del BROKER de la Escuela de Física), USUARIO (cualquiera), CONTRASEÑA (no es necesario en esta app), TOPICO (cualquiera: cada grupo pone su tópico). Todos los dispositivos móviles que quieran recibir los datos deben tener el mismo tópico.
+Una vez configurada la app (esta configuración será persistente) regresar y hacer clic en el botón ENTRAR. Se despliega la GUI de la Figura 6 de la Figura 6 arriba izquierda. Un dispositivo móvil elegirlo como PUB y al otro como SUB. Comenzar las comunicaciones, Figura 6 abajo.
+ 
+
+
+
+
+
+
+
+
+ Interfaz de usuario gráfica, Aplicación
+
+Descripción generada automáticamente 
+    Imagen que contiene Interfaz de usuario gráfica
+
+Descripción generada automáticamente 
+Figura 5
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  Diagrama
+
+Descripción generada automáticamente    
+ Diagrama
+
+Descripción generada automáticamente 
+  Diagrama
+
+Descripción generada automáticamente    
+Figura 6
+TAREA
+1. Estudiar detalladamente el código fuente de  MiCuadragesimaPrimeraApp. 
+
+
+2. Elaborar un proyecto denominado MiCuadragesimaSegundaApp en donde un dispositivo móvil android PUB le envía el valor que mide del campo magnético y sus componentes y el valor que mide de aceleración y sus componentes  a otro dispositivo móvil Android SUB. Ambos dispositivos despliegan la información en tacómetros de forma semejante al ejemplo de este módulo.
+
+
+La app debe tener un icono lanzador personal.
+REFERENCIAS
+
+
+* IoT.Eclipse. Getting Started. Introducción general  al IoT. https://iot.eclipse.org/projects/getting-started/. Consultada [Agosto de 2022].
+
+
+________________
+[1] Sino está en funcionamiento solicitar al docente el URL de otro broker
+[2] Si no existe la carpeta libs crearla.
