@@ -2,175 +2,118 @@ package com.curso_simulaciones.micuadrigesimaquintaapp.utilidades;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.view.View;
 
 import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import java.util.ArrayList;
 
 public class Graficador extends LineChart {
 
-    private ArrayList<ILineDataSet> iLineDataSets = new ArrayList<>();
-    private LineData lineaData;
+    private LineDataSet lineDataSet;
+    private String tituloEjeY = "";
+    private int colorLinea = Color.RED;
+    private float grosorLinea = 2f;
+    private int colorValores = Color.WHITE;
+    private int colorMarcadores = Color.RED;
 
     public Graficador(Context context) {
         super(context);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+            this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
 
-        // Configuración básica del gráfico
-        this.setDragEnabled(true);
-        this.setScaleEnabled(true);
-        this.setPinchZoom(true);
+        // Configuraciones iniciales básicas para que se vea bien en fondo oscuro
         this.setBackgroundColor(Color.BLACK);
-
-        configurarEjes();
-        inicializarDatos();
-    }
-
-    private void configurarEjes() {
-        XAxis xAxis = this.getXAxis();
-        xAxis.setTextColor(Color.WHITE);
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setDrawGridLines(true);
-        xAxis.setGridColor(Color.DKGRAY);
-
-        YAxis leftAxis = this.getAxisLeft();
-        leftAxis.setTextColor(Color.WHITE);
-        leftAxis.setDrawGridLines(true);
-        leftAxis.setGridColor(Color.DKGRAY);
-
-        YAxis rightAxis = this.getAxisRight();
-        rightAxis.setEnabled(false);
-
-        this.getDescription().setEnabled(false);
         this.getLegend().setTextColor(Color.WHITE);
-    }
-
-    private void inicializarDatos() {
-        iLineDataSets.clear();
-
-        // Dataset 0: Distancia (Rojo) - Matches GaugeDistancia
-        iLineDataSets.add(crearSet("Distancia (cm)", Color.RED));
-
-        // Dataset 1: Temperatura (Verde) - Matches GaugeTemperatura
-        iLineDataSets.add(crearSet("Temp (°C)", Color.GREEN));
-
-        // Dataset 2: Humedad (Azul/Cyan) - Matches GaugeHumedad
-        iLineDataSets.add(crearSet("Humedad (%)", Color.CYAN));
-
-        lineaData = new LineData(iLineDataSets);
-        this.setData(lineaData);
-    }
-
-    /**
-     * Agrega datos a las 3 series simultáneamente
-     */
-    public void agregarDatos(float x, float distancia, float temp, float hum) {
-        if (lineaData != null) {
-            // Añadir entradas a cada dataset
-            lineaData.addEntry(new Entry(x, distancia), 0);
-            lineaData.addEntry(new Entry(x, temp), 1);
-            lineaData.addEntry(new Entry(x, hum), 2);
-
-            lineaData.notifyDataChanged();
-            this.notifyDataSetChanged();
-            this.setVisibleXRangeMaximum(50); // Mover ventana
-            this.moveViewToX(lineaData.getEntryCount());
-        }
-    }
-
-    // Método para compatibilidad si solo se pasa 1 dato (lo añade al primero)
-    public void agregarDato(float x, float y) {
-        if (lineaData != null) {
-            lineaData.addEntry(new Entry(x, y), 0);
-            lineaData.notifyDataChanged();
-            this.notifyDataSetChanged();
-            this.setVisibleXRangeMaximum(50);
-            this.moveViewToX(lineaData.getEntryCount());
-        }
-    }
-
-    // Método setDatos legacy para compatibilidad con arrays completos
-    public void setDatos(ArrayList<Entry> entries) {
-        // Este método reemplaza todo.
-        // Para mantener compatibilidad con el codigo que usa "setDatos" para graficar
-        // solo distancia:
-        if (lineaData != null && lineaData.getDataSetCount() > 0) {
-            ILineDataSet set = lineaData.getDataSetByIndex(0);
-            set.clear();
-            for (Entry e : entries) {
-                set.addEntry(e);
-            }
-            lineaData.notifyDataChanged();
-            this.notifyDataSetChanged();
-            this.invalidate();
-        }
-    }
-
-    private LineDataSet crearSet(String etiqueta, int color) {
-        LineDataSet set = new LineDataSet(null, etiqueta);
-        set.setAxisDependency(YAxis.AxisDependency.LEFT);
-        set.setColor(color);
-        set.setLineWidth(2f);
-        set.setDrawCircles(false);
-        set.setDrawValues(false);
-        return set;
-    }
-
-    public void setTituloEjeX(String titulo) {
-        this.getDescription().setText(titulo);
-        this.getDescription().setEnabled(true);
         this.getDescription().setTextColor(Color.WHITE);
+        this.getXAxis().setTextColor(Color.WHITE);
+        this.getAxisLeft().setTextColor(Color.WHITE);
+        this.getAxisRight().setEnabled(false); // Ocultar eje derecho por defecto
     }
 
-    public void setTituloEjeY(String titulo) {
-        // Opcional
-    }
+    public void setDatos(ArrayList<Entry> datos) {
+        if (datos == null) return;
+        
+        lineDataSet = new LineDataSet(datos, tituloEjeY);
+        lineDataSet.setLineWidth(grosorLinea);
+        lineDataSet.setColor(colorLinea);
+        lineDataSet.setValueTextColor(colorValores);
+        lineDataSet.setCircleColor(colorMarcadores);
+        lineDataSet.setDrawCircles(true);
+        lineDataSet.setCircleRadius(3f);
+        lineDataSet.setDrawValues(false); // No mostrar valores sobre los puntos para no saturar
 
-    public void setGrosorLinea(float grosor) {
-        // Aplica al primer dataset por defecto
-        if (lineaData != null && lineaData.getDataSetCount() > 0)
-            ((LineDataSet) lineaData.getDataSetByIndex(0)).setLineWidth(grosor);
-    }
+        LineData lineData = new LineData(lineDataSet);
+        this.setData(lineData);
 
-    public void setColorLinea(int color) {
-        if (lineaData != null && lineaData.getDataSetCount() > 0)
-            ((LineDataSet) lineaData.getDataSetByIndex(0)).setColor(color);
-    }
-
-    public void setColorValores(int color) {
-        if (lineaData != null && lineaData.getDataSetCount() > 0)
-            ((LineDataSet) lineaData.getDataSetByIndex(0)).setValueTextColor(color);
-    }
-
-    public void setColorMarcadores(int color) {
-        if (lineaData != null && lineaData.getDataSetCount() > 0) {
-            ((LineDataSet) lineaData.getDataSetByIndex(0)).setCircleColor(color);
-            ((LineDataSet) lineaData.getDataSetByIndex(0)).setDrawCircles(true);
+        /*
+        Esta instrucción es de la librería y es necesaria para
+        que el eje se vaya desplazando a medida que entran datos
+        */
+        if (lineData.getEntryCount() > 0) {
+            // Desplazar la vista para seguir el último dato
+            this.moveViewToX(lineData.getEntryCount());
+            // El usuario sugirió moveViewTo con parámetros específicos, 
+            // pero moveViewToX es más común para scroll horizontal simple.
+            // Implementamos la sugerencia del usuario adaptada:
+            this.moveViewTo(lineData.getEntryCount() - 7, 50f, YAxis.AxisDependency.LEFT);
         }
+        
+        this.invalidate();
     }
 
-    public void setColorFondo(int color) {
-        this.setBackgroundColor(color);
+    /*
+    Modifica el grosor del trazo de la gráfica
+    */
+    public void setGrosorLinea(float grosorLinea) {
+        this.grosorLinea = grosorLinea;
     }
 
-    public void setColorTextoEjes(int color) {
-        this.getXAxis().setTextColor(color);
-        this.getAxisLeft().setTextColor(color);
-        this.getLegend().setTextColor(color);
-        this.getDescription().setTextColor(color);
+    public void setColorLinea(int colorLinea) {
+        this.colorLinea = colorLinea;
+    }
+
+    public void setColorFondo(int colorFondo) {
+        this.setBackgroundColor(colorFondo);
+    }
+
+    public void setColorTextoEjes(int colorTextoEjes) {
+        // texto eje y izquierda
+        this.getAxisLeft().setTextColor(colorTextoEjes);
+        // texto eje y derecha
+        this.getAxisRight().setTextColor(colorTextoEjes);
+        // texto eje x
+        this.getXAxis().setTextColor(colorTextoEjes);
+        // texto título eje y (leyenda)
+        this.getLegend().setTextColor(colorTextoEjes);
+        // texto título eje x (descripción)
+        this.getDescription().setTextColor(colorTextoEjes);
+    }
+
+    public void setColorValores(int colorValores) {
+        this.colorValores = colorValores;
+    }
+
+    public void setTituloEjeX(String tituloEjeX) {
+        this.getDescription().setText(tituloEjeX);
+        this.getDescription().setEnabled(true);
+    }
+
+    public void setTituloEjeY(String tituloEjeY) {
+        this.tituloEjeY = tituloEjeY;
+    }
+
+    public void setColorMarcadores(int colorMarcadores) {
+        this.colorMarcadores = colorMarcadores;
     }
 
     public void limpiarGrafica() {
-        if (lineaData != null) {
-            lineaData.clearValues();
-            this.notifyDataSetChanged();
-            this.invalidate();
-            this.fitScreen();
-        }
+        this.clear();
+        this.invalidate();
     }
 }

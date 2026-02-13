@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
@@ -12,7 +13,7 @@ import android.widget.TextView;
 
 import com.curso_simulaciones.micuadrigesimaquintaapp.datos.AlmacenDatosRAM;
 
-public class Tabla extends LinearLayout {
+public class TablaSimple extends LinearLayout {
 
     private ScrollView panelScroll;
     private TableLayout table;
@@ -29,11 +30,11 @@ public class Tabla extends LinearLayout {
     // private int n=0;
 
     /**
-     * Cosntructor de Tabla
-     * 
+     * Cosntructor de TablaSimple
+     *
      * @param context
      */
-    public Tabla(Context context) {
+    public TablaSimple(Context context) {
         super(context);
         this.context = context;
 
@@ -75,7 +76,7 @@ public class Tabla extends LinearLayout {
 
     /**
      * Modifica las etiquetas de las columnas
-     * 
+     *
      * @param etiquetaX
      * @param etiquetaY
      */
@@ -88,7 +89,7 @@ public class Tabla extends LinearLayout {
 
     /**
      * Envía los datos a la tabla
-     * 
+     *
      * @param x
      * @param y
      */
@@ -110,7 +111,7 @@ public class Tabla extends LinearLayout {
 
     /**
      * Modifica los colores de las columnas
-     * 
+     *
      * @param colorColumna1
      * @param colorColumna2
      * @param colorColumna3
@@ -177,7 +178,7 @@ public class Tabla extends LinearLayout {
 
         } else {
 
-            textValorY.setText(String.format(java.util.Locale.US, "%.2f", y));
+            textValorY.setText("" + y);
 
         }
 

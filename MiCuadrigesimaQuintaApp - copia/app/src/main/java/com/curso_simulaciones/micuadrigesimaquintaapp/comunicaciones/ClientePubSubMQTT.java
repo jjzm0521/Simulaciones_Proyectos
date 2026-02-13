@@ -152,9 +152,9 @@ public class ClientePubSubMQTT implements MqttCallback, IMqttActionListener {
      * 2. Recibir mensajes
      */
     public String leerString() {
-
-        return datoString;
-
+        String data = datoString;
+        datoString = null;
+        return data;
     }
 
     /*

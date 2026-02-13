@@ -255,6 +255,10 @@ public class Gauge extends View {
     }
 
     public void setMedida(float valor) {
+        // Actualizar escala según la lógica solicitada
+        cambiarEscala(valor);
+
+        this.medida = valor;
         float targetAngle = mapValueToAngle(valor);
 
         ValueAnimator anim = ValueAnimator.ofFloat(anguloActual, targetAngle);
@@ -268,15 +272,46 @@ public class Gauge extends View {
             }
         });
         anim.start();
-
-        this.medida = valor;
     }
 
     public void setRango(float min, float max) {
-        this.min = min;
-        this.max = max;
-        invalidate();
-        setMedida(this.medida); // Re-animar a la nueva posición relativa
+        // Solo actualizar si el rango cambia para evitar bucles o redibujos innecesarios
+        if (this.min != min || this.max != max) {
+            this.min = min;
+            this.max = max;
+            invalidate();
+        }
+    }
+
+    public void cambiarEscala(float medida) {
+        float nuevoMaximo = this.max;
+        float nuevoMinimo = this.min;
+
+        if (medida > 0 && medida <= 20) {
+            nuevoMaximo = 20f;
+            nuevoMinimo = 0f;
+        } else if (medida > 20 && medida <= 50) {
+            nuevoMaximo = 50f;
+            nuevoMinimo = 0f;
+        } else if (medida > 50 && medida <= 100) {
+            nuevoMaximo = 100f;
+            nuevoMinimo = 0f;
+        } else if (medida > 100 && medida <= 200) {
+            nuevoMaximo = 200f;
+            nuevoMinimo = 0f;
+        } else if (medida > 200 && medida <= 300) {
+            nuevoMaximo = 300f;
+            nuevoMinimo = 0f;
+        } else if (medida > 300 && medida <= 600) {
+            nuevoMaximo = 600f;
+            nuevoMinimo = 0f;
+        } else if (medida > 600) {
+            // Si supera 600, seguimos aumentando de 100 en 100 como seguridad
+            nuevoMaximo = (float) (Math.ceil(medida / 100f) * 100f);
+            nuevoMinimo = 0f;
+        }
+
+        setRango(nuevoMinimo, nuevoMaximo);
     }
 
     public void setUnidad(String unidad) {

@@ -55,6 +55,7 @@ public class ActividadComoClienteSubMQTT extends Activity implements Runnable {
     private float medidaDistancia;
     private float medidaTemperatura;
     private float medidaHumedad;
+    private boolean empezoMedicion = false;
 
     // hilo para actualizar tabla
     private final Handler myHandler = new Handler();
@@ -124,7 +125,7 @@ public class ActividadComoClienteSubMQTT extends Activity implements Runnable {
 
         botonTablaGrafica = new Button(this);
         botonTablaGrafica.setTextSize(TypedValue.COMPLEX_UNIT_SP, tamanoLetraResolucionIncluida);
-        botonTablaGrafica.setText("GRAFICA");
+        botonTablaGrafica.setText("TABLA");
         botonTablaGrafica.getBackground().setColorFilter(Color.rgb(183, 216, 199), PorterDuff.Mode.MULTIPLY);
         botonTablaGrafica.setEnabled(false);
 
@@ -245,7 +246,7 @@ public class ActividadComoClienteSubMQTT extends Activity implements Runnable {
 
             public void onClick(View v) {
 
-                if (botonConectar.getText() == "CONECTAR") {
+                if (botonConectar.getText().toString().equals("CONECTAR")) {
                     botonConectar.setText("EMPEZAR");
                     // conectar cliente
                     cliente.conectar();
@@ -257,7 +258,9 @@ public class ActividadComoClienteSubMQTT extends Activity implements Runnable {
                 } else {
 
                     borrarDatos();
+                    empezoMedicion = true;
                     botonTablaGrafica.setEnabled(true);
+                    botonConectar.setText("TOMANDO DATOS...");
                     botonConectar.setEnabled(false);
 
                 }
@@ -270,7 +273,7 @@ public class ActividadComoClienteSubMQTT extends Activity implements Runnable {
 
             public void onClick(View v) {
 
-                if (botonTablaGrafica.getText() == "TABLA") {
+                if (botonTablaGrafica.getText().toString().equals("TABLA")) {
                     botonTablaGrafica.setText("GRAFICA");
                     linear_layout_tabla_grafica.removeView(graficador);
                     linear_layout_tabla_grafica.addView(tabla, parametros_tabla_grafica);
@@ -300,6 +303,7 @@ public class ActividadComoClienteSubMQTT extends Activity implements Runnable {
     private void borrarDatos() {
         contador = 0;
         AlmacenDatosRAM.datosDistancia.clear();
+        AlmacenDatosRAM.datos.clear();
         tabla.borrar();
         graficador.limpiarGrafica();
     }
@@ -403,13 +407,22 @@ public class ActividadComoClienteSubMQTT extends Activity implements Runnable {
                     gaugeTemperatura.setMedida(medidaTemperatura);
                     gaugeHumedad.setMedida(medidaHumedad);
 
-                    AlmacenDatosRAM.datosDistancia.add(medidaDistancia);
-                    contador++;
+                    if (empezoMedicion) {
+                        if (contador < AlmacenDatosRAM.nDatos) {
+                            AlmacenDatosRAM.datosDistancia.add(medidaDistancia);
+                            AlmacenDatosRAM.datos.add(new Entry((float) contador, medidaDistancia));
+                            contador++;
 
-                    tabla.enviarDatos((float) contador, medidaDistancia);
+                            tabla.enviarDatos((float) contador, medidaDistancia);
 
-                    // Grafica sigue recibiendo los 3 datos
-                    graficador.agregarDatos((float) contador, medidaDistancia, medidaTemperatura, medidaHumedad);
+                            // Actualizar gráfica usando el nuevo método setDatos
+                            graficador.setDatos(AlmacenDatosRAM.datos);
+                        } else {
+                            // Si se llega al máximo de datos, se podría detener o avisar
+                            empezoMedicion = false;
+                            botonConectar.setText("FIN DE MUESTREO");
+                        }
+                    }
 
                 } catch (Exception e) {
                     e.printStackTrace();
