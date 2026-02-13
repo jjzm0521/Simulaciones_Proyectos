@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -85,19 +86,13 @@ public class ActividadPrincipalMiCuadrigesimaQuintaApp extends Activity {
     private void crearElementosGUI() {
 
         entrar = new Boton(this);
-        // entrar.setImagen(R.drawable.entrar); // Imagenes no tenemos, usaremos texto
-        entrar.setText("ENTRAR (SUB)");
-
-        entrar_pub = new Boton(this);
-        entrar_pub.setText("ENTRAR (PUB)");
+        entrar.setImagen(R.drawable.entrar);
 
         salir = new Boton(this);
-        // salir.setImagen(R.drawable.salir);
-        salir.setText("SALIR");
+        salir.setImagen(R.drawable.salir);
 
         ajustes = new Boton(this);
-        // ajustes.setImagen(R.drawable.configuracion);
-        ajustes.setText("AJUSTES");
+        ajustes.setImagen(R.drawable.configuracion);
 
     }
 
@@ -115,55 +110,41 @@ public class ActividadPrincipalMiCuadrigesimaQuintaApp extends Activity {
         LinearLayout linear_layout_primera_fila = new LinearLayout(this);
         linear_layout_primera_fila.setOrientation(LinearLayout.HORIZONTAL);
         linear_layout_primera_fila.setGravity(Gravity.FILL);
-        linear_layout_primera_fila.setBackgroundColor(Color.WHITE);
+        linear_layout_primera_fila.setBackgroundColor(Color.BLACK);
+        LinearLayout.LayoutParams parametros_primera_fila = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, 0);// ViewGroup.LayoutParams.WRAP_CONTENT);
+        parametros_primera_fila.weight = 9.0f;
+        linear_layout_primera_fila.setLayoutParams(parametros_primera_fila);
+
+        // fondo primera fila
+        Drawable fondo = getResources().getDrawable(R.drawable.distanciometro_android);
+        linear_layout_primera_fila.setBackgroundDrawable(fondo);
 
         // LinearLayout segunda fila
         linear_layout_segunda_fila = new LinearLayout(this);
         linear_layout_segunda_fila.setOrientation(LinearLayout.HORIZONTAL);
         linear_layout_segunda_fila.setGravity(Gravity.FILL);
-        linear_layout_segunda_fila.setBackgroundColor(Color.WHITE);
-        linear_layout_segunda_fila.setWeightSum(2);
-
-        // LinearLayout segunda fila
-        LinearLayout linear_layout_tercera_fila = new LinearLayout(this);
-        linear_layout_tercera_fila.setOrientation(LinearLayout.HORIZONTAL);
-        linear_layout_tercera_fila.setGravity(Gravity.FILL);
-        linear_layout_segunda_fila.setBackgroundColor(Color.WHITE);
-
-        // pegar primera fila al principal
-        LinearLayout.LayoutParams parametros_primera_fila = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, 0);
-        parametros_primera_fila.weight = 3.0f;
-        linear_layout_primera_fila.setLayoutParams(parametros_primera_fila);
-        linear_layout_principal.addView(linear_layout_primera_fila);
-
-        // pegar segunda fila al principal
         LinearLayout.LayoutParams parametros_segunda_fila = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0);
-        // ocupará el 40% de linear_principal
-        parametros_segunda_fila.weight = 4.0f;
+        parametros_segunda_fila.weight = 1.0f;
+        linear_layout_segunda_fila.setWeightSum(2.0f);
         linear_layout_segunda_fila.setLayoutParams(parametros_segunda_fila);
-        linear_layout_principal.addView(linear_layout_segunda_fila);
 
-        // pegar tercera fila al principal
-        LinearLayout.LayoutParams parametros_tercera_fila = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, 0);
-        parametros_tercera_fila.weight = 3.0f;
-        linear_layout_tercera_fila.setLayoutParams(parametros_tercera_fila);
-        linear_layout_principal.addView(linear_layout_tercera_fila);
-
-        // pegar botones en segunda fila
-        LinearLayout.LayoutParams parametros_pegado_botones = new LinearLayout.LayoutParams(0,
+        LinearLayout.LayoutParams parametros_pegado_boton = new LinearLayout.LayoutParams(0,
                 ViewGroup.LayoutParams.MATCH_PARENT);
-        parametros_pegado_botones.weight = 1.0f;
-        parametros_pegado_botones.setMargins(10, 0, 10, 0);
-        linear_layout_segunda_fila.addView(entrar, parametros_pegado_botones);
-        linear_layout_segunda_fila.addView(ajustes, parametros_pegado_botones);
-        // linear_layout_segunda_fila.addView(salir, parametros_pegado_botones);
+        parametros_pegado_boton.weight = 1.0f;
+        entrar.setLayoutParams(parametros_pegado_boton);
+        salir.setLayoutParams(parametros_pegado_boton);
+        ajustes.setLayoutParams(parametros_pegado_boton);
+        linear_layout_segunda_fila.addView(entrar);
+        linear_layout_segunda_fila.addView(ajustes);
+
+        linear_layout_principal.addView(linear_layout_primera_fila);
+        linear_layout_principal.addView(linear_layout_segunda_fila);
 
         return linear_layout_principal;
 
-    }// fin gui
+    }
 
     private void eventos() {
 
@@ -171,11 +152,19 @@ public class ActividadPrincipalMiCuadrigesimaQuintaApp extends Activity {
 
             public void onClick(View v) {
 
-                // hacer transición
-                Intent i = new Intent(ActividadPrincipalMiCuadrigesimaQuintaApp.this,
-                        ActividadComoClienteSubMQTT.class);
-                startActivity(i);
+                lanzarActividadComunicacion();
+                linear_layout_segunda_fila.removeAllViews();
+                linear_layout_segunda_fila.addView(salir);
+                linear_layout_segunda_fila.addView(ajustes);
 
+            }
+        });
+
+        salir.setOnClickListener(new View.OnClickListener() {
+
+            public void onClick(View v) {
+
+                finish();
             }
         });
 
@@ -183,20 +172,29 @@ public class ActividadPrincipalMiCuadrigesimaQuintaApp extends Activity {
 
             public void onClick(View v) {
 
-                // hacer transición
-                Intent i = new Intent(ActividadPrincipalMiCuadrigesimaQuintaApp.this, ActividadConfiguracion.class);
-                startActivity(i);
+                lanzarActividadConfiguracion();
             }
         });
 
-        salir.setOnClickListener(new View.OnClickListener() {
+    }
 
-            public void onClick(View v) {
-                // alerta();
-                DialogoSalir dialogo_salir = new DialogoSalir(ActividadPrincipalMiCuadrigesimaQuintaApp.this);
-                dialogo_salir.mostrarPopMenuCoeficientes();
-            }
-        });
+    private void lanzarActividadComunicacion() {
+
+        Intent intent = new Intent(this, ActividadComoClienteSubMQTT.class);
+        startActivity(intent);
+
+    }
+
+    private void lanzarActividadConfiguracion() {
+
+        Intent intent = new Intent(this, ActividadConfiguracion.class);
+        startActivity(intent);
+
+    }
+
+    protected void onDestroy() {
+        super.onDestroy();
+        finish();
 
     }
 
@@ -204,23 +202,13 @@ public class ActividadPrincipalMiCuadrigesimaQuintaApp extends Activity {
 
         SharedPreferences prefs = getSharedPreferences("MisPreferencias", Context.MODE_PRIVATE);
 
-        String broker = prefs.getString("broker", AlmacenDatosRAM.MQTTHOST);
-        AlmacenDatosRAM.MQTTHOST = broker;
+        AlmacenDatosRAM.MQTTHOST = prefs.getString("broker", "");
+        AlmacenDatosRAM.USERNAME = prefs.getString("usuario", "");
+        AlmacenDatosRAM.PASSWORD = prefs.getString("pasword", "");/// no lo tenía
+        AlmacenDatosRAM.topicStr = prefs.getString("topico", "");
+        AlmacenDatosRAM.nDatos = prefs.getInt("n_datos", 50);
+        AlmacenDatosRAM.nDatosGraficar = prefs.getInt("n_datos_graficar", 10);
 
-        String usuario = prefs.getString("usuario", AlmacenDatosRAM.USERNAME);
-        AlmacenDatosRAM.USERNAME = usuario;
-
-        String pasword = prefs.getString("pasword", AlmacenDatosRAM.PASSWORD);
-        AlmacenDatosRAM.PASSWORD = pasword;
-
-        String topico = prefs.getString("topico", AlmacenDatosRAM.topicStr);
-        AlmacenDatosRAM.topicStr = topico;
-
-        int n_datos = prefs.getInt("n_datos", AlmacenDatosRAM.nDatos);
-        AlmacenDatosRAM.nDatos = n_datos;
-
-        int n_datos_graficar = prefs.getInt("n_datos_graficar", AlmacenDatosRAM.nDatosGraficar);
-        AlmacenDatosRAM.nDatosGraficar = n_datos_graficar;
     }
 
     protected void onResume() {
