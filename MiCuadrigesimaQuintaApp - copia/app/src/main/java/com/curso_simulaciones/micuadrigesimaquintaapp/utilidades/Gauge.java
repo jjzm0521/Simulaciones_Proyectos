@@ -1,410 +1,286 @@
 package com.curso_simulaciones.micuadrigesimaquintaapp.utilidades;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.graphics.SweepGradient;
+import android.graphics.Typeface;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 
+/**
+ * Clase Gauge (Basada en Gaussimetro)
+ * 
+ * Implementa un instrumento virtual (gauge) tipo velocímetro.
+ * 
+ * Características:
+ * - Arco de 270° con gradiente de colores.
+ * - Aguja animada que se mueve suavemente hacia el valor medido.
+ * - Marcas de escala con números.
+ * - Muestra valor numérico y unidades.
+ */
 public class Gauge extends View {
 
-    private float largo;
-    private float minimo = 0;
-    private float maximo = 100f;
-    private float medida = 0.0f;// tomar como medida inicial
-    private String unidades = "UNIDADES";
-    private int precision = 1; // Número de decimales por defecto
+    // Valor actual de la medición
+    private float medida = 0.0f;
 
-    // color de los sectores
-    private int colorPrimerTercio = Color.rgb(200, 200, 0);
-    private int colorSegundoTercio = Color.rgb(0, 180, 0);
-    private int colorTercerTercio = Color.RED;
+    // Rango de medición
+    private float min = 0f;
+    private float max = 100f;
 
-    // color del marco
-    private int colorFondoTacometro = Color.rgb(240, 240, 240);
-    private int colorBordeTacometro = Color.BLACK;
+    // Unidad de medida
+    private String unidad = "";
 
-    // color franja dinámica
-    private int colorFranjaDinamica = Color.RED;
+    // ========== PINCELES (Paints) ==========
 
-    private int angPrimertercio = 100;
-    private int angSegundoTercio = 100;
-    private int angTercerTercio = 40;
+    private Paint paintArco;
+    private Paint paintFondo;
+    private Paint paintTextoValor;
+    private Paint paintTextoUnidad;
+    private Paint paintAguja;
+    private Paint paintPivote;
+    private Paint paintMarcas;
 
-    private int colorLineas = Color.BLACK;
-    private int colorNumeros = Color.BLACK;
+    private RectF rectFArco;
 
-    private int colorNumerosDesplieggue = Color.BLACK;
+    // ========== DIMENSIONES ==========
+    private float centerX, centerY, radio;
 
-    private int numeroDivisiones = 25;
-    private int separacionDivisionesGrandes = 5;
+    // ========== ANIMACIÓN ==========
+    // Ángulo actual de la aguja (para animación suave)
+    private float anguloActual;
 
-    /**
-     * Constructor de Gauge
-     */
+    // ========== CONFIGURACIÓN DE ÁNGULOS ==========
+    private float angInicio = 135f;
+    private float angBarrido = 270f;
+
     public Gauge(Context context) {
-
         super(context);
+        init();
+    }
 
+    private void init() {
+        // Inicializar ángulo actual al inicio del rango
+        anguloActual = angInicio;
+
+        // Usar renderizado por software para compatibilidad con gradientes
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
-            this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
+
+        // Configurar pincel del arco
+        paintArco = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintArco.setStyle(Paint.Style.STROKE);
+        paintArco.setStrokeCap(Paint.Cap.ROUND);
+
+        // Configurar pincel del fondo
+        paintFondo = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintFondo.setStyle(Paint.Style.FILL);
+        paintFondo.setColor(Color.parseColor("#121212")); // Fondo oscuro
+
+        // Configurar pincel para el valor numérico
+        paintTextoValor = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintTextoValor.setColor(Color.WHITE);
+        paintTextoValor.setTextAlign(Paint.Align.CENTER);
+        paintTextoValor.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+
+        // Configurar pincel para la unidad
+        paintTextoUnidad = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintTextoUnidad.setColor(Color.LTGRAY);
+        paintTextoUnidad.setTextAlign(Paint.Align.CENTER);
+
+        // Configurar pincel para la aguja
+        paintAguja = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintAguja.setColor(Color.RED);
+        paintAguja.setStyle(Paint.Style.FILL);
+        paintAguja.setShadowLayer(4f, 2f, 2f, Color.BLACK);
+
+        // Configurar pincel para el pivote central
+        paintPivote = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintPivote.setColor(Color.DKGRAY);
+
+        // Configurar pincel para las marcas de escala
+        paintMarcas = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintMarcas.setColor(Color.WHITE);
+        paintMarcas.setStrokeWidth(2f);
+
+        rectFArco = new RectF();
+
+        // Ensure angle sync
+        anguloActual = angInicio;
     }
 
-    /**
-     * Modifica el rango de medicion
-     * desde minimo hasta maximo
-     *
-     * @param minimo
-     * @param maximo
-     */
-    public void setRango(float minimo, float maximo) {
+    /* Método para personalizar ángulos */
+    public void setAngulos(float inicio, float barrido) {
+        this.angInicio = inicio;
+        this.angBarrido = barrido;
 
-        this.minimo = minimo;
-        this.maximo = maximo;
+        // Recalcular shader
+        if (radio > 0) {
+            updateShader();
+        }
 
+        // Forzar actualización de la posición de la aguja con los nuevos ángulos
+        setMedida(this.medida);
     }
 
-    public void setSeparacionesDivisionesGrandes(int separacionDivisionesGrandes) {
+    private void updateShader() {
+        // Ajustar gradiente para que cubra exactamente el ángulo de barrido
+        int[] colors = { Color.GREEN, Color.YELLOW, Color.RED };
 
-        this.separacionDivisionesGrandes = separacionDivisionesGrandes;
+        // Mapear los colores al porcentaje del círculo que representa el barrido
+        float ratio = angBarrido / 360f;
+        float[] positions = { 0.0f, ratio / 2f, ratio };
 
+        SweepGradient shader = new SweepGradient(centerX, centerY, colors, positions);
+
+        // Rotar el gradiente para que comience en angInicio
+        Matrix gradientMatrix = new Matrix();
+        gradientMatrix.preRotate(angInicio, centerX, centerY);
+        shader.setLocalMatrix(gradientMatrix);
+
+        paintArco.setShader(shader);
     }
 
-    private void setNumeroDivisiones(int numeroDivisiones) {
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
 
-        this.numeroDivisiones = numeroDivisiones;
+        // Calcular centro y radio
+        centerX = w / 2f;
+        centerY = h / 2f;
+        radio = Math.min(w, h) / 2f * 0.9f;
 
+        // Grosor del arco proporcional al radio
+        float strokeWidth = radio * 0.15f;
+        paintArco.setStrokeWidth(strokeWidth);
+
+        // Definir rectángulo para el arco
+        rectFArco.set(centerX - radio + strokeWidth / 2,
+                centerY - radio + strokeWidth / 2,
+                centerX + radio - strokeWidth / 2,
+                centerY + radio - strokeWidth / 2);
+
+        updateShader();
     }
 
-    /**
-     * Modifica el valor medido
-     *
-     * @param medida
-     */
-    public void setMedida(float medida) {
-
-        this.medida = medida;
-
-    }
-
-    /**
-     * Regresa el valor medido
-     *
-     * @return medida
-     */
-    public float getMedida() {
-
-        return medida;
-    }
-
-    /**
-     * Modifica las unidades del instrumento virtual
-     *
-     * @param unidades
-     */
-    public void setUnidades(String unidades) {
-
-        this.unidades = unidades;
-
-    }
-
-    public void setPrecision(int precision) {
-        this.precision = precision;
-    }
-
-    /**
-     * Modifica el color del borde del marco
-     * 
-     * @param colorBordeMarco
-     */
-
-    public void setColorBordeTacometro(int colorBordeMarco) {
-
-        this.colorBordeTacometro = colorBordeMarco;
-
-    }
-
-    /**
-     * Modifica los colores de los sectores circulares
-     *
-     * @param colorPrimerTercio
-     * @param colorSegundoTercio
-     * @param colorTercerTercio
-     */
-    public void setColorSectores(int colorPrimerTercio, int colorSegundoTercio, int colorTercerTercio) {
-
-        this.colorPrimerTercio = colorPrimerTercio;
-        this.colorSegundoTercio = colorSegundoTercio;
-        this.colorTercerTercio = colorTercerTercio;
-
-    }
-
-    /**
-     * Modifica los angulos de los sectores circulares
-     * Deben sumar 250 grados
-     *
-     * @param angPrimerTercio
-     * @param angSegundoTercio
-     * @param angTercerTercio
-     */
-    public void setAngulosSectores(int angPrimerTercio, int angSegundoTercio, int angTercerTercio) {
-        this.angPrimertercio = angPrimerTercio;
-        this.angSegundoTercio = angSegundoTercio;
-        this.angTercerTercio = angTercerTercio;
-
-    }
-
-    /**
-     * Modifica el color de fondo del tacometro
-     *
-     * @param colorFondoTacometro
-     */
-    public void setColorFondoTacometro(int colorFondoTacometro) {
-
-        this.colorFondoTacometro = colorFondoTacometro;
-
-    }
-
-    /**
-     * Modifica el color de las lineas del tacometro
-     *
-     * @param color_lineas
-     */
-    public void setColorLineasTacometro(int color_lineas) {
-
-        this.colorLineas = color_lineas;
-
-    }
-
-    public void setColorNumeros(int colorNumeros) {
-
-        this.colorNumeros = colorNumeros;
-
-    }
-
-    /**
-     * Modifica el color del numero que se despliega
-     *
-     * @param colorNumerosDesplieggue
-     */
-
-    public void setColorNumeroDespliegue(int colorNumerosDesplieggue) {
-
-        this.colorNumerosDesplieggue = colorNumerosDesplieggue;
-
-    }
-
-    /**
-     * Modifica el color de la franja dinámica
-     * 
-     * @param colorFranjaDinamica
-     */
-    public void setColorFranjaDinámica(int colorFranjaDinamica) {
-
-        this.colorFranjaDinamica = colorFranjaDinamica;
-
-    }
-
-    /**
-     * @param canvas
-     */
-
-    // método para dibujar
+    @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        /*
-         * se graba el estado actual del canvas
-         * para al final restaurarlo
-         */
-        canvas.save();
+        // 1. Dibujar fondo circular
+        canvas.drawCircle(centerX, centerY, radio, paintFondo);
 
-        /*
-         * La vista tendra las mismas dimensiones de su
-         * contenedor
-         */
-        float ancho = this.getWidth();// ancho de la vista
-        float alto = this.getHeight();// alto de la vista
+        // 2. Dibujar arco de fondo (gris oscuro)
+        paintArco.setShader(null);
+        paintArco.setColor(Color.DKGRAY);
+        canvas.drawArc(rectFArco, angInicio, angBarrido, false, paintArco);
 
-        /*
-         * Se define la variable largo como el 80%
-         * del menor valor entre alto y largo del
-         * contenedor
-         */
+        // 3. Dibujar arco con gradiente de colores
+        // Re-asignar shader (se limpia arriba al dibujar gris)
+        updateShader();
 
-        if (ancho > alto) {
+        canvas.drawArc(rectFArco, angInicio, angBarrido, false, paintArco);
 
-            largo = 0.8f * alto;
+        // 4. Dibujar marcas de escala
+        drawTicks(canvas);
 
-        } else {
+        // 5. Dibujar valor numérico
+        paintTextoValor.setTextSize(radio * 0.3f);
+        canvas.drawText(String.format(java.util.Locale.US, "%.1f", medida), centerX, centerY + radio * 0.4f,
+                paintTextoValor);
 
-            largo = 0.8f * ancho;
+        // 6. Dibujar unidad
+        paintTextoUnidad.setTextSize(radio * 0.1f);
+        canvas.drawText(unidad, centerX, centerY + radio * 0.55f, paintTextoUnidad);
 
-        }
+        // 7. Dibujar aguja indicadora
+        drawNeedle(canvas);
 
-        /*
-         * se hace tralación del (0,0) al centro
-         * del contenedor
-         */
-        canvas.translate(0.5f * ancho, 0.5f * alto);
+        // 8. Dibujar pivote central
+        canvas.drawCircle(centerX, centerY, radio * 0.05f, paintPivote);
+    }
 
-        // configurando el pincel
-        Paint pincel = new Paint();
-        // evita efecto sierra
-        pincel.setAntiAlias(true);
-        // tamaño texto
-        pincel.setTextSize(0.05f * largo);
-        // para mejor manejo de la métrica de texto
-        pincel.setLinearText(true);
-        // para efectos de buen escalado de bitmaps
-        pincel.setFilterBitmap(true);
-        // para buen manejo de gradientes de color
-        pincel.setDither(true);
+    private void drawTicks(Canvas canvas) {
+        float r1 = radio * 0.85f;
+        float r2 = radio * 0.95f;
+        float rText = radio * 0.75f;
 
-        // dibujar fondo del tacómetro
-        // marco borde: circulo no relleno
-        pincel.setStyle(Paint.Style.STROKE);
-        // grosor y color
-        pincel.setStrokeWidth(0.02f * largo);
-        pincel.setColor(colorBordeTacometro);
-        canvas.drawCircle(0, 0, 0.5f * largo, pincel);
-        // marco fondo: círculo relleno
-        pincel.setStyle(Paint.Style.FILL);
-        pincel.setColor(colorFondoTacometro);
-        canvas.drawCircle(0, 0, 0.48f * largo, pincel);
+        Paint paintNumerosEscala = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paintNumerosEscala.setColor(Color.LTGRAY);
+        paintNumerosEscala.setTextSize(radio * 0.08f);
+        paintNumerosEscala.setTextAlign(Paint.Align.CENTER);
 
-        // dibujar los tres segementos circulares
-        float esquinaSuperiorIzquierdaX = -0.45f * largo;
-        float esquinaSuperiorIzquierdaY = -0.45f * largo;
-        float esquinaInferiorDerechaX = 0.45f * largo;
-        float esquinaInferiorDerechaY = 0.45f * largo;
+        for (int i = 0; i <= 10; i++) {
+            float value = min + (max - min) * i / 10f;
+            float angle = mapValueToAngle(value);
 
-        RectF rect = new RectF(esquinaSuperiorIzquierdaX, esquinaSuperiorIzquierdaY,
-                esquinaInferiorDerechaX, esquinaInferiorDerechaY);
+            float x1 = (float) (centerX + r1 * Math.cos(Math.toRadians(angle)));
+            float y1 = (float) (centerY + r1 * Math.sin(Math.toRadians(angle)));
+            float x2 = (float) (centerX + r2 * Math.cos(Math.toRadians(angle)));
+            float y2 = (float) (centerY + r2 * Math.sin(Math.toRadians(angle)));
 
-        // grosor líneas
-        pincel.setStrokeWidth(0.02f * largo);
-        // arcos
-        pincel.setStyle(Paint.Style.STROKE);
-        pincel.setColor(colorPrimerTercio);
-        // con argumento false solo dibuja el arco y no el sector circular
-        canvas.drawArc(rect, 150, angPrimertercio, false, pincel);
-        pincel.setColor(colorSegundoTercio);
-        canvas.drawArc(rect, 150 + angPrimertercio, angSegundoTercio, false, pincel);
-        pincel.setColor(colorTercerTercio);
-        canvas.drawArc(rect, 150 + angPrimertercio + angSegundoTercio, angTercerTercio, false, pincel);
+            canvas.drawLine(x1, y1, x2, y2, paintMarcas);
 
-        // dibujar la escala
-        float indent = (float) (0.05 * largo);
-        float posicionY = (float) (0.5 * largo);
-
-        /*
-         * Divisiones grandes, pequeñas y números
-         * Se dibuja primero la división vertical.
-         * Luego se repite rotando de a 50 grados comenzando
-         * en 235 grados.
-         */
-        pincel.setStyle(Paint.Style.FILL);
-
-        for (int i = 0; i < numeroDivisiones + 1; i = i + 1) {// 6
-            // float anguloRotacion = 235 + 50 * i;
-            float salto = 240f / numeroDivisiones;
-            // float anguloRotacion = 235 + 50 * i;
-            float anguloRotacion = 240 + salto * i;
-            canvas.save();
-            canvas.rotate(anguloRotacion, 0, 0);
-            pincel.setColor(colorLineas);
-
-            if (i % separacionDivisionesGrandes == 0) {
-                // dibujar líneas grandes
-                pincel.setStrokeWidth(0.01f * largo);
-                canvas.drawLine(0, -posicionY, 0, -posicionY + indent, pincel);
-
-                // dibujar los números
-                float valorIncrementoMarcas = (maximo - minimo) / numeroDivisiones;
-                int valorMarca = (int) (minimo + valorIncrementoMarcas * i);
-                String numero = "" + valorMarca;
-
-                // ancho de la cadena del número
-                float anchoCadenaNumero = pincel.measureText(numero);
-
-                // dibuja números rotados
-                // endereza los números a orientación horizontal
-                canvas.rotate(-anguloRotacion, 0, -posicionY + 2.5f * indent);
-                pincel.setColor(colorNumeros);
-                canvas.drawText(numero, -0.5f * anchoCadenaNumero, -posicionY + 2.5f * indent, pincel);
-            } else {
-                // divisiones pequeñas
-                pincel.setStrokeWidth(0.005f * largo);
-                canvas.drawLine(0, -posicionY, 0, -posicionY + (float) (0.6 * indent), pincel);
-
+            if (i % 2 == 0) {
+                float xText = (float) (centerX + rText * Math.cos(Math.toRadians(angle)));
+                float yText = (float) (centerY + rText * Math.sin(Math.toRadians(angle)));
+                yText += paintNumerosEscala.getTextSize() / 3;
+                canvas.drawText(String.format(java.util.Locale.US, "%.0f", value), xText, yText, paintNumerosEscala);
             }
-
-            canvas.restore();
-
         }
+    }
 
-        /*
-         * dibujar la aguja
-         */
-        // aqui empieza dibujo de la aguja
-        // calcular angulo para ubicar la aguja de acuerdo al valor medido
-        float angulo_rotacion_medida = 240 + (240f / (maximo - minimo)) * (medida - minimo);
-        // Dibujar aguja
-        pincel.setStrokeWidth(0.005f * largo);
-        pincel.setColor(Color.RED);
-        canvas.rotate(angulo_rotacion_medida, 0, 0);
-        float b = (float) (1.5f * indent);
-        canvas.drawLine(0, -posicionY, 0, b, pincel);
-        canvas.rotate(-angulo_rotacion_medida, 0, 0);
-        pincel.setStyle(Paint.Style.FILL);
-        pincel.setColor(colorFondoTacometro);
-        canvas.drawCircle(0, 0, (float) (0.4 * indent), pincel);
-        pincel.setColor(Color.RED);
-        pincel.setStyle(Paint.Style.STROKE);
-        canvas.drawCircle(0, 0, (float) (0.4 * indent), pincel);
-        // aquí termina dibujo de la aguja
+    private void drawNeedle(Canvas canvas) {
+        // Asegurar visualmente que la aguja nunca salga de los límites definidos
+        float angle = Math.max(angInicio, Math.min(angInicio + angBarrido, anguloActual));
+        float needleLen = radio * 0.75f;
 
-        // franja dinámica
-        float a = (float) 0.03 * largo;
-        rect = new RectF(esquinaSuperiorIzquierdaX - a, esquinaSuperiorIzquierdaY - a,
-                esquinaInferiorDerechaX + a, esquinaInferiorDerechaY + a);
-        pincel.setColor(colorFranjaDinamica);
-        pincel.setStrokeWidth(0.01f * largo);
-        canvas.drawArc(rect, 150, angulo_rotacion_medida - 240, false, pincel);
+        float x = (float) (centerX + needleLen * Math.cos(Math.toRadians(angle)));
+        float y = (float) (centerY + needleLen * Math.sin(Math.toRadians(angle)));
 
-        // Dibujar las unidades
-        pincel.setStyle(Paint.Style.FILL);
-        pincel.setColor(colorLineas);
-        pincel.setTextSize(0.08f * largo);
-        float anchoCadenaUnidades = pincel.measureText(unidades);
-        canvas.drawText(unidades, -0.5f * anchoCadenaUnidades, -0.15f * largo, pincel);
-        // aqui termina dibujo de las unidades
+        paintAguja.setStrokeWidth(Math.max(4f, radio * 0.02f));
+        canvas.drawLine(centerX, centerY, x, y, paintAguja);
+    }
 
-        // aqui despliegue de la medida con precisión configurable
-        String formato = "%." + precision + "f";
-        String textoMedida = String.format(java.util.Locale.US, formato, medida);
-        pincel.setTextSize(0.1f * largo);
-        float anchoCadenaNumero = pincel.measureText(textoMedida);
-        pincel.setColor(colorNumerosDesplieggue);
-        canvas.drawText(textoMedida, -0.5f * anchoCadenaNumero, 0.2f * largo, pincel);
+    private float mapValueToAngle(float value) {
+        float clampedValue = Math.max(min, Math.min(max, value));
+        float normalized = (clampedValue - min) / (max - min);
+        // De angInicio a angInicio + angBarrido
+        return angInicio + (normalized * angBarrido);
+    }
 
-        // marcar empresa
-        String empresa = "IoT.PhysicsSensor";
-        pincel.setTextSize(0.05f * largo);
-        float anchoCadenaNombreEmpresa = pincel.measureText(empresa);
-        canvas.drawText(empresa, -0.5f * anchoCadenaNombreEmpresa, 0.35f * largo, pincel);
+    public void setMedida(float valor) {
+        float targetAngle = mapValueToAngle(valor);
 
-        // se restaura el canvas al estado incial
-        // el que se garbó al principio de este método
-        canvas.restore();
+        ValueAnimator anim = ValueAnimator.ofFloat(anguloActual, targetAngle);
+        anim.setDuration(300);
+        anim.setInterpolator(new DecelerateInterpolator());
+        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                anguloActual = (float) animation.getAnimatedValue();
+                invalidate();
+            }
+        });
+        anim.start();
 
-        // para efectos de animación
+        this.medida = valor;
+    }
+
+    public void setRango(float min, float max) {
+        this.min = min;
+        this.max = max;
         invalidate();
+        setMedida(this.medida); // Re-animar a la nueva posición relativa
+    }
 
-    }// fin onDraw
-
+    public void setUnidad(String unidad) {
+        this.unidad = unidad;
+        invalidate();
+    }
 }
