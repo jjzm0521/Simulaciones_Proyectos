@@ -180,7 +180,7 @@ public class Tabla extends LinearLayout {
 
         } else {
 
-            textValorY.setText("" + y);
+            textValorY.setText(String.format(java.util.Locale.US, "%.2f", y));
 
         }
 

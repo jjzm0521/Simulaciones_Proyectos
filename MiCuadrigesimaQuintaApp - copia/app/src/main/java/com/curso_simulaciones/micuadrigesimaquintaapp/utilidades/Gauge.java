@@ -14,6 +14,7 @@ public class Gauge extends View {
     private float maximo = 100f;
     private float medida = 0.0f;// tomar como medida inicial
     private String unidades = "UNIDADES";
+    private int precision = 1; // Número de decimales por defecto
 
     // color de los sectores
     private int colorPrimerTercio = Color.rgb(200, 200, 0);
@@ -108,6 +109,10 @@ public class Gauge extends View {
 
         this.unidades = unidades;
 
+    }
+
+    public void setPrecision(int precision) {
+        this.precision = precision;
     }
 
     /**
@@ -379,11 +384,13 @@ public class Gauge extends View {
         canvas.drawText(unidades, -0.5f * anchoCadenaUnidades, -0.15f * largo, pincel);
         // aqui termina dibujo de las unidades
 
-        // aqui despliegue de la medida
+        // aqui despliegue de la medida con precisión configurable
+        String formato = "%." + precision + "f";
+        String textoMedida = String.format(java.util.Locale.US, formato, medida);
         pincel.setTextSize(0.1f * largo);
-        float anchoCadenaNumero = pincel.measureText("" + medida);
+        float anchoCadenaNumero = pincel.measureText(textoMedida);
         pincel.setColor(colorNumerosDesplieggue);
-        canvas.drawText("" + medida, -0.5f * anchoCadenaNumero, 0.2f * largo, pincel);
+        canvas.drawText(textoMedida, -0.5f * anchoCadenaNumero, 0.2f * largo, pincel);
 
         // marcar empresa
         String empresa = "IoT.PhysicsSensor";

@@ -106,13 +106,38 @@ public class ClientePubSubMQTT implements MqttCallback, IMqttActionListener {
         AlmacenDatosRAM.conectado = false;
     }
 
-    // método automático
     @Override
     public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
 
-        if (AlmacenDatosRAM.conectado == true && mqttMessage != null) {
+        if (AlmacenDatosRAM.conectado && mqttMessage != null) {
             datoString = new String(mqttMessage.getPayload());
             AlmacenDatosRAM.conectado_PubSub = "Recibiendo datos...";
+
+            try {
+                JSONObject jsonObject = new JSONObject(datoString);
+                
+                // Extraer datos del JSON y guardarlos en AlmacenDatosRAM
+                if (jsonObject.has("unidad")) {
+                    AlmacenDatosRAM.unidades = jsonObject.getString("unidad");
+                }
+                if (jsonObject.has("valor")) {
+                    AlmacenDatosRAM.valor_distancia = (float) jsonObject.getDouble("valor");
+                }
+                if (jsonObject.has("temp")) {
+                    AlmacenDatosRAM.temperatura = (float) jsonObject.getDouble("temp");
+                }
+                if (jsonObject.has("hum")) {
+                    AlmacenDatosRAM.humedad = (float) jsonObject.getDouble("hum");
+                }
+                if (jsonObject.has("tiempo")) {
+                    AlmacenDatosRAM.tiempo = jsonObject.getString("tiempo");
+                }
+
+                Log.d(TAG, "Datos interpretados: " + datoString);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error al interpretar JSON: " + e.getMessage());
+            }
         }
 
     }

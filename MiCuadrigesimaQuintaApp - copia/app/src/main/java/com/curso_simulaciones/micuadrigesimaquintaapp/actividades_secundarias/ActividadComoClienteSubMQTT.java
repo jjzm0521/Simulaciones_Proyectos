@@ -108,6 +108,7 @@ public class ActividadComoClienteSubMQTT extends Activity implements Runnable {
         gaugeDistancia.setRango(0, 400);
         gaugeDistancia.setUnidades("cm");
         gaugeDistancia.setSeparacionesDivisionesGrandes(5);
+        gaugeDistancia.setPrecision(2); // 2 decimales para distancia
 
         // gauge temperatura
         gaugeTemperatura = new Gauge(this);
@@ -413,20 +414,23 @@ public class ActividadComoClienteSubMQTT extends Activity implements Runnable {
         try {
             JSONObject obj = new JSONObject(datoString);
 
-            // Asumiendo que el JSON tiene claves "distancia", "temperatura", "humedad"
+            // Ajustar claves para coincidir con el código del Pub (Arduino)
             boolean tieneDatos = false;
 
-            if (obj.has("distancia")) {
-                medidaDistancia = (float) obj.getDouble("distancia");
+            if (obj.has("valor")) {
+                medidaDistancia = (float) obj.getDouble("valor");
                 tieneDatos = true;
             }
-            if (obj.has("temperatura")) {
-                medidaTemperatura = (float) obj.getDouble("temperatura");
+            if (obj.has("temp")) {
+                medidaTemperatura = (float) obj.getDouble("temp");
                 tieneDatos = true;
             }
-            if (obj.has("humedad")) {
-                medidaHumedad = (float) obj.getDouble("humedad");
+            if (obj.has("hum")) {
+                medidaHumedad = (float) obj.getDouble("hum");
                 tieneDatos = true;
+            }
+            if (obj.has("unidad")) {
+                AlmacenDatosRAM.unidades = obj.getString("unidad");
             }
 
             return tieneDatos;
@@ -509,7 +513,8 @@ public class ActividadComoClienteSubMQTT extends Activity implements Runnable {
 
         } else if (AlmacenDatosRAM.estado_conexion_nube == 4) {
 
-            AlmacenDatosRAM.conectado_PubSub = "  Recibiendo datos: D=" + medidaDistancia + " T=" + medidaTemperatura
+            String distFormateada = String.format(java.util.Locale.US, "%.2f", medidaDistancia);
+            AlmacenDatosRAM.conectado_PubSub = "  Recibiendo datos: D=" + distFormateada + " T=" + medidaTemperatura
                     + " H=" + medidaHumedad;
             textviewAviso.setText(AlmacenDatosRAM.conectado_PubSub);
             textviewAviso.setBackgroundColor(Color.GREEN);

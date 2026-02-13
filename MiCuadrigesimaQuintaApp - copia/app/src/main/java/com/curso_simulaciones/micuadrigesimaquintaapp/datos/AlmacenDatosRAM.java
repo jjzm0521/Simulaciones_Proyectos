@@ -28,6 +28,10 @@ public class AlmacenDatosRAM {
 
     public static String tiempo;
 
+    public static float valor_distancia;
+    public static float temperatura;
+    public static float humedad;
+
     public static double[] x = new double[1000];
 
     public static double[] y = new double[1000];
