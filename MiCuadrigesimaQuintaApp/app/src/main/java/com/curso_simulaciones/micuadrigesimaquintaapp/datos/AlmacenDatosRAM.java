@@ -40,5 +40,6 @@ public class AlmacenDatosRAM {
      * agregan elementos
      */
 
+    public static ArrayList<Float> datosDistancia = new ArrayList<>();
     public static ArrayList<Entry> datos = new ArrayList<>();
 }
