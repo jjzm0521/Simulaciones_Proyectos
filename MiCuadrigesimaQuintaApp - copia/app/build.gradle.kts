@@ -39,6 +39,9 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     
+    // Incluir todos los archivos JAR y AAR de la carpeta libs
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
+    
     // implementation(files("libs/org.eclipse.paho.client.mqttv3-1.2.0.jar")) 
     implementation("com.github.hannesa2:paho.mqtt.android:3.3.5")
     

@@ -3,6 +3,12 @@ package com.curso_simulaciones.micuadrigesimaquintaapp.utilidades;
 import android.content.Context;
 import android.view.View;
 
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+
 import java.util.ArrayList;
 
 public class Graficador extends LineChart {

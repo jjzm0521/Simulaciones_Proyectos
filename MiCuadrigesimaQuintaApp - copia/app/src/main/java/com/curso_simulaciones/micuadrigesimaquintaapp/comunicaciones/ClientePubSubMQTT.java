@@ -52,35 +52,43 @@ public class ClientePubSubMQTT implements MqttCallback, IMqttActionListener {
 
     public void conectar() {
 
+        // Asegurar que se usen los datos más recientes de AlmacenDatosRAM
+        MQTTHOST = AlmacenDatosRAM.MQTTHOST;
+        USERNAME = AlmacenDatosRAM.USERNAME;
+        PASSWORD = AlmacenDatosRAM.PASSWORD;
+        topicStr = AlmacenDatosRAM.topicStr;
+
+        if (MQTTHOST == null || MQTTHOST.isEmpty()) {
+            AlmacenDatosRAM.conectado_PubSub = "Error: Host no configurado";
+            return;
+        }
+
         String clientId = MqttClient.generateClientId();
         client = new MqttAndroidClient(actividad.getApplicationContext(), MQTTHOST, clientId, Ack.AUTO_ACK);
         client.setCallback(this);
         options = new MqttConnectOptions();
         options.setUserName(USERNAME);
-        options.setPassword(PASSWORD.toCharArray());
-
-        // no estaba
-        // options.setCleanSession(true);
+        if (PASSWORD != null) {
+            options.setPassword(PASSWORD.toCharArray());
+        }
+        options.setCleanSession(true);
 
         // hacer conexión
-        client.connect(options, null, this);
-        // Log.d(TAG, "Conectado...");
-        AlmacenDatosRAM.conectado_PubSub = "Conectado con el broker...";
-        AlmacenDatosRAM.conectado = true;
+        client.connect(options, actividad.getApplicationContext(), this);
+        AlmacenDatosRAM.conectado_PubSub = "Conectando con el broker...";
     }
 
     // método automático
     // suscripción del tópico
     @Override
     public void onSuccess(IMqttToken asyncActionToken) {
-
-        // Log.d(TAG, "onSuccess: ");
-
-        client.subscribe(topicStr, 0);
-        AlmacenDatosRAM.conectado_PubSub = "Se hizo la suscripción al tópico...";
-        AlmacenDatosRAM.conectado = true;
-        // Log.d(TAG, "Se hizo la suscripción al tópico...");
-
+        if (client != null && topicStr != null && !topicStr.isEmpty()) {
+            client.subscribe(topicStr, 0);
+            AlmacenDatosRAM.conectado_PubSub = "Se hizo la suscripción al tópico...";
+            AlmacenDatosRAM.conectado = true;
+        } else {
+            AlmacenDatosRAM.conectado_PubSub = "Error: Tópico no configurado";
+        }
     }
 
     // método automático
@@ -94,16 +102,15 @@ public class ClientePubSubMQTT implements MqttCallback, IMqttActionListener {
     // método automático
     @Override
     public void connectionLost(Throwable throwable) {
-
-        // Log.d(TAG, "entro a lost");
-
+        AlmacenDatosRAM.conectado_PubSub = "Conexión pérdida...";
+        AlmacenDatosRAM.conectado = false;
     }
 
     // método automático
     @Override
     public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
 
-        if (AlmacenDatosRAM.conectado == true) {
+        if (AlmacenDatosRAM.conectado == true && mqttMessage != null) {
             datoString = new String(mqttMessage.getPayload());
             AlmacenDatosRAM.conectado_PubSub = "Recibiendo datos...";
         }
@@ -130,22 +137,13 @@ public class ClientePubSubMQTT implements MqttCallback, IMqttActionListener {
      */
     public void setEnviarMensajes(byte[] datoBytesEnviar) {
 
-        Log.d(TAG, "enviando datos: ");
-
-        if (AlmacenDatosRAM.conectado == true) {
+        if (client != null && AlmacenDatosRAM.conectado == true) {
             AlmacenDatosRAM.conectado_PubSub = "Enviando datos... ";
             MqttMessage message = new MqttMessage();
-
-            message.setQos(2);// estaba en 0
-            message.setRetained(true);// false
-
-            // message.setQos(0);//estaba en 0
-            // message.setRetained(false);//false
-
+            message.setQos(2);
+            message.setRetained(true);
             message.setPayload(datoBytesEnviar);
-
             client.publish(topicStr, message);
-
         }
     }
 
@@ -158,11 +156,12 @@ public class ClientePubSubMQTT implements MqttCallback, IMqttActionListener {
      */
 
     public void desconectar() {
-
-        client.unsubscribe(topicStr);
-        options.setCleanSession(true);// no estaba
-        client.disconnect();
-
+        if (client != null) {
+            client.unsubscribe(topicStr);
+            client.disconnect();
+            AlmacenDatosRAM.conectado = false;
+            AlmacenDatosRAM.conectado_PubSub = "Desconectado...";
+        }
     }
 
 }
